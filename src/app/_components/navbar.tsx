@@ -23,10 +23,10 @@ type Route = {
 const routes: Route[] = [
   { label: "Home", href: "/", isExternal: false },
   { label: "Kalender", href: "/#kalender", isExternal: false },
-  { label: "Leiding", href: "/leiding", isExternal: false },
+  { label: "Leidingsploeg", href: "/leidingsploeg", isExternal: false },
   {
     label: "Facebook",
-    href: "https://www.facebook.com/ChiroHouthulst",
+    href: "https://www.facebook.com/chirohouthulst",
     isExternal: true,
     icon: <FacebookIcon />,
   },
