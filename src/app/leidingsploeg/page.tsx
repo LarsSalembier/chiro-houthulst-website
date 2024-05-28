@@ -1,36 +1,6 @@
 import { PhoneIcon } from "lucide-react";
-import Link from "next/link";
 import { Navbar } from "../_components/navbar";
 import { groups } from "~/data/mock-data";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-
-const getBackgroundColor = (color: string) => {
-  switch (color) {
-    case "purple":
-      return "bg-purple-800";
-    case "yellow":
-      return "bg-yellow-600";
-    case "green":
-      return "bg-green-800";
-    case "red":
-      return "bg-red-800";
-    case "blue":
-      return "bg-blue-800";
-    case "orange":
-      return "bg-orange-700";
-    case "gray":
-      return "bg-gray-800";
-    default:
-      return "bg-gray-200";
-  }
-};
 
 export default function LeidingsploegPage() {
   return (
