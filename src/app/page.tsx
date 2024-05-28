@@ -14,11 +14,11 @@ export default function HomePage() {
         imageAlt="Groepsfoto Kamp"
         title="Chiro Houthulst"
       />
-      <main className="sm: flex max-w-7xl flex-grow flex-col justify-center gap-8 p-8 pt-16 sm:gap-16 sm:p-16 sm:pt-24 md:p-24">
+      <main className="flex max-w-7xl flex-grow flex-col justify-center gap-8 p-8 pt-16 sm:gap-16 sm:p-16 sm:pt-24 md:p-24">
         <h1 className="w-full bg-clip-text font-sans text-5xl font-bold md:text-6xl">
           Welkom bij Chiro Houthulst!
         </h1>
-        <section className="flex w-full max-w-4xl flex-col gap-4 sm:gap-8 ">
+        <section className="flex w-full max-w-4xl flex-col gap-4 sm:gap-8">
           <article className="mb-8">
             <h2 className="mb-4 font-sans text-3xl font-bold">Wie zijn wij?</h2>
             <p className="text-lg">
