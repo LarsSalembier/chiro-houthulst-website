@@ -35,11 +35,11 @@ export default function AgeGroupCard({
         <h3 className="mb-2 text-xl font-bold">{title}</h3>
         <p>{description}</p>
       </CardContent>
-      <CardFooter>
+      {/* <CardFooter>
         <a href={link} className="text-blue-500 hover:underline">
           Lees meer
         </a>
-      </CardFooter>
+      </CardFooter> */}
     </Card>
     // <div className="rounded-lg bg-white p-6 shadow-md">
     //   <Image

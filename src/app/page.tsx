@@ -2,7 +2,6 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { generateMetadata } from "~/lib/generate-metadata";
 import Image from "next/image";
-import { MenuIcon } from "lucide-react";
 import ribbelsImage from "./../../public/groepen/ribbels.png";
 import speelclubImage from "./../../public/groepen/speelclub.png";
 import kwiksImage from "./../../public/groepen/kwiks.png";
@@ -16,6 +15,14 @@ import sponsor1 from "./../../public/sponsors/1.png";
 import sponsor2 from "./../../public/sponsors/2.png";
 import sponsor3 from "./../../public/sponsors/3.png";
 import sponsor4 from "./../../public/sponsors/4.png";
+import sponsor5 from "./../../public/sponsors/5.png";
+import sponsor6 from "./../../public/sponsors/6.png";
+import sponsor7 from "./../../public/sponsors/7.png";
+import sponsor8 from "./../../public/sponsors/8.png";
+import sponsor9 from "./../../public/sponsors/9.png";
+import sponsor10 from "./../../public/sponsors/10.png";
+import sponsor11 from "./../../public/sponsors/11.png";
+import sponsor12 from "./../../public/sponsors/12.png";
 import { InfiniteMovingCards } from "~/components/ui/infinite-moving-cards";
 import EventCard from "./_components/event-card";
 import NewsCard from "./_components/news-card";
@@ -24,6 +31,8 @@ import InstagramIcon from "./_components/icons/instagram";
 import FacebookIcon from "./_components/icons/facebook";
 import Link from "next/link";
 import { Textarea } from "~/components/ui/textarea";
+import MobileNavSheet from "./_components/mobile-nav-sheet";
+import SearchBar from "./_components/search-bar";
 
 export const metadata = generateMetadata({
   title: "Home",
@@ -44,12 +53,8 @@ export default function HomePage() {
             />
           </a>
           <div className="flex flex-row gap-4">
-            <form role="search" aria-label="Zoek" className="flex items-center">
-              <Input type="search" name="q" placeholder="Zoeken..." />
-            </form>
-            <Button size="icon" aria-label="Open menu">
-              <MenuIcon />
-            </Button>
+            <SearchBar />
+            <MobileNavSheet />
           </div>
         </div>
       </header>
@@ -129,68 +134,65 @@ export default function HomePage() {
         </section>
 
         <section
-          id="uitgelichte-evenementen"
-          className="mb-8 flex flex-col gap-4"
+          id="aankomende-evenementen"
+          className="mb-8 flex flex-col gap-6"
         >
           <div>
             <h2 className="mb-4 text-2xl font-bold">Aankomende activiteiten</h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <EventCard
-                title="Chirofuif"
-                date="15 oktober 2023"
-                time="20:00 - 01:00"
-                description="Kom feesten op onze jaarlijkse Chirofuif!"
-                link="/evenement/1"
+                title="Chiro"
+                date="Zondag 9 juni 2024"
+                time="14:00 tot 17:00"
+                description="Er is zondag weer chiro! Voor de keti's en aspi's zoals gebruikelijk tot 18u."
               />
               <EventCard
-                title="Spaghettislag"
-                date="5 november 2023"
-                time="17:00 - 20:00"
-                description="Geniet van een heerlijke spaghettislag!"
-                link="/evenement/2"
+                title="Chiro"
+                date="Zondag 16 juni 2024"
+                time="14:00 tot 17:00"
+                description="Er is zondag weer chiro! Voor de keti's en aspi's zoals gebruikelijk tot 18u."
               />
               <EventCard
-                title="Kerstmarkt"
-                date="16 december 2023"
-                time="14:00 - 18:00"
-                description="Bezoek onze gezellige kerstmarkt!"
-                link="/evenement/3"
+                title="Chiro"
+                date="Zondag 23 juni 2024"
+                time="14:00 tot 17:00"
+                description="Er is zondag weer chiro! Voor de keti's en aspi's zoals gebruikelijk tot 18u."
               />
             </div>
           </div>
           <Button asChild className="w-fit">
-            <Link href="/kalender">Bekijk de volledige kalender</Link>
+            <Link href="/kalender.jpg">Bekijk de volledige kalender</Link>
           </Button>
         </section>
 
-        <section id="nieuws-updates" className="mb-8">
-          <h2 className="mb-4 text-2xl font-bold">Nieuws en Updates</h2>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <NewsCard
-              title="Start nieuw Chirojaar"
-              date="1 september 2023"
-              description="Het nieuwe Chirojaar gaat van start!"
-              link="/nieuws/1"
-            />
-            <NewsCard
-              title="Inschrijvingen geopend"
-              date="15 augustus 2023"
-              description="Schrijf je nu in voor het nieuwe Chirojaar!"
-              link="/nieuws/2"
-            />
-            <NewsCard
-              title="Terugblik kamp"
-              date="1 augustus 2023"
-              description="We blikken terug op een fantastisch kamp!"
-              link="/nieuws/3"
-            />
+        <section id="nieuws-updates" className="mb-8 flex flex-col gap-6">
+          <div>
+            <h2 className="mb-4 text-2xl font-bold">Nieuws en Updates</h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              <NewsCard
+                title="Inschrijven groepsuitstap"
+                date="23 mei 2024"
+                description="Zondag 30 juni gaan we met de voltallige groep naar Plopsaland De Panne. Schrijf je snel in!"
+                link="https://forms.gle/k7WxEpTYWiTXS2Zv9"
+                linkText="Inschrijven"
+              />
+              <NewsCard
+                title="Foto's voetbalcompetitie"
+                date="11 mei 2024"
+                description="De foto's van voetbalcompetite staan online! Bekijk ze snel."
+                link="https://www.facebook.com/media/set/?set=a.846689867485055&type=3"
+                linkText="Bekijk de foto's op Facebook"
+              />
+              <NewsCard
+                title="Kaarten Chirocafé uitverkocht"
+                date="6 mei 2024"
+                description="De kaarten voor de kip en friet zijn uitverkocht, dankuwel voor jullie steun en tot donderdag!"
+              />
+            </div>
           </div>
-          <a
-            href="/nieuws"
-            className="mt-4 inline-block rounded-md bg-primary px-4 py-2 font-bold text-primary-foreground hover:bg-blue-700"
-          >
-            Lees al het nieuws
-          </a>
+          {/* <Button asChild className="w-fit">
+            <Link href="/kalender">Lees al het nieuws</Link>
+          </Button> */}
         </section>
         <section id="leeftijdsgroepen" className="mb-8">
           <h2 className="mb-4 text-2xl font-bold">Leeftijdsgroepen</h2>
@@ -246,7 +248,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="sponsoren-partners" className="mb-8">
+        <section id="sponsors" className="mb-8">
           <h2 className="mb-4 text-2xl font-bold">Onze sponsors</h2>
           <p className="mb-4 text-gray-800">
             Wij zijn dankbaar voor de steun van onze sponsors. Dankzij hen
@@ -254,6 +256,7 @@ export default function HomePage() {
             onvergetelijke tijd bezorgen.
           </p>
           <InfiniteMovingCards
+            speed="slow"
             items={[
               {
                 url: "/sponsor/1",
@@ -274,6 +277,46 @@ export default function HomePage() {
                 url: "/sponsor/4",
                 staticImage: sponsor4,
                 alt: "Logo Sponsor 4",
+              },
+              {
+                url: "/sponsor/5",
+                staticImage: sponsor5,
+                alt: "Logo Sponsor 5",
+              },
+              {
+                url: "/sponsor/6",
+                staticImage: sponsor6,
+                alt: "Logo Sponsor 6",
+              },
+              {
+                url: "/sponsor/7",
+                staticImage: sponsor7,
+                alt: "Logo Sponsor 7",
+              },
+              {
+                url: "/sponsor/8",
+                staticImage: sponsor8,
+                alt: "Logo Sponsor 8",
+              },
+              {
+                url: "/sponsor/9",
+                staticImage: sponsor9,
+                alt: "Logo Sponsor 9",
+              },
+              {
+                url: "/sponsor/10",
+                staticImage: sponsor10,
+                alt: "Logo Sponsor 10",
+              },
+              {
+                url: "/sponsor/11",
+                staticImage: sponsor11,
+                alt: "Logo Sponsor 11",
+              },
+              {
+                url: "/sponsor/12",
+                staticImage: sponsor12,
+                alt: "Logo Sponsor 12",
               },
             ]}
           />
@@ -312,7 +355,9 @@ export default function HomePage() {
               </div>
             </div>
             <div>
-              <h4 className="mb-4 text-lg font-bold">Contacteer ons</h4>
+              <h4 className="mb-4 text-lg font-bold" id="contacteer-ons">
+                Contacteer ons
+              </h4>
               <form action="#" method="POST">
                 <div className="mb-4">
                   <label htmlFor="naam" className="mb-2 block">
@@ -332,7 +377,19 @@ export default function HomePage() {
                   </label>
                   <Textarea id="bericht" name="bericht" rows={4}></Textarea>
                 </div>
-                <Button type="submit">Verzenden</Button>
+                <Button type="submit" disabled>
+                  Verzenden
+                </Button>
+                <p>
+                  Dit contactformulier werkt nog niet. Contacteer ons via onze{" "}
+                  <Link
+                    href="https://facebook.com/chirohouthulst"
+                    className="underline"
+                  >
+                    Facebookpagina
+                  </Link>
+                  .
+                </p>
               </form>
             </div>
           </div>

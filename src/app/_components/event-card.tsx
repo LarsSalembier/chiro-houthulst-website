@@ -15,7 +15,8 @@ interface EventCardProps {
   date: string;
   time: string;
   description: string;
-  link: string;
+  link?: string;
+  linkText?: string;
 }
 
 export default function EventCard({
@@ -24,37 +25,26 @@ export default function EventCard({
   time,
   description,
   link,
+  linkText,
 }: EventCardProps) {
   return (
     <Card className="flex flex-col">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>
-          Op {date} vanaf {time}
+          {date} - {time}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
         <p>{description}</p>
       </CardContent>
       <CardFooter>
-        <Button asChild variant="secondary" disabled={true}>
-          <Link href={link}>Lees meer</Link>
-        </Button>
+        {link && linkText && (
+          <Button asChild variant="secondary">
+            <Link href={link}>{linkText}</Link>
+          </Button>
+        )}
       </CardFooter>
     </Card>
-    // <div className="rounded-lg bg-white p-6 shadow-md">
-    //   <h3 className="mb-2 text-xl font-bold">
-    //     <a href={link} className="hover:text-blue-500">
-    //       {title}
-    //     </a>
-    //   </h3>
-    //   <p className="text-gray-700">
-    //     <strong>Datum:</strong> {date}
-    //     <br />
-    //     <strong>Tijd:</strong> {time}
-    //     <br />
-    //     {description}
-    //   </p>
-    // </div>
   );
 }
