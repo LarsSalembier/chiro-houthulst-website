@@ -29,7 +29,6 @@ export default function RootLayout({
             <PostHogPageView />
             <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
               {children}
-              <Footer />
             </ThemeProvider>
           </body>
         </html>
