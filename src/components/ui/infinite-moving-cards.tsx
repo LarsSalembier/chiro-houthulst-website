@@ -2,9 +2,6 @@
 
 import { cn } from "~/lib/utils";
 import React, { useEffect, useState } from "react";
-import { type StaticImageData } from "next/image";
-import Image from "next/image";
-import Link from "next/link";
 
 export const InfiniteMovingCards = ({
   items,
@@ -13,11 +10,7 @@ export const InfiniteMovingCards = ({
   pauseOnHover = true,
   className,
 }: {
-  items: {
-    staticImage: StaticImageData;
-    url: string;
-    alt: string;
-  }[];
+  items: React.ReactNode[];
   direction?: "left" | "right";
   speed?: "fast" | "normal" | "slow";
   pauseOnHover?: boolean;
@@ -86,22 +79,12 @@ export const InfiniteMovingCards = ({
       <ul
         ref={scrollerRef}
         className={cn(
-          " flex w-max shrink-0 flex-nowrap gap-4 py-4",
+          " flex w-max shrink-0 flex-nowrap items-center  gap-4 py-4",
           start && "animate-scroll ",
           pauseOnHover && "hover:[animation-play-state:paused]",
         )}
       >
-        {items.map((item) => (
-          <li className="h-36 overflow-hidden rounded-2xl" key={item.url}>
-            <Link href={item.url}>
-              <Image
-                className="h-full w-full object-cover"
-                src={item.staticImage}
-                alt={item.alt}
-              />
-            </Link>
-          </li>
-        ))}
+        {items}
       </ul>
     </div>
   );

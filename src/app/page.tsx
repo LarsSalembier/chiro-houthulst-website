@@ -11,19 +11,6 @@ import kerelsImage from "./../../public/groepen/kerels.png";
 import tiptiensImage from "./../../public/groepen/tip10s.png";
 import aspisImage from "./../../public/groepen/aspis.png";
 import mainImage from "./../../public/kampgroepsfoto.png";
-import sponsor1 from "./../../public/sponsors/1.png";
-import sponsor2 from "./../../public/sponsors/2.png";
-import sponsor3 from "./../../public/sponsors/3.png";
-import sponsor4 from "./../../public/sponsors/4.png";
-import sponsor5 from "./../../public/sponsors/5.png";
-import sponsor6 from "./../../public/sponsors/6.png";
-import sponsor7 from "./../../public/sponsors/7.png";
-import sponsor8 from "./../../public/sponsors/8.png";
-import sponsor9 from "./../../public/sponsors/9.png";
-import sponsor10 from "./../../public/sponsors/10.png";
-import sponsor11 from "./../../public/sponsors/11.png";
-import sponsor12 from "./../../public/sponsors/12.png";
-import { InfiniteMovingCards } from "~/components/ui/infinite-moving-cards";
 import EventCard from "./_components/event-card";
 import NewsCard from "./_components/news-card";
 import AgeGroupCard from "./_components/age-group-card";
@@ -33,6 +20,10 @@ import Link from "next/link";
 import { Textarea } from "~/components/ui/textarea";
 import MobileNavSheet from "./_components/mobile-nav-sheet";
 import SearchBar from "./_components/search-bar";
+import SponsorsSection from "./_components/sponsors/sponsors-section";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = generateMetadata({
   title: "Home",
@@ -55,12 +46,15 @@ export default function HomePage() {
           <div className="flex flex-row gap-4">
             <SearchBar />
             <MobileNavSheet />
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto flex-grow px-6 pb-8 md:px-12 lg:px-24">
-        <section id="welkom" className="relative mb-8 overflow-hidden">
+      <main className="container mx-auto flex flex-grow flex-col gap-8 px-6 pb-8 md:px-12 lg:px-24">
+        <section id="welkom" className="relative overflow-hidden">
           <div className="absolute inset-0">
             <Image
               src={mainImage}
@@ -92,7 +86,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="praktisch" className="mb-8">
+        <section id="praktisch">
           <h2 className="mb-4 text-2xl font-bold">Praktisch</h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
             <div>
@@ -133,12 +127,9 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section
-          id="aankomende-evenementen"
-          className="mb-8 flex flex-col gap-6"
-        >
-          <div>
-            <h2 className="mb-4 text-2xl font-bold">Aankomende activiteiten</h2>
+        <section id="aankomende-evenementen" className="flex flex-col gap-4">
+          <h2 className="text-2xl font-bold">Aankomende activiteiten</h2>
+          <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <EventCard
                 title="Chiro"
@@ -159,15 +150,15 @@ export default function HomePage() {
                 description="Er is zondag weer chiro! Voor de keti's en aspi's zoals gebruikelijk tot 18u."
               />
             </div>
+            <Button asChild className="w-fit">
+              <Link href="/kalender.jpg">Bekijk de volledige kalender</Link>
+            </Button>
           </div>
-          <Button asChild className="w-fit">
-            <Link href="/kalender.jpg">Bekijk de volledige kalender</Link>
-          </Button>
         </section>
 
-        <section id="nieuws-updates" className="mb-8 flex flex-col gap-6">
-          <div>
-            <h2 className="mb-4 text-2xl font-bold">Nieuws en Updates</h2>
+        <section id="nieuws-updates" className="flex flex-col gap-4">
+          <h2 className="text-2xl font-bold">Nieuws en Updates</h2>
+          <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <NewsCard
                 title="Inschrijven groepsuitstap"
@@ -189,13 +180,13 @@ export default function HomePage() {
                 description="De kaarten voor de kip en friet zijn uitverkocht, dankuwel voor jullie steun en tot donderdag!"
               />
             </div>
-          </div>
-          {/* <Button asChild className="w-fit">
+            {/* <Button asChild className="w-fit">
             <Link href="/kalender">Lees al het nieuws</Link>
           </Button> */}
+          </div>
         </section>
-        <section id="leeftijdsgroepen" className="mb-8">
-          <h2 className="mb-4 text-2xl font-bold">Leeftijdsgroepen</h2>
+        <section id="leeftijdsgroepen" className="flex flex-col gap-4">
+          <h2 className="text-2xl font-bold">Leeftijdsgroepen</h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             <AgeGroupCard
               image={ribbelsImage}
@@ -248,79 +239,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="sponsors" className="mb-8">
-          <h2 className="mb-4 text-2xl font-bold">Onze sponsors</h2>
-          <p className="mb-4 text-gray-800">
-            Wij zijn dankbaar voor de steun van onze sponsors. Dankzij hen
-            kunnen we onze activiteiten organiseren en onze leden een
-            onvergetelijke tijd bezorgen.
-          </p>
-          <InfiniteMovingCards
-            speed="slow"
-            items={[
-              {
-                url: "/sponsor/1",
-                staticImage: sponsor1,
-                alt: "Logo Sponsor 1",
-              },
-              {
-                url: "/sponsor/2",
-                staticImage: sponsor2,
-                alt: "Logo Sponsor 2",
-              },
-              {
-                url: "/sponsor/3",
-                staticImage: sponsor3,
-                alt: "Logo Sponsor 3",
-              },
-              {
-                url: "/sponsor/4",
-                staticImage: sponsor4,
-                alt: "Logo Sponsor 4",
-              },
-              {
-                url: "/sponsor/5",
-                staticImage: sponsor5,
-                alt: "Logo Sponsor 5",
-              },
-              {
-                url: "/sponsor/6",
-                staticImage: sponsor6,
-                alt: "Logo Sponsor 6",
-              },
-              {
-                url: "/sponsor/7",
-                staticImage: sponsor7,
-                alt: "Logo Sponsor 7",
-              },
-              {
-                url: "/sponsor/8",
-                staticImage: sponsor8,
-                alt: "Logo Sponsor 8",
-              },
-              {
-                url: "/sponsor/9",
-                staticImage: sponsor9,
-                alt: "Logo Sponsor 9",
-              },
-              {
-                url: "/sponsor/10",
-                staticImage: sponsor10,
-                alt: "Logo Sponsor 10",
-              },
-              {
-                url: "/sponsor/11",
-                staticImage: sponsor11,
-                alt: "Logo Sponsor 11",
-              },
-              {
-                url: "/sponsor/12",
-                staticImage: sponsor12,
-                alt: "Logo Sponsor 12",
-              },
-            ]}
-          />
-        </section>
+        <SponsorsSection />
       </main>
       <footer
         className="w-full bg-card text-card-foreground"
@@ -353,6 +272,9 @@ export default function HomePage() {
                   </Link>
                 </div>
               </div>
+              <SignedOut>
+                <SignInButton />
+              </SignedOut>
             </div>
             <div>
               <h4 className="mb-4 text-lg font-bold" id="contacteer-ons">

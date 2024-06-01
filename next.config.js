@@ -28,12 +28,7 @@ const config = {
   skipTrailingSlashRedirect: true,
 
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "placehold.co",
-      },
-    ],
+    remotePatterns: [{ hostname: "utfs.io" }],
   },
 };
 

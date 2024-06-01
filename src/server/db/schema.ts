@@ -9,6 +9,7 @@ import {
   serial,
   timestamp,
   varchar,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -20,6 +21,29 @@ import {
 export const createTable = pgTableCreator(
   (name) => `chirohouthulst-website_${name}`,
 );
+
+export const sponsors = createTable("sponsors", {
+  id: serial("id").primaryKey(),
+  companyName: varchar("company_name", { length: 256 }).notNull(),
+  companyOwnerName: varchar("company_owner_name", { length: 256 }),
+  municipality: varchar("municipality", { length: 256 }),
+  postalCode: varchar("postal_code", { length: 256 }),
+  street: varchar("street", { length: 256 }),
+  number: varchar("number", { length: 256 }),
+  landline: varchar("landline", { length: 256 }),
+  mobile: varchar("mobile", { length: 256 }),
+  email: varchar("email", { length: 256 }),
+  websiteUrl: varchar("website_url", { length: 256 }),
+  amount: integer("amount").notNull(),
+  logoUrl: varchar("logo_url", { length: 256 }),
+  paid: boolean("paid").default(false),
+  startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+  endDate: timestamp("end_date", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updatedAt", { withTimezone: true }),
+});
 
 export const people = createTable("people", {
   id: serial("id").primaryKey(),

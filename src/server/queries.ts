@@ -1,5 +1,7 @@
+import { and, gte, isNotNull, lte } from "drizzle-orm";
 import "server-only";
 import { db } from "~/server/db";
+import { sponsors } from "./db/schema";
 
 export async function getGroups() {
   const groupsFromDb = await db.query.groups
@@ -25,4 +27,17 @@ export async function getGroups() {
       phone: member.person.phone,
     })),
   }));
+}
+
+export async function getSponsorsWithLogo(
+  startAmount: number,
+  endAmount: number,
+) {
+  return await db.query.sponsors.findMany({
+    where: and(
+      gte(sponsors.amount, startAmount),
+      lte(sponsors.amount, endAmount),
+      isNotNull(sponsors.logoUrl),
+    ),
+  });
 }
