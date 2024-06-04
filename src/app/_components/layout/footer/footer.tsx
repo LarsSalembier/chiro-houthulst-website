@@ -3,8 +3,11 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
-import FacebookIcon from "../page/icons/facebook";
-import InstagramIcon from "../page/icons/instagram";
+import FacebookIcon from "../../page/icons/facebook";
+import InstagramIcon from "../../page/icons/instagram";
+import { sendEmail } from "~/app/_actions/send-email";
+import { Label } from "~/components/ui/label";
+import ContactForm from "./contact-form";
 
 export function Footer() {
   return (
@@ -22,7 +25,7 @@ export function Footer() {
               <p>chirohouthulst@hotmail.com</p>
             </div>
             <div className="flex flex-col gap-2">
-              <h4 className="text-lg font-bold">Contacteer de hoofdleiding</h4>
+              <h4 className="text-lg font-bold">Hoofdleiding</h4>
               <p>
                 Warre Sabbe
                 <br />
@@ -50,54 +53,12 @@ export function Footer() {
                 </Link>
               </div>
             </div>
-            <SignedOut>
-              <div className="flex flex-col gap-2">
-                <h4 className="text-lg font-bold">Intern</h4>
-                <SignInButton>
-                  <Button variant="outline" className="w-fit">
-                    Inloggen
-                  </Button>
-                </SignInButton>
-              </div>
-            </SignedOut>
           </div>
           <div>
             <h4 className="mb-4 text-lg font-bold" id="contacteer-ons">
               Contacteer ons
             </h4>
-            <form action="#" method="POST">
-              <div className="mb-4">
-                <label htmlFor="naam" className="mb-2 block">
-                  Naam:
-                </label>
-                <Input type="text" id="naam" name="naam" />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="email" className="mb-2 block">
-                  Email:
-                </label>
-                <Input type="email" id="email" name="email" />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="bericht" className="mb-2 block">
-                  Bericht:
-                </label>
-                <Textarea id="bericht" name="bericht" rows={4}></Textarea>
-              </div>
-              <Button type="submit" disabled>
-                Verzenden
-              </Button>
-              <p>
-                Dit contactformulier werkt nog niet. Contacteer ons via onze{" "}
-                <Link
-                  href="https://facebook.com/chirohouthulst"
-                  className="underline"
-                >
-                  Facebookpagina
-                </Link>
-                .
-              </p>
-            </form>
+            <ContactForm />
           </div>
         </div>
         <p className="text-sm text-gray-500">© 2024 Chiro Houthulst</p>
