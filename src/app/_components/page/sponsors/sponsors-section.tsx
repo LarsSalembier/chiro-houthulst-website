@@ -1,7 +1,5 @@
 import { Suspense } from "react";
 import SponsorRow from "./sponsor-row";
-import { SignedIn } from "@clerk/nextjs";
-import AddSponsorButton from "./add-sponsor-button";
 
 export default function SponsorsSection() {
   return (

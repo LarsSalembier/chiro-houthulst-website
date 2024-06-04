@@ -50,16 +50,16 @@ export function Footer() {
                 </Link>
               </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <h4 className="text-lg font-bold">Intern</h4>
-              <SignedOut>
+            <SignedOut>
+              <div className="flex flex-col gap-2">
+                <h4 className="text-lg font-bold">Intern</h4>
                 <SignInButton>
                   <Button variant="outline" className="w-fit">
                     Inloggen
                   </Button>
                 </SignInButton>
-              </SignedOut>
-            </div>
+              </div>
+            </SignedOut>
           </div>
           <div>
             <h4 className="mb-4 text-lg font-bold" id="contacteer-ons">

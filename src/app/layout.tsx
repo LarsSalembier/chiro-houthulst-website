@@ -1,7 +1,6 @@
 import "~/styles/globals.css";
 
 import { DM_Sans } from "next/font/google";
-import { Footer } from "./_components/layout/footer";
 import { ThemeProvider } from "~/providers/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import CSPostHogProvider from "~/providers/analytics/analytics-provider";
