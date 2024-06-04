@@ -31,10 +31,7 @@ export default function RootLayout({
             <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
               <div className="flex min-h-screen flex-col gap-8">
                 <Navbar />
-                <main className="container mx-auto flex flex-grow flex-col gap-8 px-6 pb-8 md:px-12 lg:px-24">
-                  {children}
-                </main>
-                <Footer />
+                {children}
               </div>
             </ThemeProvider>
           </body>

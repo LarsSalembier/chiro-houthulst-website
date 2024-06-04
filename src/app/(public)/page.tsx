@@ -1,21 +1,21 @@
 import { Button } from "~/components/ui/button";
 import { generateMetadata } from "~/lib/generate-metadata";
-import ribbelsImage from "./../../public/groepen/ribbels.png";
-import speelclubImage from "./../../public/groepen/speelclub.png";
-import kwiksImage from "./../../public/groepen/kwiks.png";
-import rakkersImage from "./../../public/groepen/rakkers.png";
-import titosImage from "./../../public/groepen/titos.png";
-import kerelsImage from "./../../public/groepen/kerels.png";
-import tiptiensImage from "./../../public/groepen/tip10s.png";
-import aspisImage from "./../../public/groepen/aspis.png";
-import EventCard from "./_components/page/event-card";
-import NewsCard from "./_components/page/news-card";
-import AgeGroupCard from "./_components/page/age-group-card";
+import ribbelsImage from "~/../public/groepen/ribbels.png";
+import speelclubImage from "~/../public/groepen/speelclub.png";
+import kwiksImage from "~/../public/groepen/kwiks.png";
+import rakkersImage from "~/../public/groepen/rakkers.png";
+import titosImage from "~/../public/groepen/titos.png";
+import kerelsImage from "~/../public/groepen/kerels.png";
+import tiptiensImage from "~/../public/groepen/tip10s.png";
+import aspisImage from "~/../public/groepen/aspis.png";
+import EventCard from "../_components/page/event-card";
+import NewsCard from "../_components/page/news-card";
+import AgeGroupCard from "../_components/page/age-group-card";
 import Link from "next/link";
-import SponsorsSection from "./_components/page/sponsors/sponsors-section";
-import WelcomeSection from "./_components/page/welcome-section";
-import GridSection from "./_components/page/grid-section";
-import Paragraph from "./_components/page/paragraph";
+import SponsorsSection from "../_components/page/sponsors/sponsors-section";
+import WelcomeSection from "../_components/page/welcome-section";
+import GridSection from "../_components/page/grid-section";
+import Paragraph from "../_components/page/paragraph";
 
 export const dynamic = "force-dynamic";
 

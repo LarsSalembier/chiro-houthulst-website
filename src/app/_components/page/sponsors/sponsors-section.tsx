@@ -13,9 +13,6 @@ export default function SponsorsSection() {
           we onze activiteiten organiseren en onze leden een onvergetelijke tijd
           bezorgen.
         </p>
-        <SignedIn>
-          <AddSponsorButton />
-        </SignedIn>
         <Suspense fallback={<div>Sponsors laden...</div>}>
           <div className="flex flex-col gap-2">
             <SponsorRow
