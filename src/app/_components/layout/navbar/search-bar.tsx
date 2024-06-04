@@ -70,8 +70,7 @@ export default function SearchBar() {
   const [value, setValue] = React.useState("");
   const [searchResults, setSearchResults] = React.useState(siteLinks);
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const term = event.target.value.toLowerCase();
+  const handleSearchChange = (term: string) => {
     setValue(term);
 
     const results = siteLinks?.filter((link) =>

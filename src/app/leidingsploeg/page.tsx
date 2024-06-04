@@ -1,5 +1,5 @@
 import { PhoneIcon } from "lucide-react";
-import { Navbar } from "../_components/navbar";
+import { Navbar } from "../_components/layout/navbar/navbar";
 import { getGroups } from "~/server/queries";
 
 export default async function LeidingsploegPage() {
