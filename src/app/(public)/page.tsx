@@ -8,14 +8,14 @@ import titosImage from "~/../public/groepen/titos.png";
 import kerelsImage from "~/../public/groepen/kerels.png";
 import tiptiensImage from "~/../public/groepen/tip10s.png";
 import aspisImage from "~/../public/groepen/aspis.png";
-import EventCard from "../_components/page/event-card";
-import NewsCard from "../_components/page/news-card";
-import AgeGroupCard from "../_components/page/age-group-card";
+import EventCard from "./_components/page/event-card";
+import NewsCard from "./_components/page/news-card";
+import AgeGroupCard from "./_components/page/age-group-card";
 import Link from "next/link";
-import SponsorsSection from "../_components/page/sponsors/sponsors-section";
-import WelcomeSection from "../_components/page/welcome-section";
-import GridSection from "../_components/page/grid-section";
-import Paragraph from "../_components/page/paragraph";
+import WelcomeSection from "./_components/page/welcome-section";
+import GridSection from "./_components/page/grid-section";
+import Paragraph from "./_components/page/paragraph";
+import SponsorsSection from "./_components/page/sponsors/sponsors-section";
 
 export const dynamic = "force-dynamic";
 
@@ -146,56 +146,48 @@ export default function HomePage() {
             image={ribbelsImage}
             title="Ribbels"
             description="De Ribbels zijn onze jongste leden (3de kleuter, 1ste en 2de leerjaar). Ze beleven elke week plezier aan spelletjes, knutselen en andere leuke activiteiten."
-            link="/leeftijdsgroepen/ribbels"
           />,
           <AgeGroupCard
             key="speelclub"
             image={speelclubImage}
             title="Speelclub"
             description="De Speelclub is er voor kinderen van het 3de en 4de leerjaar. Ze spelen graag buiten, maken nieuwe vriendjes en beleven dolle avonturen."
-            link="/leeftijdsgroepen/speelclub"
           />,
           <AgeGroupCard
             key="kwiks"
             image={kwiksImage}
             title="Kwiks"
             description="De Kwiks zijn onze stoere meiden van het 5de en 6de leerjaar. Ze houden van actie, avontuur en creativiteit."
-            link="/leeftijdsgroepen/kwiks"
           />,
           <AgeGroupCard
             key="rakkers"
             image={rakkersImage}
             title="Rakkers"
             description="De Rakkers zijn onze coole jongens van het 5de en 6de leerjaar. Ze zijn altijd in voor een uitdaging en maken er graag een dolle boel van."
-            link="/leeftijdsgroepen/rakkers"
           />,
           <AgeGroupCard
             key="titos"
             image={titosImage}
             title="Tito's"
             description="De Tito's zijn onze tieners van het 1ste en 2de middelbaar. Ze zijn op zoek naar avontuur, plezier en nieuwe ervaringen."
-            link="/leeftijdsgroepen/titos"
           />,
           <AgeGroupCard
             key="kerels"
             image={kerelsImage}
             title="Kerels"
             description="De Kerels zijn onze stoere kerels van het 3de en 4de middelbaar. Ze houden van uitdagingen, avontuur en kameraadschap."
-            link="/leeftijdsgroepen/kerels"
           />,
           <AgeGroupCard
             key="tiptiens"
             image={tiptiensImage}
             title="Tip-10's"
             description="De Tip-10's zijn onze fantastische meiden van het 3de en 4de middelbaar. Ze zijn creatief, sociaal en staan open voor nieuwe dingen."
-            link="/leeftijdsgroepen/tiptiens"
           />,
           <AgeGroupCard
             key="aspis"
             image={aspisImage}
             title="Aspi's"
             description="De Aspi's zijn onze oudste leden (5de middelbaar). Ze zijn verantwoordelijk, behulpzaam en zetten zich graag in voor de Chiro."
-            link="/leeftijdsgroepen/aspis"
           />,
         ]}
       />

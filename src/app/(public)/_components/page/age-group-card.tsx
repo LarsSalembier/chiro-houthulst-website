@@ -1,25 +1,17 @@
 import React from "react";
 import Image, { type StaticImageData } from "next/image";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardHeader } from "~/components/ui/card";
 
 interface AgeGroupCardProps {
   image: StaticImageData;
   title: string;
   description: string;
-  link: string;
 }
 
 export default function AgeGroupCard({
   image,
   title,
   description,
-  link,
 }: AgeGroupCardProps) {
   return (
     <Card className="flex flex-col">

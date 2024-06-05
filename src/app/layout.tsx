@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import CSPostHogProvider from "~/providers/analytics/analytics-provider";
 import dynamic from "next/dynamic";
 import { Navbar } from "./_components/layout/navbar/navbar";
+import { Toaster } from "~/components/ui/sonner";
 
 const PostHogPageView = dynamic(
   () => import("~/providers/analytics/posthog-page-view"),
@@ -32,6 +33,7 @@ export default function RootLayout({
                 <Navbar />
                 {children}
               </div>
+              <Toaster />
             </ThemeProvider>
           </body>
         </html>

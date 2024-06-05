@@ -1,6 +1,6 @@
 import { InfiniteMovingCards } from "~/components/ui/infinite-moving-cards";
-import { getSponsorsWithLogo } from "~/server/queries";
 import Image from "next/image";
+import getSponsorsWithLogo from "./../../../_functions/get-sponsors-with-logo";
 
 interface SponsorRowProps {
   direction: "left" | "right";

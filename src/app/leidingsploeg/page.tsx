@@ -1,13 +1,7 @@
-import { PhoneIcon } from "lucide-react";
-import { Navbar } from "../_components/layout/navbar/navbar";
-import { getGroups } from "~/server/queries";
-
 export default async function LeidingsploegPage() {
-  const groups = await getGroups();
-
   return (
     <div className="flex min-h-screen flex-col items-center">
-      <Navbar
+      {/* <Navbar
         imageUrl="/openingsformatie.jpg"
         imageAlt="Openingsformatie"
         title="Leidingsploeg"
@@ -34,7 +28,8 @@ export default async function LeidingsploegPage() {
             </ul>
           </article>
         ))}
-      </main>
+      </main> */}
+      <h1>Coming soon!</h1>
     </div>
   );
 }

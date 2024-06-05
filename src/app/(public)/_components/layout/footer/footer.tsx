@@ -1,12 +1,6 @@
-import { SignInButton, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import FacebookIcon from "../../page/icons/facebook";
-import InstagramIcon from "../../page/icons/instagram";
-import { sendEmail } from "~/app/_actions/send-email";
-import { Label } from "~/components/ui/label";
+import FacebookIcon from "../../../../../components/icons/facebook";
+import InstagramIcon from "../../../../../components/icons/instagram";
 import ContactForm from "./contact-form";
 
 export function Footer() {

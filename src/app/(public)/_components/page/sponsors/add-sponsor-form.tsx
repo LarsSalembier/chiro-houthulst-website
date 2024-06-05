@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { saveSponsor } from "./actions";
+import { saveSponsor } from "../../../_actions/save-sponsor";
 import { useState } from "react";
 
 const formSchema = z.object({

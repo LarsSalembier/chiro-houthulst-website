@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { checkRole } from "~/utils/roles";
 import { SearchUsers } from "./_components/search-users";
 import { clerkClient } from "@clerk/nextjs/server";
-import { deleteUser, setRole } from "./actions";
+import setRole from "./_actions/set-role";
+import { deleteUser } from "./_actions/delete-user";
 
 export default async function AdminDashboard(params: {
   searchParams: { search?: string };
