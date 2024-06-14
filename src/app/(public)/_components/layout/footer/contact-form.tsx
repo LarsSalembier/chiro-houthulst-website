@@ -61,6 +61,7 @@ export default function ContactForm() {
         className="flex flex-col gap-4"
       >
         <FormField
+          disabled
           control={form.control}
           name="name"
           render={({ field }) => (
@@ -74,6 +75,7 @@ export default function ContactForm() {
           )}
         />
         <FormField
+          disabled
           control={form.control}
           name="email"
           render={({ field }) => (
@@ -87,6 +89,7 @@ export default function ContactForm() {
           )}
         />
         <FormField
+          disabled
           control={form.control}
           name="message"
           render={({ field }) => (
@@ -99,7 +102,7 @@ export default function ContactForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-fit">
+        <Button type="submit" className="w-fit" disabled>
           Verstuur uw bericht
         </Button>
       </form>

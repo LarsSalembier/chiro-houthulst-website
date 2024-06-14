@@ -17,7 +17,7 @@ type InputData = {
 export const sendEmail = async (input: InputData) => {
   await resend.emails.send({
     from: "Contactformulier website <contact@chirohouthulst.be>",
-    to: "lars.salembier@gmail.com",
+    to: "chiro.houthulst@hotmail.com",
     subject: "Nieuw bericht via contactformulier",
     reply_to: input.email,
     react: React.createElement(ContactFormEmail, {
