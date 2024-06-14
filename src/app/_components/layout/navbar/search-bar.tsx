@@ -40,7 +40,7 @@ const siteLinks: SiteLink[] = [
   {
     id: "kalender",
     label: "Kalender",
-    url: "/kalender.jpg",
+    url: "/kalender",
   },
   {
     id: "nieuws en updates",

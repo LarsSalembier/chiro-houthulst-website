@@ -35,6 +35,38 @@
     --ring: 228 73% 13%;
 
     --radius: 0.5rem;
+
+    /* FullCalendar Styles */
+    --fc-page-bg-color: hsl(var(--background));
+    --fc-neutral-bg-color: hsl(var(--muted));
+    --fc-neutral-text-color: hsl(var(--muted-foreground));
+    --fc-border-color: hsl(var(--border));
+
+    --fc-button-text-color: hsl(var(--primary-foreground));
+    --fc-button-bg-color: hsl(var(--primary));
+    --fc-button-border-color: transparent;
+    --fc-button-hover-bg-color: hsl(var(--primary));
+    --fc-button-hover-border-color: transparent;
+    --fc-button-active-border-color: transparent;
+
+    --fc-event-bg-color: hsl(var(--primary));
+    --fc-event-border-color: hsl(var(--primary));
+    --fc-event-text-color: hsl(var(--primary-foreground));
+    --fc-event-selected-overlay-color: rgba(0, 0, 0, 0.25);
+
+    --fc-more-link-bg-color: hsl(var(--muted));
+    --fc-more-link-text-color: hsl(var(--muted-foreground));
+
+    --fc-event-resizer-thickness: 8px;
+    --fc-event-resizer-dot-total-width: 8px;
+    --fc-event-resizer-dot-border-width: 1px;
+
+    --fc-non-business-color: rgba(215, 215, 215, 0.3);
+    --fc-bg-event-color: rgb(143, 223, 130);
+    --fc-bg-event-opacity: 0.3;
+    --fc-highlight-color: rgba(188, 232, 241, 0.3);
+    --fc-today-bg-color: rgba(255, 220, 40, 0.15);
+    --fc-now-indicator-color: red;
   }
 
   .dark {
@@ -66,5 +98,18 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+.fc {
+  & .fc-button {
+    @apply inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground outline-none ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  & .fc-button-primary:not(:disabled):active,
+  & .fc-button-primary:not(:disabled).fc-button-active {
+    @apply bg-primary/80;
   }
 }
