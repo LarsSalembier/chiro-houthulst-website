@@ -103,7 +103,7 @@ export default function HomePage() {
         ]}
         footer={
           <Button asChild className="w-fit">
-            <Link href="/kalender.jpg">Bekijk de volledige kalender</Link>
+            <Link href="/kalender">Bekijk de volledige kalender</Link>
           </Button>
         }
       />
