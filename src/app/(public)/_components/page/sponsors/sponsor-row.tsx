@@ -30,7 +30,6 @@ export default async function SponsorRow({
         } else {
           const image = (
             <Image
-              loading="eager"
               key={sponsor.id}
               src={sponsor.logoUrl}
               alt={sponsor.companyName}
