@@ -45,6 +45,15 @@ export function Footer() {
               </ul>
             </div>
             <div className="flex flex-col gap-2">
+              <h4 className="text-lg font-bold">Juridisch</h4>
+              <p>
+                Lees onze{" "}
+                <Link href="/privacyverklaring" className="underline">
+                  privacyverklaring
+                </Link>
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
               <h4 className="text-lg font-bold">Volg ons</h4>
               <div className="flex gap-4">
                 <Link href="https://www.facebook.com/chirohouthulst">
