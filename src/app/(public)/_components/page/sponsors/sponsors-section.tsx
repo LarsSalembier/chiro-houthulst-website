@@ -1,5 +1,8 @@
 import { Suspense } from "react";
 import SponsorRow from "./sponsor-row";
+import { SignedIn } from "@clerk/nextjs";
+import AddSponsorButton from "./add-sponsor-button";
+import { checkRole } from "~/utils/roles";
 
 export default function SponsorsSection() {
   return (
@@ -11,6 +14,7 @@ export default function SponsorsSection() {
           we onze activiteiten organiseren en onze leden een onvergetelijke tijd
           bezorgen.
         </p>
+        <SignedIn>{checkRole("admin") && <AddSponsorButton />}</SignedIn>
         <Suspense fallback={<div>Sponsors laden...</div>}>
           <div className="flex flex-col gap-2">
             <SponsorRow

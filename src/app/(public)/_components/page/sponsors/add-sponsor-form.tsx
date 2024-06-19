@@ -19,6 +19,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { saveSponsor } from "../../../_actions/save-sponsor";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   companyName: z
@@ -119,6 +120,7 @@ const formSchema = z.object({
 
 export default function AddSponsorForm() {
   const [showLogoUpload, setShowLogoUpload] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -140,10 +142,18 @@ export default function AddSponsorForm() {
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    await saveSponsor(data);
-
-    form.reset();
-    setShowLogoUpload(true);
+    setIsLoading(true);
+    try {
+      await saveSponsor(data);
+      toast.success("Sponsor succesvol toegevoegd!");
+      form.reset();
+      setShowLogoUpload(true);
+    } catch (error) {
+      toast.error("Er is een fout opgetreden bij het opslaan.");
+      console.error("Error saving sponsor:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -151,6 +161,7 @@ export default function AddSponsorForm() {
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="grid grid-rows-6 gap-4"
+        id="addSponsorForm"
       >
         <div className="flex flex-row gap-4">
           <FormField
@@ -322,28 +333,34 @@ export default function AddSponsorForm() {
             )}
           />
         </div>
-        {showLogoUpload ? (
-          <UploadButton
-            endpoint="imageUploader"
-            onClientUploadComplete={(res) => {
-              if (res?.[0] !== undefined) {
-                form.setValue("logoUrl", res[0].url);
-
-                setShowLogoUpload(false);
-              }
-            }}
-          />
-        ) : (
-          <Image
-            src={form.getValues("logoUrl")}
-            alt="Logo"
-            width={200}
-            height={100}
-          />
-        )}
-
-        <Button type="submit" className="align-self-end">
-          Sponsor toevoegen
+        <div>
+          {showLogoUpload ? (
+            <UploadButton
+              endpoint="imageUploader"
+              onClientUploadComplete={(res) => {
+                if (res?.[0] !== undefined) {
+                  form.setValue("logoUrl", res[0].url);
+                  setShowLogoUpload(false);
+                }
+              }}
+            />
+          ) : (
+            <div className="relative h-[100px] w-[200px]">
+              <Image
+                src={form.getValues("logoUrl")}
+                alt="Logo"
+                fill
+                className="object-contain"
+              />
+            </div>
+          )}
+        </div>
+        <Button
+          type="submit"
+          className="align-self-end w-fit"
+          disabled={isLoading}
+        >
+          {isLoading ? "Opslaan..." : "Sponsor toevoegen"}
         </Button>
       </form>
     </Form>

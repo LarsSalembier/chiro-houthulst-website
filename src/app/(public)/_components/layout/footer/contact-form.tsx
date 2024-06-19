@@ -45,13 +45,16 @@ export default function ContactForm() {
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    await sendEmail(data);
-
-    toast.info(
-      "Uw bericht is verstuurd. We nemen zo snel mogelijk contact met u op.",
-    );
-
-    form.reset();
+    try {
+      await sendEmail(data);
+      toast.success(
+        "Uw bericht is verstuurd. We nemen zo snel mogelijk contact met u op.",
+      );
+      form.reset();
+    } catch (error) {
+      toast.error("Er is iets misgegaan bij het verzenden van uw bericht.");
+      console.error("Error sending email:", error);
+    }
   }
 
   return (
@@ -82,7 +85,7 @@ export default function ContactForm() {
             <FormItem>
               <FormLabel>Uw emailadres</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} type="email" />
               </FormControl>
               <FormMessage />
             </FormItem>

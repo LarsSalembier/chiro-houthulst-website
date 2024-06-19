@@ -8,11 +8,13 @@ export default function WelcomeSection() {
         <Image
           src={mainImage}
           alt="Chiro kinderen spelen"
-          className="h-full w-full rounded-3xl object-cover"
+          fill
+          className="rounded-3xl object-cover"
           placeholder="blur"
+          priority
         />
         <div
-          className="z-1 absolute left-0 top-0 h-full w-full rounded-3xl backdrop-brightness-50"
+          className="absolute inset-0 rounded-3xl bg-black/50"
           aria-hidden="true"
         />
       </div>

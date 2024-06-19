@@ -3,7 +3,7 @@
 import { db } from "~/server/db";
 import { sponsors } from "~/server/db/schema";
 
-type InputData = {
+interface SponsorData {
   companyName: string;
   companyOwnerName?: string;
   municipality?: string;
@@ -17,27 +17,18 @@ type InputData = {
   amount: number;
   logoUrl: string;
   paid: boolean;
-};
+}
 
-export async function saveSponsor(data: InputData) {
+const SPONSORSHIP_START_DATE = new Date(2023, 9, 1);
+const SPONSORSHIP_END_DATE = new Date(2024, 8, 31);
+
+export async function saveSponsor(data: SponsorData) {
   await db
     .insert(sponsors)
     .values({
-      companyName: data.companyName,
-      companyOwnerName: data.companyOwnerName,
-      municipality: data.municipality,
-      postalCode: data.postalCode,
-      street: data.street,
-      number: data.number,
-      landline: data.landline,
-      mobile: data.mobile,
-      email: data.email,
-      websiteUrl: data.websiteUrl,
-      amount: data.amount,
-      logoUrl: data.logoUrl,
-      paid: data.paid,
-      startDate: new Date(2023, 9, 1),
-      endDate: new Date(2024, 8, 31),
+      ...data,
+      startDate: SPONSORSHIP_START_DATE,
+      endDate: SPONSORSHIP_END_DATE,
     })
     .execute();
 }

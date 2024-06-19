@@ -12,7 +12,7 @@ import Link from "next/link";
 
 interface NewsCardProps {
   title: string;
-  date: string;
+  date: Date;
   description: string;
   link?: string;
   linkText?: string;
@@ -25,22 +25,32 @@ export default function NewsCard({
   link,
   linkText,
 }: NewsCardProps) {
+  const formattedDate = date.toLocaleDateString("nl-BE", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
     <Card className="flex flex-col">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        <CardDescription>Gepubliceerd op {date}</CardDescription>
+        <CardDescription>
+          <time dateTime={date.toISOString()}>
+            Gepubliceerd op {formattedDate}
+          </time>
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
         <p>{description}</p>
       </CardContent>
-      <CardFooter>
-        {link && linkText && (
-          <Button asChild variant="secondary">
-            <Link href={link}>{linkText}</Link>
+      {link && ( // Simplify conditional rendering
+        <CardFooter>
+          <Button asChild variant="secondary" className="w-fit">
+            <Link href={link}>{linkText || "Lees meer"}</Link>
           </Button>
-        )}
-      </CardFooter>
+        </CardFooter>
+      )}
     </Card>
   );
 }

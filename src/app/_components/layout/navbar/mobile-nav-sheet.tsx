@@ -13,6 +13,16 @@ import { MenuIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
+const navLinks = [
+  { href: "/#praktisch", label: "Praktisch" },
+  { href: "/#aankomende-evenementen", label: "Aankomende activiteiten" },
+  { href: "/kalender", label: "Kalender" },
+  { href: "/#nieuws-updates", label: "Nieuws en updates" },
+  { href: "/#leeftijdsgroepen", label: "Leeftijdsgroepen" },
+  { href: "/#sponsors", label: "Sponsors" },
+  { href: "/#contacteer-ons", label: "Contacteer ons" },
+];
+
 export default function MobileNavSheet() {
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -29,65 +39,25 @@ export default function MobileNavSheet() {
           <SheetTitle>Navigeer naar...</SheetTitle>
         </SheetHeader>
         <nav className="flex flex-grow flex-col gap-4 font-medium">
-          <Button
-            asChild
-            variant="link"
-            className="w-fit"
-            onClick={() => setIsOpen(false)}
-          >
-            <Link href="/#praktisch">Praktisch</Link>
-          </Button>
-          <Button
-            asChild
-            variant="link"
-            className="w-fit"
-            onClick={() => setIsOpen(false)}
-          >
-            <Link href="/#aankomende-evenementen">Aankomende activiteiten</Link>
-          </Button>
-          <Button
-            asChild
-            variant="link"
-            className="w-fit"
-            onClick={() => setIsOpen(false)}
-          >
-            <Link href="/kalender">Kalender</Link>
-          </Button>
-          <Button
-            asChild
-            variant="link"
-            className="w-fit"
-            onClick={() => setIsOpen(false)}
-          >
-            <Link href="/#nieuws-updates">Nieuws en updates</Link>
-          </Button>
-          <Button
-            asChild
-            variant="link"
-            className="w-fit"
-            onClick={() => setIsOpen(false)}
-          >
-            <Link href="/#leeftijdsgroepen">Leeftijdsgroepen</Link>
-          </Button>
-          <Button
-            asChild
-            variant="link"
-            className="w-fit"
-            onClick={() => setIsOpen(false)}
-          >
-            <Link href="/#sponsors">Sponsors</Link>
-          </Button>
-          <Button
-            asChild
-            variant="link"
-            className="w-fit"
-            onClick={() => setIsOpen(false)}
-          >
-            <Link href="/#contacteer-ons">Contacteer ons</Link>
-          </Button>
+          <ul>
+            {navLinks.map((link) => (
+              <li key={link.href}>
+                <Button
+                  asChild
+                  variant="link"
+                  className="w-fit"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Link href={link.href}>{link.label}</Link>
+                </Button>
+              </li>
+            ))}
+          </ul>
         </nav>
         <SheetFooter className="sm:justify-center">
-          <p>&copy; Chiro Houthulst</p>
+          <footer>
+            <p>© Chiro Houthulst</p>
+          </footer>
         </SheetFooter>
       </SheetContent>
     </Sheet>

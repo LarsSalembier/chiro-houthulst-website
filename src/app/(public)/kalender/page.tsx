@@ -8,351 +8,395 @@ import nlLocale from "@fullcalendar/core/locales/nl";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 
-const events = [
+enum EventType {
+  CHIRO = "chiro",
+  VRIENDJESDAG = "vriendjesdag",
+  CINEMA = "cinema",
+  SINT_MAARTEN = "sintmaarten",
+  KERSTFEESTJE = "kerstfeestje",
+  KERSTMARKT = "kerstmarkt",
+  CHIROCAFE = "chirocafe",
+  VOETBALCOMPETITIE = "voetbalcompetitie",
+  GROEPSUITSTAP = "groepsuitstap",
+  KAMP = "kamp",
+  INSCHRIJVINGEN = "inschrijvingen",
+  VALIEZEN = "valiezen",
+  CAMION = "camion",
+  NAWACHT = "nawacht",
+}
+
+interface Event {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  type: EventType;
+}
+
+const events: Event[] = [
   {
     id: "chiro-okt-1",
     title: "Chiro",
     start: "2023-10-01T14:00:00",
     end: "2023-10-01T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-okt-8",
     title: "Chiro",
     start: "2023-10-08T14:00:00",
     end: "2023-10-08T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-okt-15",
     title: "Chiro",
     start: "2023-10-15T14:00:00",
     end: "2023-10-15T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-okt-22",
     title: "Chiro - Vriendjesdag",
     start: "2023-10-22T14:00:00",
     end: "2023-10-22T17:00:00",
-    classNames: ["chiro", "vriendjesdag"],
+    type: EventType.VRIENDJESDAG,
   },
   {
     id: "openlucht-cinema",
     title: "Openluchtcinema",
     start: "2023-10-27T19:00:00",
     end: "2023-10-27T22:00:00",
-    classNames: ["cinema"],
+    type: EventType.CINEMA,
   },
   {
     id: "chiro-okt-29",
     title: "Chiro",
     start: "2023-10-29T14:00:00",
     end: "2023-10-29T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-nov-5",
     title: "Chiro",
     start: "2023-11-05T14:00:00",
     end: "2023-11-05T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "sint-maarten",
     title: "Chiro - Sint-Maarten",
     start: "2023-11-12T14:00:00",
     end: "2023-11-12T17:00:00",
-    classNames: ["chiro", "sint-maarten"],
+    type: EventType.SINT_MAARTEN,
   },
   {
     id: "chiro-nov-19",
     title: "Chiro",
     start: "2023-11-19T14:00:00",
     end: "2023-11-19T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-nov-26",
     title: "Chiro",
     start: "2023-11-26T14:00:00",
     end: "2023-11-26T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-dec-3",
     title: "Chiro",
     start: "2023-12-03T14:00:00",
     end: "2023-12-03T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-dec-10",
     title: "Chiro",
     start: "2023-12-10T14:00:00",
     end: "2023-12-10T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-dec-17",
     title: "Chiro",
     start: "2023-12-17T14:00:00",
     end: "2023-12-17T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "kerstfeestje",
     title: "Kerstfeestje",
     start: "2023-12-23T18:00:00",
     end: "2023-12-23T20:00:00",
-    classNames: ["feest"],
+    type: EventType.KERSTFEESTJE,
   },
   {
     id: "kerstmarkt",
     title: "Kerstmarkt",
     start: "2023-12-24T14:00:00",
     end: "2023-12-25T02:00:00",
-    classNames: ["markt"],
+    type: EventType.KERSTMARKT,
   },
   {
     id: "chiro-jan-7",
     title: "Chiro",
     start: "2024-01-07T14:00:00",
     end: "2024-01-07T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-jan-14",
     title: "Chiro",
     start: "2024-01-14T14:00:00",
     end: "2024-01-14T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-jan-21",
     title: "Chiro",
     start: "2024-01-21T14:00:00",
     end: "2024-01-21T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-jan-28",
     title: "Chiro",
     start: "2024-01-28T14:00:00",
     end: "2024-01-28T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-feb-4",
     title: "Chiro",
     start: "2024-02-04T14:00:00",
     end: "2024-02-04T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "aspicafe",
     title: "Aspicafé",
     start: "2024-02-09T21:00:00",
     end: "2024-02-10T04:00:00",
-    classNames: ["chirocafe"],
+    type: EventType.CHIROCAFE,
   },
   {
     id: "chiro-feb-11",
     title: "Chiro",
     start: "2024-02-11T14:00:00",
     end: "2024-02-11T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-feb-18",
     title: "Chiro",
     start: "2024-02-18T14:00:00",
     end: "2024-02-18T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-feb-25",
     title: "Chiro",
     start: "2024-02-25T14:00:00",
     end: "2024-02-25T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-mrt-3",
     title: "Chiro",
     start: "2024-03-03T14:00:00",
     end: "2024-03-03T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-mrt-10",
     title: "Chiro",
     start: "2024-03-10T14:00:00",
     end: "2024-03-10T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-mrt-17",
     title: "Chiro",
     start: "2024-03-17T14:00:00",
     end: "2024-03-17T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-mrt-24",
     title: "Chiro",
     start: "2024-03-24T14:00:00",
     end: "2024-03-24T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-apr-7",
     title: "Chiro - Vriendjesdag",
     start: "2024-04-07T14:00:00",
     end: "2024-04-07T17:00:00",
-    classNames: ["chiro", "vriendjesdag"],
+    type: EventType.VRIENDJESDAG,
   },
   {
     id: "chiro-apr-21",
     title: "Chiro",
     start: "2024-04-21T14:00:00",
     end: "2024-04-21T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-apr-28",
     title: "Chiro",
     start: "2024-04-28T14:00:00",
     end: "2024-04-28T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "voetbalcompetitie",
     title: "Voetbalcompetitie",
     start: "2024-05-01T08:00:00",
     end: "2024-05-01T18:00:00",
-    classNames: ["sport"],
+    type: EventType.VOETBALCOMPETITIE,
   },
   {
     id: "chiro-mei-5",
     title: "Chiro",
     start: "2024-05-05T14:00:00",
     end: "2024-05-05T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chirocafe",
     title: "CHIROCAFÉ",
     start: "2024-05-09T11:30:00",
     end: "2024-05-10T04:00:00",
-    classNames: ["chiro", "cafe"],
+    type: EventType.CHIROCAFE,
   },
   {
     id: "chiro-mei-19",
     title: "Chiro",
     start: "2024-05-19T14:00:00",
     end: "2024-05-19T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-mei-26",
     title: "Chiro",
     start: "2024-05-26T14:00:00",
     end: "2024-05-26T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-jun-2",
     title: "Chiro",
     start: "2024-06-02T14:00:00",
     end: "2024-06-02T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-jun-9",
     title: "Chiro",
     start: "2024-06-09T14:00:00",
     end: "2024-06-09T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-jun-16",
     title: "Chiro",
     start: "2024-06-16T14:00:00",
     end: "2024-06-16T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "chiro-jun-23",
     title: "Chiro",
     start: "2024-06-23T14:00:00",
     end: "2024-06-23T17:00:00",
-    classNames: ["chiro"],
+    type: EventType.CHIRO,
   },
   {
     id: "groepsuitstap",
     title: "Groepsuitstap",
     start: "2024-06-30T08:00:00",
     end: "2024-06-30T18:00:00",
-    classNames: ["uitstap"],
+    type: EventType.GROEPSUITSTAP,
   },
   {
     id: "chirokamp",
     title: "Chirokamp",
     start: "2024-07-20T08:00:00",
     end: "2024-07-30T14:00:00",
-    classNames: ["chiro", "kamp"],
+    type: EventType.KAMP,
   },
   {
     id: "inschrijvingen-chirokamp-1",
     title: "Inschrijvingen Chirokamp",
     start: "2024-06-28T18:00:00",
     end: "2024-06-28T21:00:00",
-    classNames: ["chiro", "inschrijvingen"],
+    type: EventType.INSCHRIJVINGEN,
   },
   {
     id: "inschrijvingen-chirokamp-2",
     title: "Inschrijvingen Chirokamp",
     start: "2024-06-29T14:00:00",
     end: "2024-06-29T18:00:00",
-    classNames: ["chiro", "inschrijvingen"],
+    type: EventType.INSCHRIJVINGEN,
   },
   {
     id: "valiezen-chirokamp-1",
     title: "Valiezen binnenbrengen Chirokamp",
     start: "2024-07-13T10:00:00",
     end: "2024-07-13T18:00:00",
-    classNames: ["chiro", "valiezen"],
+    type: EventType.VALIEZEN,
   },
   {
     id: "valiezen-chirokamp-2",
     title: "Valiezen binnenbrengen Chirokamp",
     start: "2024-07-14T10:00:00",
     end: "2024-07-14T14:00:00",
-    classNames: ["chiro", "valiezen"],
+    type: EventType.VALIEZEN,
   },
   {
     id: "camion-laden-chirokamp-1",
     title: "Camion laden Chirokamp",
     start: "2024-07-13T8:00:00",
     end: "2024-07-13T18:00:00",
-    classNames: ["chiro", "camion"],
+    type: EventType.CAMION,
   },
   {
     id: "camion-laden-chirokamp-2",
     title: "Camion laden Chirokamp",
     start: "2024-07-14T9:00:00",
     end: "2024-07-14T14:00:00",
-    classNames: ["chiro", "camion"],
+    type: EventType.CAMION,
   },
   {
     id: "nawacht",
     title: "Nawacht (aspi's en leiding)",
     start: "2024-07-30T14:00:00",
     end: "2024-07-31T19:00:00",
-    classNames: ["chiro", "valiezen"],
+    type: EventType.NAWACHT,
   },
 ];
+
+const eventColorPalette = [
+  "#ffca3a",
+  "#8ac926",
+  "#1982c4",
+  "#6a4c93",
+  "#ff595e",
+];
+
+const assignedEventColors: { [key in EventType]?: string } = {};
+
+function getBgColorForEventType(type: EventType): string {
+  if (!assignedEventColors[type]) {
+    const randomIndex = Math.floor(Math.random() * eventColorPalette.length);
+    assignedEventColors[type] = eventColorPalette[randomIndex];
+  }
+
+  return assignedEventColors[type]!;
+}
 
 export default function Calendar() {
   return (
@@ -367,16 +411,37 @@ export default function Calendar() {
         }}
         initialView="dayGridMonth"
         nowIndicator={true}
-        editable={true}
-        selectable={true}
-        selectMirror={true}
+        editable={false}
+        selectable={false}
+        selectMirror={false}
         initialEvents={events}
+        eventContent={renderEventContent}
       />
       <Button asChild>
         <Link href="kalender.jpg" download="kalender.jpg" className="w-fit">
           Download afprintbare kalender
         </Link>
       </Button>
+    </div>
+  );
+}
+
+function renderEventContent(eventInfo: any) {
+  const event = eventInfo.event;
+  const eventType = event.extendedProps.type;
+
+  const eventBgColor = getBgColorForEventType(eventType as EventType);
+
+  return (
+    <div
+      className="fc-event-main whitespace-normal text-wrap break-words rounded-md 
+                 px-2 py-1 text-xs font-light sm:px-3 sm:py-2 sm:text-sm sm:font-medium"
+      style={{
+        backgroundColor: eventBgColor,
+        color: "white",
+      }}
+    >
+      <b>{event.title}</b>
     </div>
   );
 }

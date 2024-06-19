@@ -20,11 +20,11 @@ import {
 } from "~/components/ui/command";
 import { cn } from "~/lib/utils";
 
-type SiteLink = {
+interface SiteLink {
   id: string;
   label: string;
   url: string;
-};
+}
 
 const siteLinks: SiteLink[] = [
   {
@@ -68,21 +68,18 @@ export default function SearchBar() {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
-  const [searchResults, setSearchResults] = React.useState(siteLinks);
+
+  const searchResults = siteLinks.filter((link) =>
+    link.label.toLowerCase().includes(value.toLowerCase()),
+  );
 
   const handleSearchChange = (term: string) => {
     setValue(term);
-
-    const results = siteLinks?.filter((link) =>
-      link.label.toLowerCase().includes(term),
-    );
-    setSearchResults(results);
   };
 
   const handleSelect = (link: SiteLink) => {
     setValue(link.label);
     setOpen(false);
-
     router.push(link.url);
   };
 
@@ -103,23 +100,31 @@ export default function SearchBar() {
         <Command>
           <CommandInput
             placeholder="Zoeken..."
+            value={value}
             onValueChange={handleSearchChange}
           />
-          <CommandEmpty>Geen resultaten gevonden.</CommandEmpty>
+          {searchResults.length === 0 && (
+            <CommandEmpty>Geen resultaten gevonden.</CommandEmpty>
+          )}
           <CommandList>
-            <CommandGroup>
-              {searchResults?.map((link) => (
-                <CommandItem key={link.id} onSelect={() => handleSelect(link)}>
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === link.label ? "opacity-100" : "opacity-0",
-                    )}
-                  />
-                  <Link href={link.url}>{link.label}</Link>
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {searchResults.length > 0 && (
+              <CommandGroup>
+                {searchResults.map((link) => (
+                  <CommandItem
+                    key={link.id}
+                    onSelect={() => handleSelect(link)}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === link.label ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    <Link href={link.url}>{link.label}</Link>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>

@@ -2,6 +2,8 @@ import Link from "next/link";
 import FacebookIcon from "../../../../../components/icons/facebook";
 import InstagramIcon from "../../../../../components/icons/instagram";
 import ContactForm from "./contact-form";
+import { SignInButton, SignedOut } from "@clerk/nextjs";
+import { Button } from "~/components/ui/button";
 
 export function Footer() {
   return (
@@ -11,30 +13,36 @@ export function Footer() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <h4 className="text-lg font-bold">Chiro Houthulst</h4>
-              <p>
-                Jonkershovestraat 101S
-                <br />
-                8650 Houthulst
-              </p>
-              <p>chirohouthulst@hotmail.com</p>
+              <address className="flex flex-col gap-2 not-italic">
+                <p>
+                  Jonkershovestraat 101S
+                  <br />
+                  8650 Houthulst
+                </p>
+                <a href="mailto:chirohouthulst@hotmail.com">
+                  chirohouthulst@hotmail.com
+                </a>
+              </address>
             </div>
             <div className="flex flex-col gap-2">
               <h4 className="text-lg font-bold">Hoofdleiding</h4>
-              <p>
-                Warre Sabbe
-                <br />
-                0468 30 06 64
-              </p>
-              <p>
-                Yben Vandamme
-                <br />
-                0471 69 25 53
-              </p>
-              <p>
-                Yorben Vandamme
-                <br />
-                0497 42 52 93
-              </p>
+              <ul className="flex flex-col gap-2">
+                <li>
+                  Warre Sabbe
+                  <br />
+                  <a href="tel:+32468300664">0468 30 06 64</a>
+                </li>
+                <li>
+                  Yben Vandamme
+                  <br />
+                  <a href="tel:+32471692553">0471 69 25 53</a>
+                </li>
+                <li>
+                  Yorben Vandamme
+                  <br />
+                  <a href="tel:+32497425293">0497 42 52 93</a>
+                </li>
+              </ul>
             </div>
             <div className="flex flex-col gap-2">
               <h4 className="text-lg font-bold">Volg ons</h4>
@@ -47,6 +55,16 @@ export function Footer() {
                 </Link>
               </div>
             </div>
+            <SignedOut>
+              <div className="flex flex-col gap-2">
+                <h4 className="text-lg font-bold">Intern</h4>
+                <SignInButton>
+                  <Button className="w-fit" variant="secondary">
+                    Inloggen
+                  </Button>
+                </SignInButton>
+              </div>
+            </SignedOut>
           </div>
           <div>
             <h4 className="mb-4 text-lg font-bold" id="contacteer-ons">
@@ -55,7 +73,9 @@ export function Footer() {
             <ContactForm />
           </div>
         </div>
-        <p className="text-sm text-gray-500">© 2024 Chiro Houthulst</p>
+        <p className="text-sm text-gray-500">
+          © {new Date().getFullYear()} Chiro Houthulst
+        </p>
       </div>
     </footer>
   );

@@ -1,15 +1,14 @@
-import { and, gte, isNotNull, lte } from "drizzle-orm";
+import { and, between, gte, isNotNull, lte } from "drizzle-orm";
 import { db } from "~/server/db";
 import { sponsors } from "~/server/db/schema";
 
 export default async function getSponsorsWithLogo(
-  startAmount: number,
-  endAmount: number,
+  minAmount: number,
+  maxAmount: number,
 ) {
   return await db.query.sponsors.findMany({
     where: and(
-      gte(sponsors.amount, startAmount),
-      lte(sponsors.amount, endAmount),
+      between(sponsors.amount, minAmount, maxAmount),
       isNotNull(sponsors.logoUrl),
     ),
   });

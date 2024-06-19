@@ -12,39 +12,69 @@ import {
 
 interface EventCardProps {
   title: string;
-  date: string;
-  time: string;
+  startDate: Date;
+  endDate: Date;
   description: string;
   link?: string;
   linkText?: string;
 }
 
+const dateOptions = {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+} as const;
+
+const timeOptions = {
+  hour: "numeric",
+  minute: "numeric",
+} as const;
+
 export default function EventCard({
   title,
-  date,
-  time,
+  startDate,
+  endDate,
   description,
   link,
   linkText,
 }: EventCardProps) {
+  let dateTimeString = "";
+  if (startDate.toDateString() === endDate.toDateString()) {
+    // Same day event
+    dateTimeString = `${startDate.toLocaleDateString(undefined, dateOptions)} van ${startDate.toLocaleTimeString(
+      undefined,
+      timeOptions,
+    )} tot ${endDate.toLocaleTimeString(undefined, timeOptions)}`;
+  } else {
+    // Multi-day event
+    dateTimeString = `Van ${startDate.toLocaleDateString(undefined, dateOptions)} ${startDate.toLocaleTimeString(
+      undefined,
+      timeOptions,
+    )} tot ${endDate.toLocaleDateString(undefined, dateOptions)} ${endDate.toLocaleTimeString(
+      undefined,
+      timeOptions,
+    )}`;
+  }
+
   return (
     <Card className="flex flex-col">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>
-          {date} - {time}
+          <time dateTime={startDate.toISOString()}>{dateTimeString}</time>
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
         <p>{description}</p>
       </CardContent>
-      <CardFooter>
-        {link && linkText && (
-          <Button asChild variant="secondary">
-            <Link href={link}>{linkText}</Link>
+      {link && (
+        <CardFooter>
+          <Button asChild variant="secondary" className="w-fit">
+            <Link href={link}>{linkText || "Lees meer"}</Link>
           </Button>
-        )}
-      </CardFooter>
+        </CardFooter>
+      )}
     </Card>
   );
 }
