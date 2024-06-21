@@ -14,8 +14,8 @@ import AgeGroupCard from "./_components/page/age-group-card";
 import Link from "next/link";
 import WelcomeSection from "./_components/page/welcome-section";
 import GridSection from "./_components/page/grid-section";
-import Paragraph from "./_components/page/paragraph";
 import SponsorsSection from "./_components/page/sponsors/sponsors-section";
+import ExplanationText from "./_components/page/explanation-text";
 
 export const dynamic = "force-dynamic";
 
@@ -150,30 +150,30 @@ export default function HomePage() {
       <WelcomeSection />
 
       <GridSection id="praktisch" title="Praktisch">
-        <Paragraph key="zondag" title="Zondag">
+        <ExplanationText key="zondag" title="Zondag">
           <p>
             Elke zondag is er Chiro van 14u tot 17u in ons Chiroheem
             (Jonkershovestraat 101S). Tijdens de Chironamiddag voorzien wij een
             vieruurtje voor €1. Als je liever je eigen drankje en koekje
             meebrengt, is dat ook geen probleem.
           </p>
-        </Paragraph>
-        <Paragraph key="kamp" title="Kamp">
+        </ExplanationText>
+        <ExplanationText key="kamp" title="Kamp">
           <p>
             Elk jaar gaan we op kamp van 20 t.e.m. 30 juli. Als je mee wil op
             kamp, vragen we je om tijdens het jaar minstens vijf keer naar de
             Chiro te komen (en liefst zo vaak mogelijk). Zo kunnen de leiding en
             medeleden je beter leren kennen.
           </p>
-        </Paragraph>
-        <Paragraph key="inschrijving" title="Inschrijving">
+        </ExplanationText>
+        <ExplanationText key="inschrijving" title="Inschrijving">
           <p>
             Inschrijven in de Chiro kost €30 en kan elke zondag bij de leiding.
             Zo zijn jullie ook verzekerd. Je kan altijd eens de Chiro komen
             uittesten, inschrijven is niet verplicht vanaf de eerste zondag!
           </p>
-        </Paragraph>
-        <Paragraph key="uniform" title="Uniform">
+        </ExplanationText>
+        <ExplanationText key="uniform" title="Uniform">
           <p>
             Het Chiro-uniform is te koop in{" "}
             <Link
@@ -188,7 +188,7 @@ export default function HomePage() {
             Houthulst-T-shirts. Deze zijn elke zondag te koop bij de leiding
             voor €10.
           </p>
-        </Paragraph>
+        </ExplanationText>
       </GridSection>
 
       <GridSection

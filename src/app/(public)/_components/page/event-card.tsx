@@ -1,5 +1,6 @@
 import Link from "next/link";
 import React from "react";
+import Paragraph from "~/components/typography/paragraph";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -66,7 +67,7 @@ export default function EventCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p>{description}</p>
+        <Paragraph>{description}</Paragraph>
       </CardContent>
       {link && (
         <CardFooter>

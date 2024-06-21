@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import Link from "next/link";
+import Paragraph from "~/components/typography/paragraph";
 
 interface NewsCardProps {
   title: string;
@@ -42,9 +43,9 @@ export default function NewsCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p>{description}</p>
+        <Paragraph>{description}</Paragraph>
       </CardContent>
-      {link && ( // Simplify conditional rendering
+      {link && (
         <CardFooter>
           <Button asChild variant="secondary" className="w-fit">
             <Link href={link}>{linkText || "Lees meer"}</Link>

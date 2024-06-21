@@ -8,6 +8,8 @@ import {
 } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
+import Paragraph from "~/components/typography/paragraph";
+import Header3 from "~/components/typography/header3";
 
 interface AgeGroupCardProps {
   image: StaticImageData;
@@ -33,8 +35,8 @@ export default function AgeGroupCard({
         />
       </CardHeader>
       <CardContent className="flex-grow">
-        <h3 className="mb-2 text-xl font-bold">{title}</h3>
-        <p>{description}</p>
+        <Header3>{title}</Header3>
+        <Paragraph>{description}</Paragraph>
       </CardContent>
       <CardFooter>
         <Button asChild variant="secondary">

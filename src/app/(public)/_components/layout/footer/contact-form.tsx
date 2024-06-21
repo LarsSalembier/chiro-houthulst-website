@@ -34,7 +34,7 @@ const formSchema = z.object({
     .max(2000, "Bericht is te lang."),
 });
 
-export default function ContactForm() {
+export default function ContactForm({ className }: { className?: string }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,7 +61,7 @@ export default function ContactForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-4"
+        className={`flex flex-col gap-4 ${className}`}
       >
         <FormField
           disabled

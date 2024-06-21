@@ -1,4 +1,5 @@
 import React from "react";
+import Header2 from "~/components/typography/header2";
 
 interface GridSectionProps {
   id: string;
@@ -14,10 +15,10 @@ export default function GridSection({
   footer,
 }: GridSectionProps) {
   return (
-    <section id={id} className="flex flex-col gap-4 xl:gap-6">
-      <h2 className="text-2xl font-bold">{title}</h2>
-      <div className="flex flex-col gap-6">
-        <div className=" grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-9">
+    <section id={id} className="flex flex-col">
+      <Header2>{title}</Header2>
+      <div className="mt-6 flex flex-col gap-6">
+        <div className=" grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:gap-9">
           {children}
         </div>
         {footer}
