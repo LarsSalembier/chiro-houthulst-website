@@ -11,11 +11,11 @@ import aspisImage from "~/../public/groepen/aspis.png";
 import EventCard from "./_components/page/event-card";
 import NewsCard from "./_components/page/news-card";
 import AgeGroupCard from "./_components/page/age-group-card";
-import Link from "next/link";
 import WelcomeSection from "./_components/page/welcome-section";
 import GridSection from "./_components/page/grid-section";
 import SponsorsSection from "./_components/page/sponsors/sponsors-section";
 import ExplanationText from "./_components/page/explanation-text";
+import Link from "~/components/typography/link";
 
 export const dynamic = "force-dynamic";
 
@@ -151,48 +151,34 @@ export default function HomePage() {
 
       <GridSection id="praktisch" title="Praktisch">
         <ExplanationText key="zondag" title="Zondag">
-          <p>
-            Elke zondag is er Chiro van 14u tot 17u in ons Chiroheem
-            (Jonkershovestraat 101S). Tijdens de Chironamiddag voorzien wij een
-            vieruurtje voor €1. Als je liever je eigen drankje en koekje
-            meebrengt, is dat ook geen probleem.
-          </p>
+          Elke zondag is er Chiro van 14u tot 17u in ons Chiroheem
+          (Jonkershovestraat 101S). Tijdens de Chironamiddag voorzien wij een
+          vieruurtje voor €1. Als je liever je eigen drankje en koekje
+          meebrengt, is dat ook geen probleem.
         </ExplanationText>
         <ExplanationText key="kamp" title="Kamp">
-          <p>
-            Elk jaar gaan we op kamp van 20 t.e.m. 30 juli. Als je mee wil op
-            kamp, vragen we je om tijdens het jaar minstens vijf keer naar de
-            Chiro te komen (en liefst zo vaak mogelijk). Zo kunnen de leiding en
-            medeleden je beter leren kennen.
-          </p>
+          Elk jaar gaan we op kamp van 20 t.e.m. 30 juli. Als je mee wil op
+          kamp, vragen we je om tijdens het jaar minstens vijf keer naar de
+          Chiro te komen (en liefst zo vaak mogelijk). Zo kunnen de leiding en
+          medeleden je beter leren kennen.
         </ExplanationText>
         <ExplanationText key="inschrijving" title="Inschrijving">
-          <p>
-            Inschrijven in de Chiro kost €30 en kan elke zondag bij de leiding.
-            Zo zijn jullie ook verzekerd. Je kan altijd eens de Chiro komen
-            uittesten, inschrijven is niet verplicht vanaf de eerste zondag!
-          </p>
+          Inschrijven in de Chiro kost €30 en kan elke zondag bij de leiding. Zo
+          zijn jullie ook verzekerd. Je kan altijd eens de Chiro komen
+          uittesten, inschrijven is niet verplicht vanaf de eerste zondag!
         </ExplanationText>
         <ExplanationText key="uniform" title="Uniform">
-          <p>
-            Het Chiro-uniform is te koop in{" "}
-            <Link
-              href="https://www.debanier.be/"
-              className="text-primary underline"
-            >
-              de Banier
-            </Link>{" "}
-            (dichtste verstiging: Roeselare). Vanaf de Rakwi&apos;s is het
-            dragen van het uniform verplicht op groepsuitstap en op kamp. Naast
-            het officiële uniform verkopen wij ook onze eigen Chiro
-            Houthulst-T-shirts. Deze zijn elke zondag te koop bij de leiding
-            voor €10.
-          </p>
+          Het Chiro-uniform is te koop in{" "}
+          <Link href="https://www.debanier.be/">de Banier</Link> (dichtste
+          verstiging: Roeselare). Vanaf de Rakwi&apos;s is het dragen van het
+          uniform verplicht op groepsuitstap en op kamp. Naast het officiële
+          uniform verkopen wij ook onze eigen Chiro Houthulst-T-shirts. Deze
+          zijn elke zondag te koop bij de leiding voor €10.
         </ExplanationText>
       </GridSection>
 
       <GridSection
-        id="aankomende-evenementen"
+        id="aankomende-activiteiten"
         title="Aankomende activiteiten"
         footer={
           <Button asChild className="w-fit">

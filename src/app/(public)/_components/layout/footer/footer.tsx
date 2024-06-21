@@ -27,7 +27,7 @@ export function Footer() {
             <Paragraph>
               <EmailAddress>chirohouthulst@hotmail.com</EmailAddress>
             </Paragraph>
-            <Header4>Hoofdleiding</Header4>
+            <Header4 id="hoofdleiding">Hoofdleiding</Header4>
             <Paragraph>
               Voor dringende vragen of problemen kan je steeds terecht bij onze
               hoofdleiding:

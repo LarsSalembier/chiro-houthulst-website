@@ -12,15 +12,20 @@ import { Button } from "~/components/ui/button";
 import { MenuIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import Header4 from "~/components/typography/header4";
+import FacebookIcon from "~/components/icons/facebook";
+import InstagramIcon from "~/components/icons/instagram";
 
 const navLinks = [
   { href: "/#praktisch", label: "Praktisch" },
-  { href: "/#aankomende-evenementen", label: "Aankomende activiteiten" },
+  { href: "/#aankomende-activiteiten", label: "Aankomende activiteiten" },
   { href: "/kalender", label: "Kalender" },
   { href: "/#nieuws-updates", label: "Nieuws en updates" },
   { href: "/#leeftijdsgroepen", label: "Leeftijdsgroepen" },
   { href: "/#sponsors", label: "Sponsors" },
   { href: "/#contacteer-ons", label: "Contacteer ons" },
+  { href: "/#hoofdleiding", label: "Hoofdleiding" },
+  { href: "/privacyverklaring", label: "Privacyverklaring" },
 ];
 
 export default function MobileNavSheet() {
@@ -53,6 +58,15 @@ export default function MobileNavSheet() {
               </li>
             ))}
           </ul>
+          <Header4>Volg ons</Header4>
+          <div className="mt-5 flex gap-4">
+            <Link href="https://www.facebook.com/chirohouthulst">
+              <FacebookIcon />
+            </Link>
+            <Link href="https://www.instagram.com/chirohouthulst">
+              <InstagramIcon />
+            </Link>
+          </div>
         </nav>
         <SheetFooter className="sm:justify-center">
           <footer>

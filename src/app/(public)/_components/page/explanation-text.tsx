@@ -12,7 +12,7 @@ export default function ExplanationText({
 }: ExplanationTextProps) {
   return (
     <div>
-      <Header3>{title}</Header3>
+      <Header3 id={title.toLowerCase()}>{title}</Header3>
       <Paragraph>{children}</Paragraph>
     </div>
   );

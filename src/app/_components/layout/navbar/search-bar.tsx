@@ -33,9 +33,29 @@ const siteLinks: SiteLink[] = [
     url: "/#praktisch",
   },
   {
+    id: "zondag",
+    label: "Zondag",
+    url: "/#zondag",
+  },
+  {
+    id: "kamp",
+    label: "Kamp",
+    url: "/#kamp",
+  },
+  {
+    id: "inschrijving",
+    label: "Inschrijving",
+    url: "/#inschrijving",
+  },
+  {
+    id: "uniform",
+    label: "Uniform",
+    url: "/#uniform",
+  },
+  {
     id: "aankomende activiteiten",
     label: "Aankomende activiteiten",
-    url: "/#aankomende-evenementen",
+    url: "/#aankomende-activiteiten",
   },
   {
     id: "kalender",
@@ -45,7 +65,7 @@ const siteLinks: SiteLink[] = [
   {
     id: "nieuws en updates",
     label: "Nieuws en updates",
-    url: "/#nieuws-en-updates",
+    url: "/#nieuws-updates",
   },
   {
     id: "leeftijdsgroepen",
@@ -61,6 +81,16 @@ const siteLinks: SiteLink[] = [
     id: "contacteer-ons",
     label: "Contacteer ons",
     url: "/#contacteer-ons",
+  },
+  {
+    id: "hoofdleiding",
+    label: "Hoofdleiding",
+    url: "/#hoofdleiding",
+  },
+  {
+    id: "privacyverklaring",
+    label: "Privacyverklaring",
+    url: "/privacyverklaring",
   },
 ];
 
