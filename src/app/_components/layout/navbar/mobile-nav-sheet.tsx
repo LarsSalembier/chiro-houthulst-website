@@ -18,6 +18,7 @@ import InstagramIcon from "~/components/icons/instagram";
 
 const navLinks = [
   { href: "/#praktisch", label: "Praktisch" },
+  { href: "/verzekeringen", label: "Verzekering" },
   { href: "/#aankomende-activiteiten", label: "Aankomende activiteiten" },
   { href: "/kalender", label: "Kalender" },
   { href: "/#nieuws-updates", label: "Nieuws en updates" },

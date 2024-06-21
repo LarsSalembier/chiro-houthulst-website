@@ -92,6 +92,16 @@ const siteLinks: SiteLink[] = [
     label: "Privacyverklaring",
     url: "/privacyverklaring",
   },
+  {
+    id: "verzekering",
+    label: "Verzekering",
+    url: "/verzekeringen",
+  },
+  {
+    id: "ongeval",
+    label: "Ongeval",
+    url: "/verzekeringen",
+  },
 ];
 
 export default function SearchBar() {

@@ -150,30 +150,39 @@ export default function HomePage() {
       <WelcomeSection />
 
       <GridSection id="praktisch" title="Praktisch">
-        <ExplanationText key="zondag" title="Zondag">
+        <ExplanationText title="Zondag">
           Elke zondag is er Chiro van 14u tot 17u in ons Chiroheem
           (Jonkershovestraat 101S). Tijdens de Chironamiddag voorzien wij een
           vieruurtje voor €1. Als je liever je eigen drankje en koekje
           meebrengt, is dat ook geen probleem.
         </ExplanationText>
-        <ExplanationText key="kamp" title="Kamp">
+        <ExplanationText title="Kamp">
           Elk jaar gaan we op kamp van 20 t.e.m. 30 juli. Als je mee wil op
           kamp, vragen we je om tijdens het jaar minstens vijf keer naar de
           Chiro te komen (en liefst zo vaak mogelijk). Zo kunnen de leiding en
           medeleden je beter leren kennen.
         </ExplanationText>
-        <ExplanationText key="inschrijving" title="Inschrijving">
+        <ExplanationText title="Inschrijving">
           Inschrijven in de Chiro kost €30 en kan elke zondag bij de leiding. Zo
           zijn jullie ook verzekerd. Je kan altijd eens de Chiro komen
           uittesten, inschrijven is niet verplicht vanaf de eerste zondag!
         </ExplanationText>
-        <ExplanationText key="uniform" title="Uniform">
+        <ExplanationText title="Uniform">
           Het Chiro-uniform is te koop in{" "}
           <Link href="https://www.debanier.be/">de Banier</Link> (dichtste
-          verstiging: Roeselare). Vanaf de Rakwi&apos;s is het dragen van het
-          uniform verplicht op groepsuitstap en op kamp. Naast het officiële
-          uniform verkopen wij ook onze eigen Chiro Houthulst-T-shirts. Deze
-          zijn elke zondag te koop bij de leiding voor €10.
+          verstiging: Roeselare). Vanaf de Rakwi&apos;s is een uniform
+          verplicht. Naast het officiële uniform verkopen wij ook onze eigen
+          Chiro Houthulst-T-shirts. Deze zijn elke zondag te koop bij de leiding
+          voor €10.
+        </ExplanationText>
+        <ExplanationText
+          title="Verzekering"
+          link="/verzekeringen"
+          linkText="Wat moet je doen bij een ongeval?"
+        >
+          Iedereen die is ingeschreven in de Chiro is verzekerd. De verzekering
+          dekt de kosten van een ongeval tijdens de Chiro-activiteiten. Ook als
+          je op weg bent naar de Chiro of naar huis, ben je verzekerd.
         </ExplanationText>
       </GridSection>
 
