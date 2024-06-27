@@ -20,8 +20,8 @@ function generateTextToFile(directoryPath, outputFilePath) {
       ".next",
       "output.txt",
       "next-env.d.ts",
-      ".git", // Ignore .git directory
-      ".github", // Ignore .github directory
+      ".git",
+      ".github",
       ".gitignore",
       "generate_structure.js",
     ];
