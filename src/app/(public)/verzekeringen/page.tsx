@@ -1,20 +1,9 @@
 import Header1 from "~/components/typography/header1";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import UnorderedList from "~/components/typography/unordered-list";
 import Paragraph from "~/components/typography/paragraph";
 import MutedText from "~/components/typography/muted-text";
 import Header3 from "~/components/typography/header3";
-import Address from "~/components/typography/address";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import EmailAddress from "~/components/typography/email-address";
-import PhoneNumber from "~/components/typography/phone-number";
 import Header2 from "~/components/typography/header2";
 import OrderedList from "~/components/typography/ordered-list";
 import Link from "~/components/typography/link";
@@ -49,7 +38,7 @@ export default function PrivacyPolicy() {
         <li>Laat de dokter het geneeskundig getuigschrift invullen.</li>
         <li>
           Stuur een scan van het getuigschrift naar de hoofdleiding via{" "}
-          <EmailAddress>chirohouthulst@hotmail.com</EmailAddress> met vermelding
+          <EmailAddress address="chirohouthulst@hotmail.com" /> met vermelding
           van de naam van het kind en wat er juist gebeurd is.
         </li>
       </OrderedList>
@@ -90,11 +79,12 @@ export default function PrivacyPolicy() {
       <Header3>Materiële schade</Header3>
       <Paragraph>
         Persoonlijke bezittingen zoals een fiets, gsm of kledij zijn niet
-        verzekerd door de Chiropolis. Ook schade aan auto's of andere voertuigen
-        valt niet onder de verzekering. Maar als de schade veroorzaakt werd door
-        een aanwijsbare fout van iemand anders, dan kan de schade wel verhaald
-        worden op de familiale verzekering van die persoon. Als die persoon geen
-        familiale verzekering heeft, dan komt de Chiroverzekering tussen.
+        verzekerd door de Chiropolis. Ook schade aan auto&apos;s of andere
+        voertuigen valt niet onder de verzekering. Maar als de schade
+        veroorzaakt werd door een aanwijsbare fout van iemand anders, dan kan de
+        schade wel verhaald worden op de familiale verzekering van die persoon.
+        Als die persoon geen familiale verzekering heeft, dan komt de
+        Chiroverzekering tussen.
       </Paragraph>
       <Header2>Meer informatie</Header2>
       <Paragraph>

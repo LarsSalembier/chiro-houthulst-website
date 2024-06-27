@@ -24,13 +24,11 @@ export default async function setRole(
     });
 
     return { success: true, role: res.publicMetadata.role as UserRole };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error setting user role:", error);
     return {
       success: false,
-      message:
-        error.message ||
-        "Er is een fout opgetreden bij het instellen van de rol.",
+      message: "Er is een fout opgetreden bij het instellen van de rol.",
     };
   }
 }

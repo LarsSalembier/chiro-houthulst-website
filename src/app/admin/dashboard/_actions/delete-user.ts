@@ -16,7 +16,7 @@ export async function deleteUser(userId: string): Promise<DeleteUserResponse> {
   try {
     await clerkClient.users.deleteUser(userId);
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error deleting user:", error);
     return {
       success: false,

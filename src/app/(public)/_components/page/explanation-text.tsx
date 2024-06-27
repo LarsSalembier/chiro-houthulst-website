@@ -24,7 +24,7 @@ export default function ExplanationText({
       </div>
       {link && (
         <Button asChild className="w-fit">
-          <Link href={link}>{linkText || "Lees meer"}</Link>
+          <Link href={link}>{linkText ?? "Lees meer"}</Link>
         </Button>
       )}
     </div>

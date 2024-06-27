@@ -1,9 +1,6 @@
 import FacebookIcon from "../../../../../components/icons/facebook";
 import InstagramIcon from "../../../../../components/icons/instagram";
 import ContactForm from "./contact-form";
-import { SignInButton, SignedOut } from "@clerk/nextjs";
-import { Button } from "~/components/ui/button";
-import Header3 from "~/components/typography/header3";
 import Address from "~/components/typography/address";
 import Paragraph from "~/components/typography/paragraph";
 import EmailAddress from "~/components/typography/email-address";
@@ -25,7 +22,7 @@ export function Footer() {
               postalCode="8650"
             />
             <Paragraph>
-              <EmailAddress>chirohouthulst@hotmail.com</EmailAddress>
+              <EmailAddress address="chirohouthulst@hotmail.com" />
             </Paragraph>
             <Header4 id="hoofdleiding">Hoofdleiding</Header4>
             <Paragraph>
@@ -36,17 +33,17 @@ export function Footer() {
               <li>
                 Warre Sabbe
                 <br />
-                <PhoneNumber>0468 30 06 64</PhoneNumber>
+                <PhoneNumber number="0468 30 06 64" />
               </li>
               <li>
                 Yben Vandamme
                 <br />
-                <PhoneNumber>0471 69 25 53</PhoneNumber>
+                <PhoneNumber number="0471 69 25 53" />
               </li>
               <li>
                 Yorben Vandamme
                 <br />
-                <PhoneNumber>0497 42 52 93</PhoneNumber>
+                <PhoneNumber number="0497 42 52 93" />
               </li>
             </UnorderedList>
             <Header4>Juridisch</Header4>

@@ -48,7 +48,7 @@ export default function NewsCard({
       {link && (
         <CardFooter>
           <Button asChild variant="secondary" className="w-fit">
-            <Link href={link}>{linkText || "Lees meer"}</Link>
+            <Link href={link}>{linkText ?? "Lees meer"}</Link>
           </Button>
         </CardFooter>
       )}

@@ -1,4 +1,4 @@
-import { and, between, gte, isNotNull, lte } from "drizzle-orm";
+import { and, between, isNotNull } from "drizzle-orm";
 import { db } from "~/server/db";
 import { sponsors } from "~/server/db/schema";
 

@@ -28,7 +28,7 @@ export default async function SponsorRow({
     .map((sponsor) => (
       <Link
         key={sponsor.id}
-        href={sponsor.websiteUrl || "#"}
+        href={sponsor.websiteUrl ?? "#"}
         target={sponsor.websiteUrl ? "_blank" : "_self"}
         rel={sponsor.websiteUrl ? "noopener noreferrer" : undefined}
         className="z-100"

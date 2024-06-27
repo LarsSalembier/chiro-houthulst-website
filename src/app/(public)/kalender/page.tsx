@@ -426,11 +426,18 @@ export default function Calendar() {
   );
 }
 
-function renderEventContent(eventInfo: any) {
+function renderEventContent(eventInfo: {
+  event: {
+    title: string;
+    extendedProps: {
+      type: EventType;
+    };
+  };
+}) {
   const event = eventInfo.event;
   const eventType = event.extendedProps.type;
 
-  const eventBgColor = getBgColorForEventType(eventType as EventType);
+  const eventBgColor = getBgColorForEventType(eventType);
 
   return (
     <div

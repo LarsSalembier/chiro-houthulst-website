@@ -88,9 +88,9 @@ export default function PrivacyPolicy() {
               postalCode="8650"
             />
             <Paragraph>
-              <EmailAddress>chirohouthulst@hotmail.com</EmailAddress>
+              <EmailAddress address="chirohouthulst@hotmail.com" />
               <br />
-              <PhoneNumber>0468 30 06 64</PhoneNumber>
+              <PhoneNumber number="0468 30 06 64" />
             </Paragraph>
           </CardContent>
         </Card>
@@ -105,9 +105,9 @@ export default function PrivacyPolicy() {
               postalCode="2000"
             />
             <Paragraph>
-              <EmailAddress>privacy@chiro.be</EmailAddress>
+              <EmailAddress address="privacy@chiro.be" />
               <br />
-              <PhoneNumber>03-231 07 95</PhoneNumber>
+              <PhoneNumber number="03-231 07 95" />
             </Paragraph>
           </CardContent>
         </Card>
@@ -183,7 +183,7 @@ export default function PrivacyPolicy() {
           medicatie toe te dienen
         </li>
         <li>
-          Foto's: om te informeren over onze activiteiten en voor
+          Foto&apos;s: om te informeren over onze activiteiten en voor
           archiefdoeleinden
         </li>
       </UnorderedList>
@@ -262,7 +262,7 @@ export default function PrivacyPolicy() {
           Facebook en Hotmail.
         </li>
         <li>De hosting van onze website: Vercel.</li>
-        <li>Het plaatsen van foto's: Google Photos, Facebook.</li>
+        <li>Het plaatsen van foto&apos;s: Google Photos, Facebook.</li>
       </UnorderedList>
       <Paragraph>
         Daarnaast kan een lokale overheid gegevens opvragen binnen het kader van

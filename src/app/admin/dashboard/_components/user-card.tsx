@@ -41,7 +41,7 @@ export default function UserCard({
       toast.success(`Rol succesvol gewijzigd naar ${role}`);
     } else {
       toast.error(
-        result.message ||
+        result.message ??
           "Er is een fout opgetreden bij het wijzigen van de rol.",
       );
     }
@@ -54,7 +54,7 @@ export default function UserCard({
       toast.success("Gebruiker succesvol verwijderd.");
     } else {
       toast.error(
-        result.message ||
+        result.message ??
           "Er is een fout opgetreden bij het verwijderen van de gebruiker.",
       );
     }

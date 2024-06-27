@@ -1,10 +1,10 @@
 import { Phone } from "lucide-react";
 
-export default function PhoneNumber({ children }: React.PropsWithChildren) {
+export default function PhoneNumber({ number }: { number: string }) {
   return (
-    <a href={`tel:${children}`} className="inline-flex items-center">
+    <a href={`tel:${number}`} className="inline-flex items-center">
       <Phone className="mr-2 h-4 w-4" />
-      <span>{children}</span>
+      <span>{number}</span>
     </a>
   );
 }
