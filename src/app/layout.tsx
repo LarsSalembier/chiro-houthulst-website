@@ -5,8 +5,9 @@ import { ThemeProvider } from "~/providers/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import CSPostHogProvider from "~/providers/analytics/analytics-provider";
 import dynamic from "next/dynamic";
-import Navbar from "./_components/layout/navbar/navbar";
+import Navbar from "./navbar";
 import { Toaster } from "~/components/ui/sonner";
+import { Footer } from "./footer";
 
 const PostHogPageView = dynamic(
   () => import("~/providers/analytics/posthog-page-view"),
@@ -31,7 +32,10 @@ export default function RootLayout({
             <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
               <div className="flex min-h-screen flex-col gap-8">
                 <Navbar />
-                {children}
+                <main className="container mx-auto flex flex-grow flex-col gap-8 px-6 pb-8 md:px-12 lg:px-24">
+                  {children}
+                </main>
+                <Footer />
               </div>
               <Toaster />
             </ThemeProvider>

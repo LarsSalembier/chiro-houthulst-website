@@ -2,7 +2,7 @@
 
 import { Resend } from "resend";
 import { env } from "~/env";
-import ContactFormEmail from "~/components/contact-form-email";
+import ContactFormEmail from "~/components/email/contact-form-email";
 import React from "react";
 
 interface EmailData {

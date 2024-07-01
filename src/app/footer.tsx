@@ -1,5 +1,5 @@
-import FacebookIcon from "../../../../../components/icons/facebook";
-import InstagramIcon from "../../../../../components/icons/instagram";
+import FacebookIcon from "~/components/icons/facebook";
+import InstagramIcon from "~/components/icons/instagram";
 import ContactForm from "./contact-form";
 import Address from "~/components/typography/address";
 import Paragraph from "~/components/typography/paragraph";

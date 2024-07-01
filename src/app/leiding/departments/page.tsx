@@ -1,7 +1,7 @@
 import Header1 from "~/components/typography/header1";
 import Header2 from "~/components/typography/header2";
 import Paragraph from "~/components/typography/paragraph";
-import AddDepartmentDialog from "./_components/departments/add-department-dialog";
+import AddDepartmentDialog from "./add-department-dialog";
 import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/nextjs";
 import { db } from "~/server/db";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";

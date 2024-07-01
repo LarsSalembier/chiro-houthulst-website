@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { saveSponsor } from "../../../_actions/save-sponsor";
+import { saveSponsor } from "./_actions/save-sponsor";
 import { useState } from "react";
 import { toast } from "sonner";
 

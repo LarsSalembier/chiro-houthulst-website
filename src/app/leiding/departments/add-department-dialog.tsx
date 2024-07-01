@@ -26,7 +26,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
-import addDepartment from "../../_actions/add-department";
+import addDepartment from "./_actions/add-department";
 import ColorPicker from "~/components/ui/color-picker";
 // import { useUploadThing } from "~/utils/uploadthing";
 

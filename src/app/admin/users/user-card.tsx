@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import setRole from "../_actions/set-role";
+import setRole from "./_actions/set-role";
 import { toast } from "sonner";
-import { deleteUser } from "../_actions/delete-user";
+import { deleteUser } from "./_actions/delete-user";
 import { Button } from "~/components/ui/button";
 import {
   AlertDialog,
