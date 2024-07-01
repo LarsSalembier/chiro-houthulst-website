@@ -50,6 +50,10 @@ export function Footer() {
             <Paragraph>
               Lees onze <Link href="/privacyverklaring">privacyverklaring</Link>
             </Paragraph>
+            <Header4>Voor leiding</Header4>
+            <Paragraph>
+              Ga naar het <Link href="/leidingportaal">Leidingportaal</Link>.
+            </Paragraph>
           </div>
           <div>
             <Header4>Volg ons</Header4>
