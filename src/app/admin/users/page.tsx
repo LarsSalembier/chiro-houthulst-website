@@ -31,7 +31,7 @@ export default async function AdminDashboard(params: {
               lastName={user.lastName ?? undefined}
               role={
                 user?.publicMetadata?.role
-                  ? (user.publicMetadata.role as "user" | "admin")
+                  ? (user.publicMetadata.role as "admin" | undefined)
                   : undefined
               }
             />

@@ -37,7 +37,7 @@ export const sponsors = createTable("sponsors", {
   websiteUrl: varchar("website_url", { length: 256 }),
   amount: integer("amount").notNull(),
   logoUrl: varchar("logo_url", { length: 256 }),
-  paid: boolean("paid").default(false),
+  paid: boolean("paid").default(false).notNull(),
   startDate: timestamp("start_date", { withTimezone: true }).notNull(),
   endDate: timestamp("end_date", { withTimezone: true }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
@@ -45,6 +45,8 @@ export const sponsors = createTable("sponsors", {
     .notNull(),
   updatedAt: timestamp("updatedAt", { withTimezone: true }),
 });
+
+export type Sponsor = typeof sponsors.$inferSelect;
 
 export const departments = createTable("departments", {
   id: serial("id").primaryKey(),

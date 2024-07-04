@@ -1,11 +1,11 @@
 export {};
 
-export type Roles = "admin";
+export type Role = "admin";
 
 declare global {
   interface CustomJwtSessionClaims {
     metadata: {
-      role?: Roles;
+      role?: Role;
     };
   }
 }

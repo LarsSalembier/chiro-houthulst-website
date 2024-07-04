@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import sendEmail from "./_actions/send-email";
 import { Button } from "~/components/ui/button";
 import {
   Form,
@@ -16,6 +15,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { toast } from "sonner";
+import { sendEmailFromContactForm } from "./actions";
 
 const formSchema = z.object({
   name: z
@@ -46,7 +46,7 @@ export default function ContactForm({ className }: { className?: string }) {
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     try {
-      await sendEmail(data);
+      await sendEmailFromContactForm(data);
       toast.success(
         "Uw bericht is verstuurd. We nemen zo snel mogelijk contact met u op.",
       );

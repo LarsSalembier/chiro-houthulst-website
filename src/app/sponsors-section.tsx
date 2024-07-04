@@ -20,21 +20,9 @@ export default function SponsorsSection() {
         <SignedIn>{checkRole("admin") && <AddSponsorButton />}</SignedIn>
         <Suspense fallback={<div>Sponsors laden...</div>}>
           <div className="flex flex-col gap-2">
-            <SponsorRow
-              direction="right"
-              minimumAmount={101}
-              maximumAmount={10000}
-            />
-            <SponsorRow
-              direction="left"
-              minimumAmount={51}
-              maximumAmount={100}
-            />
-            <SponsorRow
-              direction="right"
-              minimumAmount={0}
-              maximumAmount={50}
-            />
+            <SponsorRow direction="right" minAmount={101} maxAmount={10000} />
+            <SponsorRow direction="left" minAmount={51} maxAmount={100} />
+            <SponsorRow direction="right" minAmount={0} maxAmount={50} />
           </div>
         </Suspense>
       </div>
