@@ -19,7 +19,7 @@ import { Input } from "~/components/ui/input";
 import {
   type CreateSponsor,
   createSponsorSchema,
-} from "../schemas/sponsor-schemas";
+} from "../../schemas/sponsor-schemas";
 
 export default function AddSponsorForm() {
   const form = useForm<CreateSponsor>({

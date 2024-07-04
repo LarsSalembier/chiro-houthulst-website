@@ -10,7 +10,7 @@ import { AuthenticationError, AuthorizationError } from "~/repository/errors";
 import { checkRole } from "~/utils/roles";
 import { db } from "~/server/db";
 import { sponsors } from "~/server/db/schema";
-import { type createSponsorSchema } from "../schemas/sponsor-schemas";
+import { type createSponsorSchema } from "../../schemas/sponsor-schemas";
 
 const SPONSORSHIP_START_DATE = new Date(2023, 9, 1);
 const SPONSORSHIP_END_DATE = new Date(2024, 8, 31);
