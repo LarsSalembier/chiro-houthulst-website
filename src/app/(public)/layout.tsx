@@ -1,20 +1,18 @@
 import "~/styles/globals.css";
 
-import Navbar from "./navbar";
-import { Footer } from "./footer";
+import { Footer } from "../../components/footer/footer";
+import { SiteHeader } from "~/components/header/site-header";
 
-export default function RootLayout({
-  children,
-}: {
+interface AppLayoutProps {
   children: React.ReactNode;
-}) {
+}
+
+export default function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col gap-8">
-      <Navbar />
-      <main className="container mx-auto flex flex-grow flex-col gap-8 px-6 pb-8 md:px-12 lg:px-24">
-        {children}
-      </main>
+    <>
+      <SiteHeader />
+      <main className="flex-1">{children}</main>
       <Footer />
-    </div>
+    </>
   );
 }

@@ -1,5 +1,4 @@
 import { Button } from "~/components/ui/button";
-import { generateMetadata } from "~/lib/generate-metadata";
 import ribbelsImage from "~/../public/groepen/ribbels.png";
 import speelclubImage from "~/../public/groepen/speelclub.png";
 import kwiksImage from "~/../public/groepen/kwiks.png";
@@ -8,20 +7,36 @@ import titosImage from "~/../public/groepen/titos.png";
 import kerelsImage from "~/../public/groepen/kerels.png";
 import tiptiensImage from "~/../public/groepen/tip10s.png";
 import aspisImage from "~/../public/groepen/aspis.png";
+import { Grid } from "../../components/grid";
+import { FormattedLink } from "~/components/typography/links";
+import {
+  HeroSection,
+  HeroSectionDescription,
+  HeroSectionTitle,
+} from "~/app/(public)/hero-section";
+import mainImage from "~/../public/kampgroepsfoto.png";
+import {
+  Section,
+  SectionContent,
+  SectionFooter,
+  SectionTitle,
+} from "~/components/section";
+import {
+  Subsection,
+  SubsectionContent,
+  SubsectionFooter,
+  SubsectionTitle,
+} from "~/components/subsection";
+import { SignedIn } from "@clerk/nextjs";
+import { hasRole } from "~/utils/roles";
+import { Suspense } from "react";
+import SponsorRow from "./sponsor-row";
+import Link from "next/link";
 import EventCard from "./event-card";
 import NewsCard from "./news-card";
 import AgeGroupCard from "./age-group-card";
-import WelcomeSection from "./welcome-section";
-import GridSection from "./grid-section";
-import SponsorsSection from "./sponsors-section";
-import ExplanationText from "./explanation-text";
-import Link from "~/components/typography/link";
-
-export const dynamic = "force-dynamic";
-
-export const metadata = generateMetadata({
-  title: "Home",
-});
+import AddSponsorButton from "~/app/(public)/add-sponsor-button";
+import { Paragraph } from "~/components/typography/text";
 
 const upcomingEvents = [
   {
@@ -146,91 +161,148 @@ const ageGroups = [
 
 export default function HomePage() {
   return (
-    <>
-      <WelcomeSection />
+    <div className="container relative flex flex-col gap-12">
+      <HeroSection src={mainImage} alt="Groepsfoto Chiro Houthulst">
+        <HeroSectionTitle>Welkom bij Chiro Houthulst!</HeroSectionTitle>
+        <HeroSectionDescription>
+          De Chiro is de grootste jeugdbeweging van België. We brengen kinderen
+          en jongeren samen, zonder onderscheid, en laten hen via spel
+          ervaringen opdoen, samenleven en een kijk op zichzelf en de wereld
+          ontwikkelen.
+        </HeroSectionDescription>
+      </HeroSection>
 
-      <GridSection id="praktisch" title="Praktisch">
-        <ExplanationText title="Zondag">
-          Elke zondag is er Chiro van 14u tot 17u in ons Chiroheem
-          (Jonkershovestraat 101S). Tijdens de Chironamiddag voorzien wij een
-          vieruurtje voor €1. Als je liever je eigen drankje en koekje
-          meebrengt, is dat ook geen probleem.
-        </ExplanationText>
-        <ExplanationText title="Kamp">
-          Elk jaar gaan we op kamp van 20 t.e.m. 30 juli. Als je mee wil op
-          kamp, vragen we je om tijdens het jaar minstens vijf keer naar de
-          Chiro te komen (en liefst zo vaak mogelijk). Zo kunnen de leiding en
-          medeleden je beter leren kennen.
-        </ExplanationText>
-        <ExplanationText title="Inschrijving">
-          Inschrijven in de Chiro kost €30 en kan elke zondag bij de leiding. Zo
-          zijn jullie ook verzekerd. Je kan altijd eens de Chiro komen
-          uittesten, inschrijven is niet verplicht vanaf de eerste zondag!
-        </ExplanationText>
-        <ExplanationText title="Uniform">
-          Het Chiro-uniform is te koop in{" "}
-          <Link href="https://www.debanier.be/">de Banier</Link> (dichtste
-          verstiging: Roeselare). Vanaf de Rakwi&apos;s is een uniform
-          verplicht. Naast het officiële uniform verkopen wij ook onze eigen
-          Chiro Houthulst-T-shirts. Deze zijn elke zondag te koop bij de leiding
-          voor €10.
-        </ExplanationText>
-        <ExplanationText
-          title="Verzekering"
-          link="/verzekeringen"
-          linkText="Wat moet je doen bij een ongeval?"
-        >
-          Iedereen die is ingeschreven in de Chiro is verzekerd. De verzekering
-          dekt de kosten van een ongeval tijdens de Chiro-activiteiten. Ook als
-          je op weg bent naar de Chiro of naar huis, ben je verzekerd.
-        </ExplanationText>
-      </GridSection>
+      <Section id="praktisch">
+        <SectionTitle>Praktisch</SectionTitle>
+        <SectionContent>
+          <Grid>
+            <Subsection id="zondag">
+              <SubsectionTitle>Zondag</SubsectionTitle>
+              <SubsectionContent>
+                <Paragraph>
+                  Elke zondag is er Chiro van 14u tot 17u in ons Chiroheem
+                  (Jonkershovestraat 101S). Tijdens de Chironamiddag voorzien
+                  wij een vieruurtje voor €1. Als je liever je eigen drankje en
+                  koekje meebrengt, is dat ook geen probleem.
+                </Paragraph>
+              </SubsectionContent>
+            </Subsection>
+            <Subsection id="kamp">
+              <SubsectionTitle>Kamp</SubsectionTitle>
+              <SubsectionContent>
+                <Paragraph>
+                  Elk jaar gaan we op kamp van 20 t.e.m. 30 juli. Als je mee wil
+                  op kamp, vragen we je om tijdens het jaar minstens vijf keer
+                  naar de Chiro te komen (en liefst zo vaak mogelijk). Zo kunnen
+                  de leiding en medeleden je beter leren kennen.
+                </Paragraph>
+              </SubsectionContent>
+            </Subsection>
+            <Subsection id="inschrijving">
+              <SubsectionTitle>Inschrijving</SubsectionTitle>
+              <SubsectionContent>
+                <Paragraph>
+                  Inschrijven in de Chiro kost €30 en kan elke zondag bij de
+                  leiding. Zo zijn jullie ook verzekerd. Je kan altijd eens de
+                  Chiro komen uittesten, inschrijven is niet verplicht vanaf de
+                  eerste zondag!
+                </Paragraph>
+              </SubsectionContent>
+            </Subsection>
+            <Subsection id="uniform">
+              <SubsectionTitle>Uniform</SubsectionTitle>
+              <SubsectionContent>
+                <Paragraph>
+                  Het Chiro-uniform is te koop in{" "}
+                  <FormattedLink href="https://www.debanier.be/">
+                    de Banier
+                  </FormattedLink>{" "}
+                  (dichtste vestiging: Roeselare). Vanaf de Rakwi&apos;s is een
+                  uniform verplicht. Naast het officiële uniform verkopen wij
+                  ook onze eigen Chiro Houthulst-T-shirts. Deze zijn elke zondag
+                  te koop bij de leiding voor €10.
+                </Paragraph>
+              </SubsectionContent>
+            </Subsection>
+            <Subsection id="verzekering">
+              <SubsectionTitle>Verzekering</SubsectionTitle>
+              <SubsectionContent>
+                <Paragraph>
+                  Iedereen die is ingeschreven in de Chiro is verzekerd. De
+                  verzekering dekt de kosten van een ongeval tijdens de
+                  Chiro-activiteiten. Ook als je op weg bent naar de Chiro of
+                  naar huis, ben je verzekerd.
+                </Paragraph>
+              </SubsectionContent>
+              <SubsectionFooter>
+                <Button asChild className="w-fit">
+                  <Link href="/verzekeringen">
+                    Wat moet je doen bij een ongeval?
+                  </Link>
+                </Button>
+              </SubsectionFooter>
+            </Subsection>
+          </Grid>
+        </SectionContent>
+      </Section>
 
-      <GridSection
-        id="aankomende-activiteiten"
-        title="Aankomende activiteiten"
-        footer={
+      <Section id="aankomende-activiteiten">
+        <SectionTitle>Aankomende activiteiten</SectionTitle>
+        <SectionContent>
+          <Grid>
+            {upcomingEvents.map((event) => (
+              <EventCard {...event} key={event.key} />
+            ))}
+          </Grid>
+        </SectionContent>
+        <SectionFooter>
           <Button asChild className="w-fit">
             <Link href="/kalender">Bekijk de volledige kalender</Link>
           </Button>
-        }
-      >
-        {upcomingEvents.map((event) => (
-          <EventCard
-            key={event.key}
-            title={event.title}
-            startDate={event.startDate}
-            endDate={event.endDate}
-            description={event.description}
-          />
-        ))}
-      </GridSection>
+        </SectionFooter>
+      </Section>
 
-      <GridSection id="nieuws-updates" title="Nieuws en Updates">
-        {recentNews.map((newsItem) => (
-          <NewsCard
-            key={newsItem.key}
-            title={newsItem.title}
-            date={newsItem.date}
-            description={newsItem.description}
-            link={newsItem.link}
-            linkText={newsItem.linkText}
-          />
-        ))}
-      </GridSection>
+      <Section id="nieuws-updates">
+        <SectionTitle>Nieuws en Updates</SectionTitle>
+        <SectionContent>
+          <Grid>
+            {recentNews.map((newsItem) => (
+              <NewsCard {...newsItem} key={newsItem.key} />
+            ))}
+          </Grid>
+        </SectionContent>
+      </Section>
 
-      <GridSection id="leeftijdsgroepen" title="Leeftijdsgroepen">
-        {ageGroups.map((group) => (
-          <AgeGroupCard
-            key={group.key}
-            image={group.image}
-            title={group.title}
-            description={group.description}
-            link={group.link}
-          />
-        ))}
-      </GridSection>
-      <SponsorsSection />
-    </>
+      <Section id="afdelingen">
+        <SectionTitle>Afdelingen</SectionTitle>
+        <SectionContent>
+          <Grid>
+            {ageGroups.map((group) => (
+              <AgeGroupCard {...group} key={group.key} />
+            ))}
+          </Grid>
+        </SectionContent>
+      </Section>
+
+      <Section id="sponsors">
+        <SectionTitle>Sponsors</SectionTitle>
+        <SectionContent>
+          <Paragraph>
+            Wij zijn dankbaar voor de steun van onze sponsors. Dankzij hen
+            kunnen we onze activiteiten organiseren en onze leden een
+            onvergetelijke tijd bezorgen. Zelf sponsor worden? Neem gerust
+            contact op met onze hoofdleiding.
+          </Paragraph>
+          <SignedIn>{hasRole("admin") && <AddSponsorButton />}</SignedIn>
+          <Suspense fallback={<div>Sponsors laden...</div>}>
+            <div className="flex flex-col">
+              <SponsorRow direction="right" minAmount={101} maxAmount={10000} />
+              <SponsorRow direction="left" minAmount={51} maxAmount={100} />
+              <SponsorRow direction="right" minAmount={0} maxAmount={50} />
+            </div>
+          </Suspense>
+        </SectionContent>
+      </Section>
+    </div>
   );
 }

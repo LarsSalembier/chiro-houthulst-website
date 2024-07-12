@@ -5,11 +5,10 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
+  CardTitle,
 } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
-import Paragraph from "~/components/typography/paragraph";
-import Header3 from "~/components/typography/header3";
 
 interface AgeGroupCardProps {
   image: StaticImageData;
@@ -26,18 +25,16 @@ export default function AgeGroupCard({
 }: AgeGroupCardProps) {
   return (
     <Card className="flex flex-col">
-      <CardHeader>
+      <CardHeader className="flex flex-col gap-6">
         <Image
           src={image}
           alt={`Foto van de ${title}`}
           className="h-48 w-full rounded-md object-cover"
           placeholder="blur"
         />
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow">
-        <Header3>{title}</Header3>
-        <Paragraph>{description}</Paragraph>
-      </CardContent>
+      <CardContent className="flex-grow">{description}</CardContent>
       <CardFooter>
         <Button asChild variant="secondary">
           <Link href={link}>Lees meer</Link>

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import React from "react";
-import Paragraph from "~/components/typography/paragraph";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -66,12 +65,10 @@ export default function EventCard({
           <time dateTime={startDate.toISOString()}>{dateTimeString}</time>
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow">
-        <Paragraph>{description}</Paragraph>
-      </CardContent>
+      <CardContent className="flex-grow">{description}</CardContent>
       {link && (
         <CardFooter>
-          <Button asChild variant="secondary" className="w-fit">
+          <Button asChild variant="secondary">
             <Link href={link}>{linkText ?? "Lees meer"}</Link>
           </Button>
         </CardFooter>

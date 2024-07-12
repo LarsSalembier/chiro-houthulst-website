@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     /* Base Options: */
     "esModuleInterop": true,
@@ -8,6 +9,7 @@
     "resolveJsonModule": true,
     "moduleDetection": "force",
     "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
 
     /* Strictness */
     "strict": true,

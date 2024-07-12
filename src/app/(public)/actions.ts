@@ -7,7 +7,7 @@ import { type z } from "zod";
 import ContactFormEmail from "~/components/email/contact-form-email";
 import { env } from "~/env";
 import { AuthenticationError, AuthorizationError } from "~/repository/errors";
-import { checkRole } from "~/utils/roles";
+import { hasRole } from "~/utils/roles";
 import { db } from "~/server/db";
 import { sponsors } from "~/server/db/schema";
 import { type createSponsorSchema } from "../../schemas/sponsor-schemas";
@@ -30,7 +30,7 @@ export async function addSponsor(data: z.infer<typeof createSponsorSchema>) {
   if (!user) {
     throw new AuthenticationError();
   }
-  if (checkRole("admin")) {
+  if (hasRole("admin")) {
     throw new AuthorizationError();
   }
 
