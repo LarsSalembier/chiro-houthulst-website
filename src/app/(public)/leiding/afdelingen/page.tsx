@@ -20,17 +20,24 @@ import { hasRole } from "~/utils/roles";
 export default async function LeidingDashboardPage() {
   const departments = await db.query.departments.findMany();
 
-  if (!hasRole("leiding") || !hasRole("admin")) {
+  if (!hasRole("leiding") && !hasRole("admin")) {
     return (
-      <div className="container relative flex flex-col gap-6 pb-8 md:pb-12 lg:pb-12">
-        <PageHeader>
-          <PageHeaderHeading>Leidingsportaal</PageHeaderHeading>
-          <PageHeaderDescription>
-            Je hebt geen toegang tot deze pagina. Wacht tot je account is
-            goedgekeurd.
-          </PageHeaderDescription>
-        </PageHeader>
-      </div>
+      <>
+        <SignedIn>
+          <div className="container relative flex flex-col gap-6 pb-8 md:pb-12 lg:pb-12">
+            <PageHeader>
+              <PageHeaderHeading>Leidingsportaal</PageHeaderHeading>
+              <PageHeaderDescription>
+                Je hebt geen toegang tot deze pagina. Wacht tot je account is
+                goedgekeurd.
+              </PageHeaderDescription>
+            </PageHeader>
+          </div>
+        </SignedIn>
+        <SignedOut>
+          <RedirectToSignIn />
+        </SignedOut>
+      </>
     );
   }
 
@@ -38,10 +45,10 @@ export default async function LeidingDashboardPage() {
     <div className="container relative flex flex-col gap-6 pb-8 md:pb-12 lg:pb-12">
       <SignedIn>
         <PageHeader>
-          <PageHeaderHeading>Leidingportaal</PageHeaderHeading>
+          <PageHeaderHeading>Leidingsportaal</PageHeaderHeading>
           <PageHeaderDescription>
-            Welkom op het leidingportaal. Hier kan je alle informatie vinden die
-            je nodig hebt als leiding.
+            Welkom op het leidingsportaal. Hier kan je alle informatie vinden
+            die je nodig hebt als leiding.
           </PageHeaderDescription>
         </PageHeader>
         <Section>
