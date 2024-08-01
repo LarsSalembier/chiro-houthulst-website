@@ -16,6 +16,12 @@ import {
   SubsectionContent,
   SubsectionTitle,
 } from "~/components/subsection";
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Verzekeringen",
+  description: "Informatie over de verzekeringen van Chiro Houthulst",
+};
 
 export default function PrivacyPolicy() {
   return (

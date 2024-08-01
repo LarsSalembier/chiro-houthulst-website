@@ -16,6 +16,12 @@ import {
 } from "~/components/section";
 import { Grid } from "~/components/grid";
 import { hasRole } from "~/utils/roles";
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Afdelingen",
+  description: "Beheer de afdelingen op deze pagina.",
+};
 
 export default async function LeidingDashboardPage() {
   const departments = await db.query.departments.findMany();

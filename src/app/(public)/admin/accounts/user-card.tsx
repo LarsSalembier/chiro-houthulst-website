@@ -16,6 +16,7 @@ import {
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import { type Role } from "types/globals";
+import { Badge } from "~/components/ui/badge";
 
 interface UserCardProps {
   id: string;
@@ -33,12 +34,14 @@ export default function UserCard({
   role,
 }: UserCardProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [currentRole, setCurrentRole] = useState(role);
 
   const handleSetRole = async (role: Role) => {
     const result = await setRole(id, role);
 
     if (result.success) {
       toast.success(`Rol succesvol gewijzigd naar ${role}`);
+      setCurrentRole(role);
     } else {
       toast.error(
         result.message ??
@@ -95,9 +98,13 @@ export default function UserCard({
           {firstName ?? ""} {lastName ?? ""}
         </p>
         <p className="text-gray-500">{primaryEmail}</p>
+        <Badge
+          className={currentRole === "admin" ? "bg-purple-800" : "bg-green-700"}
+        >
+          {role}
+        </Badge>
       </div>
-      <div className="mt-2 flex items-center gap-4">
-        <p>Huidige rol: {role ?? "geen"}</p>
+      <div className="mt-4 flex w-full flex-wrap gap-4">
         {buttons.map(({ label, role }) => (
           <Button
             key={role}

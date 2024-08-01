@@ -1,5 +1,5 @@
 import { hasRole } from "~/utils/roles";
-import { SearchUsers } from "./search-users";
+import { UserSearchbar } from "./user-searchbar";
 import { clerkClient } from "@clerk/nextjs/server";
 import UserCard from "./user-card";
 import {
@@ -8,6 +8,12 @@ import {
   PageHeaderHeading,
 } from "~/components/page-header";
 import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/nextjs";
+import { type Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Adminportaal",
+  description: "Beheer de gebruikers van de website.",
+};
 
 export default async function AdminDashboard(params: {
   searchParams: { search?: string };
@@ -49,7 +55,6 @@ export default async function AdminDashboard(params: {
               Hier kan je alle gebruikers vinden en beheren.
             </PageHeaderDescription>
           </PageHeader>
-          <SearchUsers />
           <div className="flex flex-col gap-4">
             {users.map((user) => {
               return (
@@ -68,6 +73,7 @@ export default async function AdminDashboard(params: {
               );
             })}
           </div>
+          <UserSearchbar />
         </div>
       </SignedIn>
       <SignedOut>

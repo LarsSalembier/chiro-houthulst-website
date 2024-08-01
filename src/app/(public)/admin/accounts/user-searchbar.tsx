@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 
-export const SearchUsers = () => {
+export const UserSearchbar = () => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -21,15 +21,15 @@ export const SearchUsers = () => {
 
         router.push(`${pathname}?${searchParams.toString()}`);
       }}
-      className="flex items-center gap-2"
+      className="flex w-fit items-center gap-2"
     >
       <label htmlFor="search" className="sr-only">
-        Search for Users
+        Zoek gebruikers
       </label>
       <Input
         id="search"
         name="search"
-        type="text"
+        type="search"
         placeholder="Zoek gebruikers..."
       />
       <Button type="submit">Zoeken</Button>
