@@ -12,6 +12,8 @@ import {
   Send,
   User,
   GlobeLock,
+  Construction,
+  FolderLock,
 } from "lucide-react";
 import Logo from "./icons/logo";
 
@@ -76,4 +78,6 @@ export const Icons = {
   Send: (props: IconProps) => <Send {...props} />,
   User: (props: IconProps) => <User {...props} />,
   GlobeLock: (props: IconProps) => <GlobeLock {...props} />,
+  FolderLock: (props: IconProps) => <FolderLock {...props} />,
+  Construction: (props: IconProps) => <Construction {...props} />,
 };

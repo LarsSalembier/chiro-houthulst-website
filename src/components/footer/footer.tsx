@@ -96,7 +96,7 @@ export function Footer() {
               </div>
             </SubsectionContent>
           </Subsection>
-          <Subsection>
+          <Subsection id="contacteer-ons">
             <SubsectionTitle>Contacteer ons</SubsectionTitle>
             <SubsectionContent>
               <ContactForm />

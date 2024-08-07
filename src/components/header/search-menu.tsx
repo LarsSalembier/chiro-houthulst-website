@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { type DialogProps } from "@radix-ui/react-alert-dialog";
 
 import { navigationConfig } from "~/config/navigation";
 import { Button } from "../ui/button";
@@ -16,6 +15,7 @@ import {
   CommandList,
 } from "../ui/command";
 import { Icons } from "../icons";
+import { type DialogProps } from "@radix-ui/react-dialog";
 
 export function SearchMenu({ ...props }: DialogProps) {
   const router = useRouter();

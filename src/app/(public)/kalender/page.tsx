@@ -1,21 +1,23 @@
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { type Metadata } from "next";
-import Calendar from "./calendar";
-import { events } from "~/config/events";
 import {
   PageHeader,
   PageHeaderHeading,
   PageHeaderDescription,
   PageActions,
 } from "~/components/page-header";
+import { Suspense } from "react";
+import LoadingMonthView from "~/components/loading/loading-month-view";
+import Calendar from "~/components/ui/calendar/calendar";
+import { events } from "~/config/events";
 
 export const metadata: Metadata = {
   title: "Kalender",
   description: "Kalender van Chiro Houthulst",
 };
 
-export default function CalendarPage() {
+export default async function CalendarPage() {
   return (
     <div className="container relative flex flex-col gap-6">
       <PageHeader>
@@ -37,7 +39,11 @@ export default function CalendarPage() {
           </Button>
         </PageActions>
       </PageHeader>
-      <Calendar events={events} />
+      <div className="pb-8 md:pb-12 lg:pb-12">
+        <Suspense fallback={<LoadingMonthView />}>
+          <Calendar events={events} />
+        </Suspense>
+      </div>
     </div>
   );
 }

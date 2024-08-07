@@ -293,7 +293,10 @@ export default function HomePage() {
             onvergetelijke tijd bezorgen. Zelf sponsor worden? Neem gerust
             contact op met onze hoofdleiding.
           </Paragraph>
-          <SignedIn>{hasRole("admin") && <AddSponsorButton />}</SignedIn>
+          <Suspense fallback={null}>
+            <SignedIn>{hasRole("admin") && <AddSponsorButton />}</SignedIn>
+          </Suspense>
+
           <Suspense fallback={<div>Sponsors laden...</div>}>
             <div className="flex flex-col">
               <SponsorRow direction="right" minAmount={101} maxAmount={10000} />

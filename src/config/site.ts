@@ -1,5 +1,7 @@
 export const siteConfig = {
   name: "Chiro Sint-Jan Houthulst",
+  logoName: "Sint-Jan Houthulst",
+  logoShortName: "Houthulst",
   url: "https://chirohouthulst.be",
   description:
     "Chiro Houthulst is een leuke en actieve jeugdbeweging voor kinderen vanaf het derde kleuter. Kom elke zondag tussen 14u en 17u spelen en nieuwe vrienden maken!",

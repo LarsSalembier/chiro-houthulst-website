@@ -13,10 +13,13 @@ export function MainNav() {
 
   return (
     <div className="mr-4 hidden md:flex">
-      <Link href="/" className="mr-4 flex items-center space-x-2 lg:mr-6">
-        <Icons.Logo className="h-6 w-6" />
-        <span className="hidden font-bold lg:inline-block">
-          {siteConfig.name}
+      <Link href="/" className="mr-4 flex items-center space-x-1 lg:mr-6">
+        <Icons.Logo className="mb-1 h-6 w-6" />
+        <span className="hidden font-bold xl:inline-block">
+          {siteConfig.logoName}
+        </span>
+        <span className="hidden font-bold md:inline-block xl:hidden">
+          {siteConfig.logoShortName}
         </span>
       </Link>
       <nav className="flex items-center gap-4 text-sm lg:gap-6">

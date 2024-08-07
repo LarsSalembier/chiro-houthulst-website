@@ -119,5 +119,35 @@ export const navigationConfig: NavigationConfig = {
         },
       ],
     },
+    {
+      title: "Volg ons",
+      items: [
+        {
+          title: "Facebook",
+          href: "https://www.facebook.com/chirohouthulst",
+          icon: "Facebook",
+        },
+        {
+          title: "Instagram",
+          href: "https://www.instagram.com/chirohouthulst",
+          icon: "Instagram",
+        },
+      ],
+    },
+    {
+      title: "Intern",
+      items: [
+        {
+          title: "Leidingsportaal",
+          href: "/leiding",
+          icon: "FolderLock",
+        },
+        {
+          title: "Adminportaal",
+          href: "/admin",
+          icon: "Construction",
+        },
+      ],
+    },
   ],
 };

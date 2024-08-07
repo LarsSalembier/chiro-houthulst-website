@@ -55,6 +55,7 @@ export default async function AdminDashboard(params: {
               Hier kan je alle gebruikers vinden en beheren.
             </PageHeaderDescription>
           </PageHeader>
+          <UserSearchbar />
           <div className="flex flex-col gap-4">
             {users.map((user) => {
               return (
@@ -73,7 +74,6 @@ export default async function AdminDashboard(params: {
               );
             })}
           </div>
-          <UserSearchbar />
         </div>
       </SignedIn>
       <SignedOut>
