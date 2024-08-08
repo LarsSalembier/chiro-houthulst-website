@@ -1,7 +1,7 @@
 import { InfiniteMovingCards } from "~/components/ui/infinite-moving-cards";
 import Image from "next/image";
 import Link from "next/link";
-import { getSponsorsInAmountRange } from "~/repository/sponsors/get-sponsors-in-amount-range";
+import { getSponsorsInAmountRange } from "~/server/queries";
 
 interface SponsorRowProps {
   direction: "left" | "right";

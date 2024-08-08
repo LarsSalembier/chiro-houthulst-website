@@ -15,8 +15,8 @@ import React, { useState } from "react";
 import { type Event } from "~/server/db/schema";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
-import { deleteEvent } from "../actions";
 import { toast } from "sonner";
+import { deleteEvent } from "~/server/queries";
 
 interface DayCellContentProps {
   day: Date;

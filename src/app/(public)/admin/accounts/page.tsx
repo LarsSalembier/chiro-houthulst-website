@@ -1,6 +1,4 @@
-import { hasRole } from "~/utils/roles";
 import { UserSearchbar } from "./user-searchbar";
-import { clerkClient } from "@clerk/nextjs/server";
 import UserCard from "./user-card";
 import {
   PageHeader,
@@ -9,6 +7,9 @@ import {
 } from "~/components/page-header";
 import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/nextjs";
 import { type Metadata } from "next";
+import { isAdmin } from "~/utils/auth";
+import { getUsersByQuery } from "~/server/queries";
+import { type Role } from "types/globals";
 
 export const metadata: Metadata = {
   title: "Adminportaal",
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 export default async function AdminDashboard(params: {
   searchParams: { search?: string };
 }) {
-  if (!hasRole("admin")) {
+  if (!isAdmin()) {
     return (
       <>
         <SignedIn>
@@ -39,11 +40,7 @@ export default async function AdminDashboard(params: {
     );
   }
 
-  const query = params.searchParams.search;
-
-  const users = query
-    ? (await clerkClient.users.getUserList({ query })).data
-    : (await clerkClient.users.getUserList()).data;
+  const users = await getUsersByQuery(params.searchParams.search);
 
   return (
     <>
@@ -67,7 +64,7 @@ export default async function AdminDashboard(params: {
                   lastName={user.lastName ?? undefined}
                   role={
                     user?.publicMetadata?.role
-                      ? (user.publicMetadata.role as "admin" | undefined)
+                      ? (user.publicMetadata.role as Role | undefined)
                       : undefined
                   }
                 />

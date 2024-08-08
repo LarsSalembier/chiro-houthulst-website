@@ -14,9 +14,9 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { toast } from "sonner";
-import { addSponsor } from "./actions";
 import { Input } from "~/components/ui/input";
 import { type CreateSponsor, createSponsorSchema } from "./sponsor-schemas";
+import { addSponsor } from "~/server/queries";
 
 export default function AddSponsorForm() {
   const form = useForm<CreateSponsor>({
@@ -28,7 +28,6 @@ export default function AddSponsorForm() {
     try {
       await addSponsor(data);
       toast.success("Sponsor succesvol toegevoegd!");
-      form.reset();
     } catch (error) {
       toast.error("Er is een fout opgetreden bij het opslaan.");
       console.error("Error saving sponsor:", error);

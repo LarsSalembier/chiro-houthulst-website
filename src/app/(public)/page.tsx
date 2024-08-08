@@ -28,7 +28,6 @@ import {
   SubsectionTitle,
 } from "~/components/subsection";
 import { SignedIn } from "@clerk/nextjs";
-import { hasRole } from "~/utils/roles";
 import { Suspense } from "react";
 import SponsorRow from "./sponsor-row";
 import Link from "next/link";
@@ -37,6 +36,7 @@ import NewsCard from "./news-card";
 import AgeGroupCard from "./age-group-card";
 import AddSponsorButton from "~/app/(public)/add-sponsor-button";
 import { Paragraph } from "~/components/typography/text";
+import { isLeiding } from "~/utils/auth";
 
 const upcomingEvents = [
   {
@@ -294,7 +294,7 @@ export default function HomePage() {
             contact op met onze hoofdleiding.
           </Paragraph>
           <Suspense fallback={null}>
-            <SignedIn>{hasRole("admin") && <AddSponsorButton />}</SignedIn>
+            <SignedIn>{isLeiding() && <AddSponsorButton />}</SignedIn>
           </Suspense>
 
           <Suspense fallback={<div>Sponsors laden...</div>}>

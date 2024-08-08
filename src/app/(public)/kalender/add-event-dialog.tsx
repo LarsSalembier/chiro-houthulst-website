@@ -41,10 +41,10 @@ import {
 } from "../../../components/ui/select";
 import { createEventSchema } from "./create-event-schema";
 import { useState } from "react";
-import { addEvent } from "./actions";
 import { toast } from "sonner";
 import { nlBE } from "date-fns/locale";
 import { type Event } from "~/server/db/schema";
+import { addEvent } from "~/server/queries";
 
 interface AddEventDialogProps {
   startDate: Date;
@@ -90,7 +90,6 @@ export default function AddEventDialog({
           locale: nlBE,
         })}) succesvol toegevoegd aan de kalender.`,
       );
-      form.reset();
     } catch (error) {
       toast.error(
         "Er is een fout opgetreden bij het opslaan van het evenement.",

@@ -6,3 +6,9 @@ export const hasRole = (role: Role) => {
 
   return sessionClaims?.metadata.role === role;
 };
+
+export const isAdmin = () => hasRole("admin");
+
+export const isLeiding = () => hasRole("leiding") || isAdmin();
+
+export const isLoggedIn = () => !!auth().userId;

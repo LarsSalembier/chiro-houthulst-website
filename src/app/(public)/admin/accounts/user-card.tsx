@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { toast } from "sonner";
-import { deleteUser, setRole } from "./actions";
 import { Button } from "~/components/ui/button";
 import {
   AlertDialog,
@@ -17,6 +15,7 @@ import {
 } from "~/components/ui/alert-dialog";
 import { type Role } from "types/globals";
 import { Badge } from "~/components/ui/badge";
+import { deleteUser, setRole } from "~/server/queries";
 
 interface UserCardProps {
   id: string;
@@ -33,35 +32,30 @@ export default function UserCard({
   lastName,
   role,
 }: UserCardProps) {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [currentRole, setCurrentRole] = useState(role);
-
   const handleSetRole = async (role: Role) => {
-    const result = await setRole(id, role);
+    "use server";
 
-    if (result.success) {
+    try {
+      await setRole(id, role);
       toast.success(`Rol succesvol gewijzigd naar ${role}`);
-      setCurrentRole(role);
-    } else {
-      toast.error(
-        result.message ??
-          "Er is een fout opgetreden bij het wijzigen van de rol.",
-      );
+    } catch (error) {
+      toast.error("Er is een fout opgetreden bij het wijzigen van de rol.");
+      console.error(error);
     }
   };
 
   const handleDeleteUser = async () => {
-    const result = await deleteUser(id);
+    "use server";
 
-    if (result.success) {
+    try {
+      await deleteUser(id);
       toast.success("Gebruiker succesvol verwijderd.");
-    } else {
+    } catch (error) {
       toast.error(
-        result.message ??
-          "Er is een fout opgetreden bij het verwijderen van de gebruiker.",
+        "Er is een fout opgetreden bij het verwijderen van de gebruiker.",
       );
+      console.error(error);
     }
-    setIsDeleteDialogOpen(false);
   };
 
   const buttons = [
@@ -98,9 +92,7 @@ export default function UserCard({
           {firstName ?? ""} {lastName ?? ""}
         </p>
         <p className="text-gray-500">{primaryEmail}</p>
-        <Badge
-          className={currentRole === "admin" ? "bg-purple-800" : "bg-green-700"}
-        >
+        <Badge className={role === "admin" ? "bg-purple-800" : "bg-green-700"}>
           {role}
         </Badge>
       </div>
@@ -115,10 +107,7 @@ export default function UserCard({
           </Button>
         ))}
 
-        <AlertDialog
-          open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-        >
+        <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button size="sm" variant="destructive">
               Verwijder account

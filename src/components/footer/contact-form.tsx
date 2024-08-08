@@ -15,7 +15,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { toast } from "sonner";
-import { sendEmailFromContactForm } from "../../app/(public)/actions";
+import { sendEmailFromContactForm } from "~/server/queries";
 
 const formSchema = z.object({
   name: z
@@ -50,7 +50,6 @@ export default function ContactForm({ className }: { className?: string }) {
       toast.success(
         "Uw bericht is verstuurd. We nemen zo snel mogelijk contact met u op.",
       );
-      form.reset();
     } catch (error) {
       toast.error("Er is iets misgegaan bij het verzenden van uw bericht.");
       console.error("Error sending email:", error);
