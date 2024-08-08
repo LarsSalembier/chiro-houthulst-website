@@ -8,9 +8,8 @@ import {
   PageActions,
 } from "~/components/page-header";
 import { Suspense } from "react";
-import LoadingMonthView from "~/components/loading/loading-month-view";
-import Calendar from "~/components/ui/calendar/calendar";
-import { events } from "~/config/events";
+import LoadingCalendar from "~/components/loading/loading-calendar";
+import CalendarWithData from "./calendar-with-data";
 
 export const metadata: Metadata = {
   title: "Kalender",
@@ -40,8 +39,8 @@ export default async function CalendarPage() {
         </PageActions>
       </PageHeader>
       <div className="pb-8 md:pb-12 lg:pb-12">
-        <Suspense fallback={<LoadingMonthView />}>
-          <Calendar events={events} />
+        <Suspense fallback={<LoadingCalendar />}>
+          <CalendarWithData />
         </Suspense>
       </div>
     </div>

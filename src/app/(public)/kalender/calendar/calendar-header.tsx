@@ -1,6 +1,6 @@
 import { format } from "date-fns/format";
 import { nl } from "date-fns/locale";
-import { Button } from "../button";
+import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { isSameMonth } from "date-fns";
 

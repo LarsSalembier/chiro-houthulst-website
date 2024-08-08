@@ -16,10 +16,7 @@ import {
 import { toast } from "sonner";
 import { addSponsor } from "./actions";
 import { Input } from "~/components/ui/input";
-import {
-  type CreateSponsor,
-  createSponsorSchema,
-} from "../../schemas/sponsor-schemas";
+import { type CreateSponsor, createSponsorSchema } from "./sponsor-schemas";
 
 export default function AddSponsorForm() {
   const form = useForm<CreateSponsor>({

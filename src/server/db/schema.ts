@@ -48,6 +48,25 @@ export const sponsors = createTable("sponsors", {
 
 export type Sponsor = typeof sponsors.$inferSelect;
 
+export const events = createTable("events", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+  endDate: timestamp("end_date", { withTimezone: true }).notNull(),
+  location: varchar("location", { length: 255 }),
+  facebookEventUrl: varchar("facebook_event_url", { length: 255 }),
+  eventType: varchar("event_type", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+  createdBy: varchar("created_by", { length: 255 }).notNull(),
+  updatedBy: varchar("updated_by", { length: 255 }),
+});
+
+export type Event = typeof events.$inferSelect;
+
 export const departments = createTable("departments", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),

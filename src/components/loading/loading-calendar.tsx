@@ -11,7 +11,7 @@ import {
   type Locale,
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { nl } from "date-fns/locale";
+import { nlBE } from "date-fns/locale";
 
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
@@ -66,7 +66,7 @@ function CalendarHeader({ currentMonth }: { currentMonth: Date }) {
   return (
     <div className="flex items-center justify-between p-4">
       <h2 className="text-xl font-semibold">
-        {format(currentMonth, "MMMM yyyy", { locale: nl })}
+        {format(currentMonth, "MMMM yyyy", { locale: nlBE })}
       </h2>
       <div className="flex items-center gap-2">
         <Button variant="outline" size="icon" disabled>
@@ -95,7 +95,7 @@ function DayCellContent({ day }: { day: Date }) {
         <div
           role="button"
           aria-label={`Evenementen op ${format(day, "MMMM dd, yyyy", {
-            locale: nl,
+            locale: nlBE,
           })}`}
           className="flex h-full w-full flex-col justify-between p-2 lg:justify-normal lg:gap-4"
         >
@@ -116,13 +116,13 @@ function DayCellContent({ day }: { day: Date }) {
   );
 }
 
-interface LoadingMonthViewProps {
+interface LoadingCalendarProps {
   locale?: Locale;
 }
 
-export default function LoadingMonthView({
-  locale = nl,
-}: LoadingMonthViewProps) {
+export default function LoadingCalendar({
+  locale = nlBE,
+}: LoadingCalendarProps) {
   const currentMonth = new Date();
 
   const daysInMonth = eachDayOfInterval({

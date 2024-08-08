@@ -10,46 +10,27 @@ import {
   format,
   isToday,
   isSameMonth,
-  isSameDay,
-  parseISO,
   type Locale,
-  isBefore,
-  startOfDay,
-  addHours,
-  endOfDay,
-  isAfter,
 } from "date-fns";
-import { nl } from "date-fns/locale";
+import { nlBE } from "date-fns/locale";
 
 import { cn } from "~/lib/utils";
-import { type ChiroEvent } from "~/types/chiro-event";
 import CalendarHeader from "./calendar-header";
 import DayCellContent from "./day-cell-content";
+import { type Event } from "~/server/db/schema";
+import { getEventsForDay } from "./calendar-utils";
 
 interface CalendarProps {
-  events: ChiroEvent[];
+  events: Event[];
   locale?: Locale;
+  userCanEdit: boolean;
 }
 
-function getEventsForDay(events: ChiroEvent[], day: Date): ChiroEvent[] {
-  const beginningOfDay = startOfDay(day);
-  return events.filter((event) => {
-    const eventStart = parseISO(event.start);
-    const eventEnd = parseISO(event.end);
-    return (
-      // Event starts today
-      isSameDay(eventStart, beginningOfDay) ||
-      // Event spans into following days
-      (isBefore(eventStart, beginningOfDay) &&
-        isAfter(eventEnd, endOfDay(beginningOfDay))) ||
-      // Event ends today but after 6:00 AM
-      (isSameDay(eventEnd, beginningOfDay) &&
-        isAfter(eventEnd, addHours(beginningOfDay, 6)))
-    );
-  });
-}
-
-export default function Calendar({ events, locale = nl }: CalendarProps) {
+export default function Calendar({
+  events,
+  locale = nlBE,
+  userCanEdit,
+}: CalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
 
   const handlePreviousMonth = () => {
@@ -124,7 +105,12 @@ export default function Calendar({ events, locale = nl }: CalendarProps) {
                         isToday(day) && "bg-blue-500 text-white",
                       )}
                     >
-                      <DayCellContent day={day} events={eventsForDay} />
+                      <DayCellContent
+                        day={day}
+                        events={eventsForDay}
+                        userCanEdit={userCanEdit}
+                        lastAddedEvent={events[events.length - 1]}
+                      />
                     </td>
                   );
                 })}

@@ -1,15 +1,9 @@
 import { cn } from "~/lib/utils";
-import { ChiroEventType, type ChiroEvent } from "~/types/chiro-event";
-
-export const EVENT_DOT_COLORS: Record<ChiroEventType, string> = {
-  [ChiroEventType.CHIRO]: "bg-blue-500",
-  [ChiroEventType.SPECIAL_CHIRO]: "bg-purple-500",
-  [ChiroEventType.EVENT]: "bg-green-500",
-  [ChiroEventType.CAMP]: "bg-yellow-500",
-};
+import { type Event } from "~/server/db/schema";
+import { getEventDotColor } from "./calendar-utils";
 
 interface DayEventDotsProps {
-  events: ChiroEvent[];
+  events: Event[];
 }
 
 export default function DayEventDots({ events }: DayEventDotsProps) {
@@ -20,7 +14,7 @@ export default function DayEventDots({ events }: DayEventDotsProps) {
           key={index}
           className={cn(
             "mx-0.5 h-2 w-2 rounded-full",
-            events[index] && EVENT_DOT_COLORS[events[index].type],
+            events[index] && getEventDotColor(events[index].eventType),
           )}
         />
       ))}
