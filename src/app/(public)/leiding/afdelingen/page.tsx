@@ -15,8 +15,8 @@ import {
   SectionTitle,
 } from "~/components/section";
 import { Grid } from "~/components/grid";
-import { hasRole } from "~/utils/roles";
 import { type Metadata } from "next";
+import { isLeiding } from "~/utils/auth";
 
 export const metadata: Metadata = {
   title: "Afdelingen",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 export default async function LeidingDashboardPage() {
   const departments = await db.query.departments.findMany();
 
-  if (!hasRole("leiding") && !hasRole("admin")) {
+  if (!isLeiding()) {
     return (
       <>
         <SignedIn>
