@@ -33,8 +33,6 @@ export default function UserCard({
   role,
 }: UserCardProps) {
   const handleSetRole = async (role: Role) => {
-    "use server";
-
     try {
       await setRole(id, role);
       toast.success(`Rol succesvol gewijzigd naar ${role}`);
@@ -45,8 +43,6 @@ export default function UserCard({
   };
 
   const handleDeleteUser = async () => {
-    "use server";
-
     try {
       await deleteUser(id);
       toast.success("Gebruiker succesvol verwijderd.");
