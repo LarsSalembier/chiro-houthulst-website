@@ -54,7 +54,7 @@ export function Header3({
   );
 }
 
-export default function Header4({
+export function Header4({
   children,
   className,
   ...props

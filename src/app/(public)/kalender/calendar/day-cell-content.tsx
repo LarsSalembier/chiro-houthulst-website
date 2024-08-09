@@ -7,7 +7,6 @@ import {
 } from "~/components/ui/dialog";
 import { format, isSameDay } from "date-fns";
 import { nl } from "date-fns/locale";
-import { UnorderedList } from "~/components/typography/lists";
 import DayEventDots from "./day-event-dots";
 import DayEventsList from "./day-events-list";
 import AddEventDialog from "../add-event-dialog";
@@ -16,6 +15,9 @@ import { type Event } from "~/server/db/schema";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { deleteEventAndRevalidateCalendar } from "../actions";
+import { Header4 } from "~/components/typography/headers";
+import { MutedText, Paragraph } from "~/components/typography/text";
+import { TrashIcon } from "lucide-react";
 
 interface DayCellContentProps {
   day: Date;
@@ -69,12 +71,12 @@ export default function DayCellContent({
                 {format(day, "dd MMMM yyyy", { locale: nl })}
               </DialogTitle>
             </DialogHeader>
-            <UnorderedList className="flex flex-col gap-4 py-4">
+            <ul className="flex flex-col gap-4 py-4">
               {events.map((event) => {
                 return (
-                  <li key={event.id} className="space-y-1">
-                    <h4 className="text-lg font-semibold">{event.title}</h4>
-                    <p className="text-sm text-muted-foreground">
+                  <li key={event.id} className="space-y-2">
+                    <Header4>{event.title}</Header4>
+                    <MutedText className="text-sm text-muted-foreground">
                       {isSameDay(event.startDate, event.endDate)
                         ? `Van ${format(event.startDate, "HH:mm", {
                             locale: nl,
@@ -90,11 +92,10 @@ export default function DayCellContent({
                           })} om ${format(event.endDate, "HH:mm", {
                             locale: nl,
                           })}`}
-                    </p>
-                    <p className="text-sm">{event.description}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {event.location}
-                    </p>
+                      <br />
+                      Locatie: {event.location}
+                    </MutedText>
+                    <Paragraph>{event.description}</Paragraph>
                     <div className="flex gap-2">
                       {event.facebookEventUrl && (
                         <Button asChild size="sm">
@@ -105,22 +106,21 @@ export default function DayCellContent({
                       )}
                       {userCanEdit && (
                         <Button
-                          size="sm"
+                          size="icon"
                           type="submit"
                           variant="destructive"
                           onClick={() => handleDeleteEvent(event.id)}
                           disabled={isLoading}
+                          className="h-8 w-8"
                         >
-                          {isLoading
-                            ? "Evenement verwijderen..."
-                            : "Evenement verwijderen"}
+                          <TrashIcon className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
                   </li>
                 );
               })}
-            </UnorderedList>
+            </ul>
           </DialogContent>
         </Dialog>
       ) : (
