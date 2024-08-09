@@ -1,6 +1,5 @@
 "use client";
 
-import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import {
   AlertDialog,
@@ -15,7 +14,7 @@ import {
 } from "~/components/ui/alert-dialog";
 import { type Role } from "types/globals";
 import { Badge } from "~/components/ui/badge";
-import { deleteUser, setRole } from "~/server/queries";
+import { deleteUserAndRevalidate, setRoleAndRevalidate } from "./actions";
 
 interface UserCardProps {
   id: string;
@@ -33,25 +32,11 @@ export default function UserCard({
   role,
 }: UserCardProps) {
   const handleSetRole = async (role: Role) => {
-    try {
-      await setRole(id, role);
-      toast.success(`Rol succesvol gewijzigd naar ${role}`);
-    } catch (error) {
-      toast.error("Er is een fout opgetreden bij het wijzigen van de rol.");
-      console.error(error);
-    }
+    await setRoleAndRevalidate(id, role);
   };
 
   const handleDeleteUser = async () => {
-    try {
-      await deleteUser(id);
-      toast.success("Gebruiker succesvol verwijderd.");
-    } catch (error) {
-      toast.error(
-        "Er is een fout opgetreden bij het verwijderen van de gebruiker.",
-      );
-      console.error(error);
-    }
+    await deleteUserAndRevalidate(id);
   };
 
   const buttons = [

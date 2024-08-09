@@ -1,11 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { UploadButton } from "~/utils/uploadthing";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +14,6 @@ import {
 import {
   Form,
   FormControl,
-  // FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -26,93 +22,29 @@ import {
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
-import { addDepartment } from "./actions";
+import { addDepartmentAndRevalidate } from "./actions";
 import ColorPicker from "~/components/ui/color-picker";
-// import { useUploadThing } from "~/utils/uploadthing";
-
-// function capitalizeFirstLetter(str: string) {
-//   const firstChar = str.charAt(0).toUpperCase();
-//   const rest = str.slice(1).toLowerCase();
-
-//   return firstChar + rest;
-// }
-
-const formSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "Vul de naam van de afdeling in.")
-    .max(255, "Naam van de afdeling is te lang.")
-    .regex(
-      /^[a-zA-Z0-9\s'-]+$/,
-      "De naam van de afdeling mag alleen letters, cijfers, - en ' en bevatten.",
-    ),
-  color: z.preprocess(
-    (val) => (val === "" ? undefined : val),
-    z
-      .string()
-      .trim()
-      .regex(
-        /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
-        "Geef een geldige hexadecimale kleurcode in (bijv. #FF0000).",
-      )
-      .optional(),
-  ),
-  // mascotImage: z.any(),
-  description: z.preprocess(
-    (val) => (val === "" ? undefined : val),
-    z.string().trim().max(1000, "Beschrijving is te lang.").optional(),
-  ),
-});
+import {
+  type CreateDepartmentData,
+  createDepartmentSchema,
+} from "~/server/schemas/create-department-schema";
 
 export default function AddDepartmentDialog() {
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<CreateDepartmentData>({
+    resolver: zodResolver(createDepartmentSchema),
     defaultValues: {
       name: "",
       color: "000000",
-      // mascotImage: [] as File[],
       description: "",
     },
   });
 
-  // const { startUpload } = useUploadThing("imageUploader", {
-  //   onClientUploadComplete: () => {
-  //     toast.success("Mascotte geüpload!");
-  //     form.resetField("mascotImage");
-  //   },
-  //   onUploadError: () => {
-  //     toast.error(
-  //       "Er is een fout opgetreden bij het uploaden van de mascotte.",
-  //     );
-  //   },
-  //   onUploadBegin: () => {
-  //     toast.info("Mascotte wordt geüpload...");
-  //   },
-  // });
-
-  async function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(data: CreateDepartmentData) {
     setIsLoading(true);
-    try {
-      // const result = await startUpload([data.mascotImage] as File[]);
-
-      // await addDepartment(
-      //   formSchema.parse({
-      //     ...data,
-      //     mascotImageUrl: result?.[0]?.url,
-      //   }),
-      // );
-      await addDepartment(data);
-      toast.success("Afdeling succesvol toegevoegd!");
-      form.reset();
-    } catch (error) {
-      toast.error("Er is een fout opgetreden bij het opslaan.");
-      console.error("Error saving department:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    await addDepartmentAndRevalidate(data);
+    setIsLoading(false);
   }
 
   return (
@@ -167,27 +99,6 @@ export default function AddDepartmentDialog() {
                 </FormItem>
               )}
             />
-            {/* <FormField
-              control={form.control}
-              name="mascotImage"
-              render={({ field: { onChange, ...fieldProps } }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Upload mascotte"
-                      type="file"
-                      {...fieldProps}
-                      onChange={(event) => onChange(event.target.files?.[0])}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    De mascotte van de afdeling.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
             <FormField
               control={form.control}
               name="description"

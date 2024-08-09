@@ -10,6 +10,7 @@ export const ourFileRouter = {
     .middleware(async () => {
       const user = auth();
 
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       if (!user?.userId) throw new UploadThingError("Unauthorized");
 
       // Whatever is returned here is accessible in onUploadComplete as `metadata`

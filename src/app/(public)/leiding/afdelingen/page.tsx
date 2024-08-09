@@ -1,6 +1,5 @@
 import AddDepartmentDialog from "./add-department-dialog";
 import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/nextjs";
-import { db } from "~/server/db";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Paragraph } from "~/components/typography/text";
 import {
@@ -17,6 +16,7 @@ import {
 import { Grid } from "~/components/grid";
 import { type Metadata } from "next";
 import { isLeiding } from "~/utils/auth";
+import { getAllDepartments } from "~/server/queries/department-queries";
 
 export const metadata: Metadata = {
   title: "Afdelingen",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 };
 
 export default async function LeidingDashboardPage() {
-  const departments = await db.query.departments.findMany();
+  const departments = await getAllDepartments();
 
   if (!isLeiding()) {
     return (

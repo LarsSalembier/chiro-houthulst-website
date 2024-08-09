@@ -8,8 +8,8 @@ import {
 import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/nextjs";
 import { type Metadata } from "next";
 import { isAdmin } from "~/utils/auth";
-import { getUsersByQuery } from "~/server/queries";
 import { type Role } from "types/globals";
+import { getUsersByQuery } from "~/server/queries/user-queries";
 
 export const metadata: Metadata = {
   title: "Adminportaal",

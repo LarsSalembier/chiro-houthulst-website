@@ -15,8 +15,7 @@ import React, { useState } from "react";
 import { type Event } from "~/server/db/schema";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
-import { toast } from "sonner";
-import { deleteEvent } from "~/server/queries";
+import { deleteEventAndRevalidateCalendar } from "../actions";
 
 interface DayCellContentProps {
   day: Date;
@@ -37,17 +36,8 @@ export default function DayCellContent({
 
   async function handleDeleteEvent(eventId: number) {
     setIsLoading(true);
-    try {
-      await deleteEvent(eventId);
-      toast.success(`Evenement succesvol verwijderd van de kalender.`);
-    } catch (error) {
-      toast.error(
-        "Er is een fout opgetreden bij het verwijderen van het evenement.",
-      );
-      console.error("Error removing event:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    await deleteEventAndRevalidateCalendar(eventId);
+    setIsLoading(false);
   }
 
   return (

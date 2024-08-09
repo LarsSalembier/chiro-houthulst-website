@@ -10,7 +10,6 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { CalendarIcon, PlusIcon } from "lucide-react";
-import { type z } from "zod";
 import {
   Form,
   FormControl,
@@ -38,13 +37,15 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
-import { createEventSchema } from "./create-event-schema";
+} from "~/components/ui/select";
+import {
+  type CreateEventData,
+  createEventSchema,
+} from "~/server/schemas/create-event-schema";
 import { useState } from "react";
-import { toast } from "sonner";
 import { nlBE } from "date-fns/locale";
 import { type Event } from "~/server/db/schema";
-import { addEvent } from "~/server/queries";
+import { addEventAndRevalidateCalendar } from "./actions";
 
 interface AddEventDialogProps {
   startDate: Date;
@@ -67,7 +68,7 @@ export default function AddEventDialog({
     minutes: lastAddedEvent?.endDate.getMinutes() ?? 0,
   });
 
-  const form = useForm<z.infer<typeof createEventSchema>>({
+  const form = useForm<CreateEventData>({
     resolver: zodResolver(createEventSchema),
     defaultValues: {
       title: lastAddedEvent?.title ?? "",
@@ -81,23 +82,10 @@ export default function AddEventDialog({
     },
   });
 
-  async function onSubmit(values: z.infer<typeof createEventSchema>) {
+  async function onSubmit(values: CreateEventData) {
     setIsLoading(true);
-    try {
-      await addEvent(values);
-      toast.success(
-        `${values.title} (${format(values.startDate, "PPP HH:mm", {
-          locale: nlBE,
-        })}) succesvol toegevoegd aan de kalender.`,
-      );
-    } catch (error) {
-      toast.error(
-        "Er is een fout opgetreden bij het opslaan van het evenement.",
-      );
-      console.error("Error saving event:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    await addEventAndRevalidateCalendar(values);
+    setIsLoading(false);
   }
 
   return (

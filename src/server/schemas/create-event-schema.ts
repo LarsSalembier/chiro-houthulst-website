@@ -45,3 +45,5 @@ export const createEventSchema = z.object({
     .min(3, "Geef een geldig evenementtype in.")
     .max(50, "Evenementtype is te lang."),
 });
+
+export type CreateEventData = z.infer<typeof createEventSchema>;

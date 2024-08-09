@@ -1,9 +1,9 @@
 import Calendar from "~/app/(public)/kalender/calendar/calendar";
-import { db } from "~/server/db";
+import { getAllEvents } from "~/server/queries/event-queries";
 import { isLeiding } from "~/utils/auth";
 
 export default async function CalendarWithData() {
-  const eventsFromDatabase = await db.query.events.findMany();
+  const eventsFromDatabase = await getAllEvents();
 
   return <Calendar events={eventsFromDatabase} userCanEdit={isLeiding()} />;
 }

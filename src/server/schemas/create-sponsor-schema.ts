@@ -97,4 +97,4 @@ export const createSponsorSchema = z.object({
   paid: z.boolean(),
 });
 
-export type CreateSponsor = z.infer<typeof createSponsorSchema>;
+export type CreateSponsorData = z.infer<typeof createSponsorSchema>;
