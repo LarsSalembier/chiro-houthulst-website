@@ -13,40 +13,31 @@ import { type Event } from "~/server/db/schema";
 import { isLeiding } from "~/utils/auth";
 import UpdateEventDialog from "./kalender/update-event-dialog";
 import DeleteEventDialog from "./kalender/delete-event-dialog";
+import { format, isSameDay } from "date-fns";
+import { nlBE } from "date-fns/locale";
 
 interface EventCardProps {
   event: Event;
 }
 
-const dateOptions = {
-  weekday: "long",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-} as const;
-
-const timeOptions = {
-  hour: "numeric",
-  minute: "numeric",
-} as const;
-
 export default function EventCard({ event }: EventCardProps) {
   let dateTimeString = "";
-  if (event.startDate.toDateString() === event.startDate.toDateString()) {
+  if (isSameDay(event.startDate, event.endDate)) {
     // Same day event
-    dateTimeString = `${event.startDate.toLocaleDateString(undefined, dateOptions)} van ${event.startDate.toLocaleTimeString(
-      undefined,
-      timeOptions,
-    )} tot ${event.endDate.toLocaleTimeString(undefined, timeOptions)}`;
+    dateTimeString = `${format(event.startDate, "PPP", {
+      locale: nlBE,
+    })} van ${format(event.startDate, "HH:mm", {
+      locale: nlBE,
+    })} tot ${format(event.endDate, "HH:mm", {
+      locale: nlBE,
+    })}`;
   } else {
     // Multi-day event
-    dateTimeString = `Van ${event.startDate.toLocaleDateString(undefined, dateOptions)} ${event.startDate.toLocaleTimeString(
-      undefined,
-      timeOptions,
-    )} tot ${event.endDate.toLocaleDateString(undefined, dateOptions)} ${event.endDate.toLocaleTimeString(
-      undefined,
-      timeOptions,
-    )}`;
+    dateTimeString = `Van ${format(event.startDate, "PPP HH:mm", {
+      locale: nlBE,
+    })} tot ${format(event.endDate, "PPP HH:mm", {
+      locale: nlBE,
+    })}`;
   }
 
   return (
