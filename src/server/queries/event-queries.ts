@@ -1,8 +1,10 @@
 import { isLeiding, isLoggedIn } from "~/utils/auth";
 import {
   createEventSchema,
+  type UpdateEventData,
   type CreateEventData,
-} from "../schemas/create-event-schema";
+  updateEventSchema,
+} from "../schemas/event-schemas";
 import { AuthenticationError, AuthorizationError } from "~/utils/errors";
 import { db } from "../db";
 import { events } from "../db/schema";
@@ -37,6 +39,31 @@ export async function createEvent(data: CreateEventData) {
       createdBy: auth().userId!,
     })
     .execute();
+}
+
+/**
+ * Updates an event.
+ *
+ * @param id The id of the event to update.
+ * @param data The new event data.
+ *
+ * @throws An AuthenticationError if the user is not authenticated.
+ * @throws An AuthorizationError if the user is not leiding.
+ * @throws A ZodError if the event data is invalid.
+ * @throws If the event could not be updated.
+ */
+export async function updateEvent(id: number, data: UpdateEventData) {
+  if (!isLoggedIn()) {
+    throw new AuthenticationError();
+  }
+
+  if (!isLeiding()) {
+    throw new AuthorizationError();
+  }
+
+  updateEventSchema.parse(data);
+
+  await db.update(events).set(data).where(eq(events.id, id)).execute();
 }
 
 /**

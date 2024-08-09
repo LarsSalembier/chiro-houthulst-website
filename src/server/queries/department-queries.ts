@@ -3,7 +3,7 @@ import { AuthenticationError, AuthorizationError } from "~/utils/errors";
 import {
   type CreateDepartmentData,
   createDepartmentSchema,
-} from "../schemas/create-department-schema";
+} from "../schemas/department-schemas";
 import { db } from "../db";
 import { departments } from "../db/schema";
 import { auth } from "@clerk/nextjs/server";

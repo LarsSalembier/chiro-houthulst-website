@@ -1,71 +1,63 @@
 "use server";
 
-import { type CreateEventData } from "../../../server/schemas/create-event-schema";
-import { toast } from "sonner";
-import { format } from "date-fns";
-import { nlBE } from "date-fns/locale";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import {
+  type UpdateEventData,
+  type CreateEventData,
+} from "../../../server/schemas/event-schemas";
 import { revalidatePath } from "next/cache";
-import { createEvent, deleteEvent } from "~/server/queries/event-queries";
+import {
+  createEvent,
+  deleteEvent,
+  updateEvent,
+} from "~/server/queries/event-queries";
 
 /**
- * Adds an event to the calendar, and revalidates the calendar page. Also shows
- * a toast message on success or error.
+ * Adds an event to the calendar, and revalidates the calendar page.
  *
  * @param values The data of the event to add.
+ *
+ * @throws An AuthenticationError if the user is not authenticated.
+ * @throws An AuthorizationError if the user is not leiding.
+ * @throws A ZodError if the event data is invalid.
+ * @throws If the event could not be created.
  */
-export async function addEventAndRevalidateCalendar(values: CreateEventData) {
-  try {
-    await createEvent(values);
-    toast.success(
-      `${values.title} (${format(values.startDate, "PPP HH:mm", {
-        locale: nlBE,
-      })}) succesvol toegevoegd aan de kalender.`,
-    );
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      toast.error("Je bent niet ingelogd.");
-    } else if (error instanceof AuthorizationError) {
-      toast.error("Je hebt geen toestemming om een evenement toe te voegen.");
-    } else {
-      toast.error(
-        `Er is een fout opgetreden bij het toevoegen van ${values.title} (${format(
-          values.startDate,
-          "PPP HH:mm",
-          { locale: nlBE },
-        )}) aan de kalender.`,
-      );
-    }
-
-    console.error(`Error adding event ${values.title}:`, error);
-  }
+export async function createEventAndRevalidate(values: CreateEventData) {
+  await createEvent(values);
 
   revalidatePath("/kalender");
 }
 
 /**
- * Deletes an event from the calendar, and revalidates the calendar page. Also
- * shows a toast message on success or error.
+ * Updates an event in the calendar, and revalidates the calendar page.
+ *
+ * @param eventId The id of the event to update.
+ * @param values The new data of the event.
+ *
+ * @throws An AuthenticationError if the user is not authenticated.
+ * @throws An AuthorizationError if the user is not leiding.
+ * @throws A ZodError if the event data is invalid.
+ * @throws If the event could not be updated.
+ */
+export async function updateEventAndRevalidate(
+  eventId: number,
+  values: UpdateEventData,
+) {
+  await updateEvent(eventId, values);
+
+  revalidatePath("/kalender");
+}
+
+/**
+ * Deletes an event from the calendar, and revalidates the calendar page.
  *
  * @param eventId The id of the event to delete.
+ *
+ * @throws An AuthenticationError if the user is not authenticated.
+ * @throws An AuthorizationError if the user is not leiding.
+ * @throws If the event could not be deleted.
  */
-export async function deleteEventAndRevalidateCalendar(eventId: number) {
-  try {
-    await deleteEvent(eventId);
-    toast.success("Evenement succesvol verwijderd van de kalender.");
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      toast.error("Je bent niet ingelogd.");
-    } else if (error instanceof AuthorizationError) {
-      toast.error("Je hebt geen toestemming om een evenement te verwijderen.");
-    } else {
-      toast.error(
-        "Er is een fout opgetreden bij het verwijderen van het evenement.",
-      );
-    }
-
-    console.error(`Error removing event with id ${eventId}:`, error);
-  }
+export async function deleteEventAndRevalidate(eventId: number) {
+  await deleteEvent(eventId);
 
   revalidatePath("/kalender");
 }

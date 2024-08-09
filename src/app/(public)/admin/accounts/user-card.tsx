@@ -15,6 +15,8 @@ import {
 import { type Role } from "types/globals";
 import { Badge } from "~/components/ui/badge";
 import { deleteUserAndRevalidate, setRoleAndRevalidate } from "./actions";
+import { toast } from "sonner";
+import { AuthenticationError, AuthorizationError } from "~/utils/errors";
 
 interface UserCardProps {
   id: string;
@@ -32,11 +34,45 @@ export default function UserCard({
   role,
 }: UserCardProps) {
   const handleSetRole = async (role: Role) => {
-    await setRoleAndRevalidate(id, role);
+    try {
+      await setRoleAndRevalidate(id, role);
+      toast.success(`Rol succesvol gewijzigd naar ${role}`);
+    } catch (error) {
+      if (error instanceof AuthorizationError) {
+        toast.error(
+          `Je hebt geen toestemming om de rol van deze gebruiker te wijzigen naar ${role}.`,
+        );
+      } else if (error instanceof AuthenticationError) {
+        toast.error("Je bent niet ingelogd.");
+      } else {
+        toast.error(
+          `Er is een fout opgetreden bij het wijzigen van de rol naar ${role}.`,
+        );
+      }
+
+      console.error(`Error setting role for user ${id}:`, error);
+    }
   };
 
   const handleDeleteUser = async () => {
-    await deleteUserAndRevalidate(id);
+    try {
+      await deleteUserAndRevalidate(id);
+      toast.success("Gebruiker succesvol verwijderd.");
+    } catch (error) {
+      if (error instanceof AuthorizationError) {
+        toast.error(
+          "Je hebt geen toestemming om deze gebruiker te verwijderen.",
+        );
+      } else if (error instanceof AuthenticationError) {
+        toast.error("Je bent niet ingelogd.");
+      } else {
+        toast.error(
+          "Er is een fout opgetreden bij het verwijderen van de gebruiker.",
+        );
+      }
+
+      console.error(`Error deleting user ${id}:`, error);
+    }
   };
 
   const buttons = [

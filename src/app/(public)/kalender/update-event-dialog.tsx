@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { CalendarIcon, PlusIcon } from "lucide-react";
+import { CalendarIcon, EditIcon } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -28,7 +28,7 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { cn } from "~/lib/utils";
-import { format, getHours, set } from "date-fns";
+import { format } from "date-fns";
 import { Calendar } from "~/components/ui/calendar";
 import TimePicker from "~/components/ui/date-time-picker/time-picker";
 import {
@@ -41,74 +41,57 @@ import {
 import { useState } from "react";
 import { nlBE } from "date-fns/locale";
 import { type Event } from "~/server/db/schema";
-import { createEventAndRevalidate } from "./actions";
+import { updateEventAndRevalidate } from "./actions";
 import {
-  createEventSchema,
-  type CreateEventData,
+  type UpdateEventData,
+  updateEventSchema,
 } from "~/server/schemas/event-schemas";
 import { toast } from "sonner";
 import { AuthenticationError, AuthorizationError } from "~/utils/errors";
 
-interface AddEventDialogProps {
-  startDate: Date;
-  lastAddedEvent?: Event;
+interface UpdateEventDialogProps {
+  event: Event;
 }
 
-export default function AddEventDialog({
-  startDate,
-  lastAddedEvent,
-}: AddEventDialogProps) {
+export default function UpdateEventDialog({ event }: UpdateEventDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const defaultStartDate = set(startDate, {
-    hours: getHours(lastAddedEvent?.startDate ?? startDate),
-    minutes: lastAddedEvent?.startDate.getMinutes() ?? 0,
-  });
-
-  const defaultEndDate = set(startDate, {
-    hours: getHours(lastAddedEvent?.endDate ?? startDate),
-    minutes: lastAddedEvent?.endDate.getMinutes() ?? 0,
-  });
-
-  const form = useForm<CreateEventData>({
-    resolver: zodResolver(createEventSchema),
+  const form = useForm<UpdateEventData>({
+    resolver: zodResolver(updateEventSchema),
     defaultValues: {
-      title: lastAddedEvent?.title ?? "",
-      description: lastAddedEvent?.description ?? "",
-      startDate: defaultStartDate,
-      endDate: defaultEndDate,
-      location:
-        lastAddedEvent?.location ?? "Chiroheem - Jonkershovestraat 101s",
-      facebookEventUrl: lastAddedEvent?.facebookEventUrl ?? "",
-      eventType: lastAddedEvent?.eventType ?? "chiro",
+      title: event.title,
+      description: event.description ?? "",
+      startDate: event.startDate,
+      endDate: event.endDate,
+      location: event.location ?? "",
+      facebookEventUrl: event.facebookEventUrl ?? "",
+      eventType: event.eventType,
     },
   });
 
-  async function onSubmit(values: CreateEventData) {
+  async function onSubmit(values: UpdateEventData) {
     setIsLoading(true);
     try {
-      await createEventAndRevalidate(values);
+      await updateEventAndRevalidate(event.id, values);
       toast.success(
         `${values.title} (${format(values.startDate, "PPP HH:mm", {
           locale: nlBE,
-        })}) succesvol toegevoegd aan de kalender.`,
+        })}) succesvol aangepast.`,
       );
     } catch (error) {
       if (error instanceof AuthenticationError) {
         toast.error("Je bent niet ingelogd.");
       } else if (error instanceof AuthorizationError) {
-        toast.error("Je hebt geen toestemming om een evenement toe te voegen.");
+        toast.error("Je hebt geen toestemming om een evenement aan te passen.");
       } else {
         toast.error(
-          `Er is een fout opgetreden bij het toevoegen van ${values.title} (${format(
+          `Er is een fout opgetreden bij het aanpassen van ${values.title} (${format(
             values.startDate,
             "PPP HH:mm",
             { locale: nlBE },
-          )}) aan de kalender.`,
+          )}).`,
         );
       }
-
-      console.error(`Error adding event ${values.title}:`, error);
     }
     setIsLoading(false);
   }
@@ -118,18 +101,18 @@ export default function AddEventDialog({
       <DialogTrigger asChild>
         <Button
           size="icon"
-          variant="outline"
-          className="z-100 h-6 w-6 self-end lg:h-8 lg:w-8"
+          type="submit"
+          variant="secondary"
+          className="h-8 w-8"
         >
-          <PlusIcon className="h-3 w-3 text-foreground lg:h-4 lg:w-4" />
+          <EditIcon className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Voeg een evenement toe</DialogTitle>
+          <DialogTitle>Bewerk {event.title}</DialogTitle>
           <DialogDescription>
-            Vul onderstaand formulier in om een evenement toe te voegen aan de
-            kalender.
+            Vul onderstaand formulier in om het evenement aan te passen.
           </DialogDescription>
           <div>
             <Form {...form}>
@@ -319,7 +302,7 @@ export default function AddEventDialog({
                 <div className="flex justify-end space-x-4">
                   <Button variant="outline">Annuleren</Button>
                   <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Opslaan..." : "Evenement toevoegen"}
+                    {isLoading ? "Opslaan..." : "Wijzigingen opslaan"}
                   </Button>
                 </div>
               </form>

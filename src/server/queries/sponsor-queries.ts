@@ -2,7 +2,7 @@ import { isLeiding, isLoggedIn } from "~/utils/auth";
 import {
   type CreateSponsorData,
   createSponsorSchema,
-} from "../schemas/create-sponsor-schema";
+} from "../schemas/sponsor-schemas";
 import { AuthenticationError, AuthorizationError } from "~/utils/errors";
 import { db } from "../db";
 import { sponsors } from "../db/schema";

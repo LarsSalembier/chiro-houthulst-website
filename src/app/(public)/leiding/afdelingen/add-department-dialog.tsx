@@ -22,12 +22,14 @@ import {
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
-import { addDepartmentAndRevalidate } from "./actions";
+import { createDepartmentAndRevalidate } from "./actions";
 import ColorPicker from "~/components/ui/color-picker";
 import {
   type CreateDepartmentData,
   createDepartmentSchema,
-} from "~/server/schemas/create-department-schema";
+} from "~/server/schemas/department-schemas";
+import { toast } from "sonner";
+import { AuthenticationError, AuthorizationError } from "~/utils/errors";
 
 export default function AddDepartmentDialog() {
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +45,22 @@ export default function AddDepartmentDialog() {
 
   async function onSubmit(data: CreateDepartmentData) {
     setIsLoading(true);
-    await addDepartmentAndRevalidate(data);
+    try {
+      await createDepartmentAndRevalidate(data);
+      toast.success(`Afdeling ${data.name} succesvol toegevoegd!`);
+    } catch (error) {
+      if (error instanceof AuthenticationError) {
+        toast.error("Je bent niet ingelogd.");
+      } else if (error instanceof AuthorizationError) {
+        toast.error("Je hebt geen toestemming om een afdeling toe te voegen.");
+      } else {
+        toast.error(
+          `Er is een fout opgetreden bij het toevoegen van afdeling ${data.name}.`,
+        );
+      }
+
+      console.error(`Error adding department ${data.name}:`, error);
+    }
     setIsLoading(false);
   }
 

@@ -17,8 +17,10 @@ import { Input } from "~/components/ui/input";
 import {
   type CreateSponsorData,
   createSponsorSchema,
-} from "~/server/schemas/create-sponsor-schema";
+} from "~/server/schemas/sponsor-schemas";
 import { addSponsorAndRevalidate as createSponsorAndRevalidate } from "./actions";
+import { toast } from "sonner";
+import { AuthenticationError, AuthorizationError } from "~/utils/errors";
 
 export default function AddSponsorForm() {
   const form = useForm<CreateSponsorData>({
@@ -27,7 +29,22 @@ export default function AddSponsorForm() {
   });
 
   const onSubmit = form.handleSubmit(async (data) => {
-    await createSponsorAndRevalidate(data);
+    try {
+      await createSponsorAndRevalidate(data);
+      toast.success(`Sponsor ${data.companyName} succesvol toegevoegd!`);
+    } catch (error) {
+      if (error instanceof AuthenticationError) {
+        toast.error("Je bent niet ingelogd.");
+      } else if (error instanceof AuthorizationError) {
+        toast.error("Je hebt geen toestemming om een sponsor toe te voegen.");
+      } else {
+        toast.error(
+          `Er is een fout opgetreden bij het toevoegen van sponsor ${data.companyName}.`,
+        );
+      }
+
+      console.error(`Error adding sponsor ${data.companyName}:`, error);
+    }
   });
 
   return (

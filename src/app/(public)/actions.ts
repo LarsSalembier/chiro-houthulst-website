@@ -1,34 +1,21 @@
 "use server";
 
-import { type CreateSponsorData } from "../../server/schemas/create-sponsor-schema";
-import { toast } from "sonner";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import { type CreateSponsorData } from "../../server/schemas/sponsor-schemas";
 import { revalidatePath } from "next/cache";
 import { createSponsor } from "~/server/queries/sponsor-queries";
 
 /**
- * Add a sponsor to the database and revalidate the homepage. Also
- * shows a toast message on success or error.
+ * Add a sponsor to the database and revalidate the homepage.
  *
  * @param data The data of the sponsor to add.
+ *
+ * @throws An AuthenticationError if the user is not authenticated.
+ * @throws An AuthorizationError if the user is not leiding.
+ * @throws A ZodError if the sponsor data is invalid.
+ * @throws If the sponsor could not be added.
  */
 export async function addSponsorAndRevalidate(data: CreateSponsorData) {
-  try {
-    await createSponsor(data);
-    toast.success(`Sponsor ${data.companyName} succesvol toegevoegd!`);
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      toast.error("Je bent niet ingelogd.");
-    } else if (error instanceof AuthorizationError) {
-      toast.error("Je hebt geen toestemming om een sponsor toe te voegen.");
-    } else {
-      toast.error(
-        `Er is een fout opgetreden bij het toevoegen van sponsor ${data.companyName}.`,
-      );
-    }
-
-    console.error(`Error adding sponsor ${data.companyName}:`, error);
-  }
+  await createSponsor(data);
 
   revalidatePath("/");
 }

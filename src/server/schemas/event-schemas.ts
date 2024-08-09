@@ -47,3 +47,7 @@ export const createEventSchema = z.object({
 });
 
 export type CreateEventData = z.infer<typeof createEventSchema>;
+
+export const updateEventSchema = createEventSchema;
+
+export type UpdateEventData = CreateEventData;
