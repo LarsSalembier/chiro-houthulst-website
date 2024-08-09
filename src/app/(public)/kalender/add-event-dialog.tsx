@@ -52,11 +52,13 @@ import { AuthenticationError, AuthorizationError } from "~/utils/errors";
 interface AddEventDialogProps {
   startDate: Date;
   lastAddedEvent?: Event;
+  className?: string;
 }
 
 export default function AddEventDialog({
   startDate,
   lastAddedEvent,
+  className,
 }: AddEventDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -119,7 +121,7 @@ export default function AddEventDialog({
         <Button
           size="icon"
           variant="outline"
-          className="z-100 h-6 w-6 self-end lg:h-8 lg:w-8"
+          className={cn("z-100 h-6 w-6 self-end lg:h-8 lg:w-8", className)}
         >
           <PlusIcon className="h-3 w-3 text-foreground lg:h-4 lg:w-4" />
         </Button>
@@ -131,201 +133,198 @@ export default function AddEventDialog({
             Vul onderstaand formulier in om een evenement toe te voegen aan de
             kalender.
           </DialogDescription>
-          <div>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Naam evenement</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="text" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Beschrijving</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} rows={3} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel className="text-left">
-                        Startdatum en -tijd
-                      </FormLabel>
-                      <Popover>
-                        <FormControl>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-[280px] justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground",
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? (
-                                format(field.value, "PPP HH:mm", {
-                                  locale: nlBE,
-                                })
-                              ) : (
-                                <span>Kies een startdatum</span>
-                              )}
-                            </Button>
-                          </PopoverTrigger>
-                        </FormControl>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                          <div className="border-t border-border p-3">
-                            <TimePicker
-                              setDate={field.onChange}
-                              date={field.value}
-                            />
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="endDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel className="text-left">
-                        Einddatum en -tijd
-                      </FormLabel>
-                      <Popover>
-                        <FormControl>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-[280px] justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground",
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? (
-                                format(field.value, "PPP HH:mm", {
-                                  locale: nlBE,
-                                })
-                              ) : (
-                                <span>Kies een einddatum</span>
-                              )}
-                            </Button>
-                          </PopoverTrigger>
-                        </FormControl>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                          <div className="border-t border-border p-3">
-                            <TimePicker
-                              setDate={field.onChange}
-                              date={field.value}
-                            />
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Locatie</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="text" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="facebookEventUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Link Facebook-evenement</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="text" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="eventType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Soort evenement</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecteer een soort evenement" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="chiro">
-                            Gewone Chirozondag
-                          </SelectItem>
-                          <SelectItem value="special_chiro">
-                            Evenement voor leden / speciale Chirozondag
-                          </SelectItem>
-                          <SelectItem value="event">
-                            Openbaar evenement
-                          </SelectItem>
-                          <SelectItem value="camp">
-                            Chirokamp (en camion etc.)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )}
-                />
-                <div className="flex justify-end space-x-4">
-                  <Button variant="outline">Annuleren</Button>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Opslaan..." : "Evenement toevoegen"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </div>
         </DialogHeader>
+        <div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Naam evenement</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="text" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Beschrijving</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} rows={3} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="startDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className="text-left">
+                      Startdatum en -tijd
+                    </FormLabel>
+                    <Popover>
+                      <FormControl>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-[280px] justify-start text-left font-normal",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {field.value ? (
+                              format(field.value, "PPP HH:mm", {
+                                locale: nlBE,
+                              })
+                            ) : (
+                              <span>Kies een startdatum</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                      </FormControl>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                        <div className="border-t border-border p-3">
+                          <TimePicker
+                            setDate={field.onChange}
+                            date={field.value}
+                          />
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="endDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className="text-left">
+                      Einddatum en -tijd
+                    </FormLabel>
+                    <Popover>
+                      <FormControl>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-[280px] justify-start text-left font-normal",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {field.value ? (
+                              format(field.value, "PPP HH:mm", {
+                                locale: nlBE,
+                              })
+                            ) : (
+                              <span>Kies een einddatum</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                      </FormControl>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                        <div className="border-t border-border p-3">
+                          <TimePicker
+                            setDate={field.onChange}
+                            date={field.value}
+                          />
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Locatie</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="text" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="facebookEventUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Link Facebook-evenement</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="text" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="eventType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Soort evenement</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecteer een soort evenement" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="chiro">
+                          Gewone Chirozondag
+                        </SelectItem>
+                        <SelectItem value="special_chiro">
+                          Evenement voor leden / speciale Chirozondag
+                        </SelectItem>
+                        <SelectItem value="event">
+                          Openbaar evenement
+                        </SelectItem>
+                        <SelectItem value="camp">
+                          Chirokamp (en camion etc.)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-end space-x-4">
+                <Button variant="outline">Annuleren</Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "Opslaan..." : "Evenement toevoegen"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   );

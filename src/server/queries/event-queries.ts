@@ -9,7 +9,7 @@ import { AuthenticationError, AuthorizationError } from "~/utils/errors";
 import { db } from "../db";
 import { events } from "../db/schema";
 import { auth } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
+import { eq, gte } from "drizzle-orm";
 
 /**
  * Create a new event.
@@ -94,4 +94,19 @@ export async function deleteEvent(id: number) {
  */
 export async function getAllEvents() {
   return db.query.events.findMany();
+}
+
+/**
+ * Get n upcoming (or currently happening) events.
+ *
+ * @returns The n closest to today events that haven't ended yet.
+ */
+export async function getUpcomingEvents(amount: number) {
+  return db.query.events
+    .findMany({
+      where: gte(events.endDate, new Date()),
+      orderBy: events.startDate,
+      limit: amount,
+    })
+    .execute();
 }

@@ -10,17 +10,14 @@ import { nl } from "date-fns/locale";
 import DayEventDots from "./day-event-dots";
 import DayEventsList from "./day-events-list";
 import AddEventDialog from "../add-event-dialog";
-import React, { useState } from "react";
+import React from "react";
 import { type Event } from "~/server/db/schema";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
-import { deleteEventAndRevalidate } from "../actions";
 import { Header4 } from "~/components/typography/headers";
 import { MutedText, Paragraph } from "~/components/typography/text";
-import { TrashIcon } from "lucide-react";
 import UpdateEventDialog from "../update-event-dialog";
-import { toast } from "sonner";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import DeleteEventDialog from "../delete-event-dialog";
 
 interface DayCellContentProps {
   day: Date;
@@ -35,32 +32,7 @@ export default function DayCellContent({
   userCanEdit,
   lastAddedEvent,
 }: DayCellContentProps) {
-  const [isLoading, setIsLoading] = useState(false);
-
   const hasEvents = events.length > 0;
-
-  async function handleDeleteEvent(eventId: number) {
-    setIsLoading(true);
-    try {
-      await deleteEventAndRevalidate(eventId);
-      toast.success("Evenement succesvol verwijderd van de kalender.");
-    } catch (error) {
-      if (error instanceof AuthenticationError) {
-        toast.error("Je bent niet ingelogd.");
-      } else if (error instanceof AuthorizationError) {
-        toast.error(
-          "Je hebt geen toestemming om een evenement te verwijderen.",
-        );
-      } else {
-        toast.error(
-          "Er is een fout opgetreden bij het verwijderen van het evenement.",
-        );
-      }
-
-      console.error(`Error deleting event with id ${eventId}:`, error);
-    }
-    setIsLoading(false);
-  }
 
   return (
     <>
@@ -126,16 +98,7 @@ export default function DayCellContent({
                       )}
                       {userCanEdit && (
                         <>
-                          <Button
-                            size="icon"
-                            type="submit"
-                            variant="destructive"
-                            onClick={() => handleDeleteEvent(event.id)}
-                            disabled={isLoading}
-                            className="h-8 w-8"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </Button>
+                          <DeleteEventDialog event={event} />
                           <UpdateEventDialog event={event} />
                         </>
                       )}

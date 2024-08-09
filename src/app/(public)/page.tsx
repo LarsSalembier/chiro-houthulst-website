@@ -15,12 +15,7 @@ import {
   HeroSectionTitle,
 } from "~/app/(public)/hero-section";
 import mainImage from "~/../public/kampgroepsfoto.png";
-import {
-  Section,
-  SectionContent,
-  SectionFooter,
-  SectionTitle,
-} from "~/components/section";
+import { Section, SectionContent, SectionTitle } from "~/components/section";
 import {
   Subsection,
   SubsectionContent,
@@ -31,39 +26,13 @@ import { SignedIn } from "@clerk/nextjs";
 import { Suspense } from "react";
 import SponsorRow from "./sponsor-row";
 import Link from "next/link";
-import EventCard from "./event-card";
 import NewsCard from "./news-card";
 import AgeGroupCard from "./age-group-card";
 import AddSponsorButton from "~/app/(public)/add-sponsor-button";
 import { Paragraph } from "~/components/typography/text";
 import { isLeiding } from "~/utils/auth";
-
-const upcomingEvents = [
-  {
-    key: "1",
-    title: "Chiro",
-    startDate: new Date("2024-06-09T14:00:00"),
-    endDate: new Date("2024-06-09T17:00:00"),
-    description:
-      "Er is zondag weer chiro! Voor de keti's en aspi's zoals gebruikelijk tot 18u.",
-  },
-  {
-    key: "2",
-    title: "Chiro",
-    startDate: new Date("2024-06-16T14:00:00"),
-    endDate: new Date("2024-06-16T17:00:00"),
-    description:
-      "Er is zondag weer chiro! Voor de keti's en aspi's zoals gebruikelijk tot 18u.",
-  },
-  {
-    key: "3",
-    title: "Chiro",
-    startDate: new Date("2024-06-23T14:00:00"),
-    endDate: new Date("2024-06-23T17:00:00"),
-    description:
-      "Er is zondag weer chiro! Voor de keti's en aspi's zoals gebruikelijk tot 18u.",
-  },
-];
+import UpcomingEvents from "./upcoming-events";
+import LoadingUpcomingEvents from "~/components/loading/loading-upcoming-events";
 
 const recentNews = [
   {
@@ -246,21 +215,9 @@ export default function HomePage() {
         </SectionContent>
       </Section>
 
-      <Section id="aankomende-activiteiten">
-        <SectionTitle>Aankomende activiteiten</SectionTitle>
-        <SectionContent>
-          <Grid>
-            {upcomingEvents.map((event) => (
-              <EventCard {...event} key={event.key} />
-            ))}
-          </Grid>
-        </SectionContent>
-        <SectionFooter>
-          <Button asChild className="w-fit">
-            <Link href="/kalender">Bekijk de volledige kalender</Link>
-          </Button>
-        </SectionFooter>
-      </Section>
+      <Suspense fallback={<LoadingUpcomingEvents />}>
+        <UpcomingEvents />
+      </Suspense>
 
       <Section id="nieuws-updates">
         <SectionTitle>Nieuws en Updates</SectionTitle>

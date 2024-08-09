@@ -9,14 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { type Event } from "~/server/db/schema";
+import { isLeiding } from "~/utils/auth";
+import UpdateEventDialog from "./kalender/update-event-dialog";
+import DeleteEventDialog from "./kalender/delete-event-dialog";
 
 interface EventCardProps {
-  title: string;
-  startDate: Date;
-  endDate: Date;
-  description: string;
-  link?: string;
-  linkText?: string;
+  event: Event;
 }
 
 const dateOptions = {
@@ -31,27 +30,20 @@ const timeOptions = {
   minute: "numeric",
 } as const;
 
-export default function EventCard({
-  title,
-  startDate,
-  endDate,
-  description,
-  link,
-  linkText,
-}: EventCardProps) {
+export default function EventCard({ event }: EventCardProps) {
   let dateTimeString = "";
-  if (startDate.toDateString() === endDate.toDateString()) {
+  if (event.startDate.toDateString() === event.startDate.toDateString()) {
     // Same day event
-    dateTimeString = `${startDate.toLocaleDateString(undefined, dateOptions)} van ${startDate.toLocaleTimeString(
+    dateTimeString = `${event.startDate.toLocaleDateString(undefined, dateOptions)} van ${event.startDate.toLocaleTimeString(
       undefined,
       timeOptions,
-    )} tot ${endDate.toLocaleTimeString(undefined, timeOptions)}`;
+    )} tot ${event.endDate.toLocaleTimeString(undefined, timeOptions)}`;
   } else {
     // Multi-day event
-    dateTimeString = `Van ${startDate.toLocaleDateString(undefined, dateOptions)} ${startDate.toLocaleTimeString(
+    dateTimeString = `Van ${event.startDate.toLocaleDateString(undefined, dateOptions)} ${event.startDate.toLocaleTimeString(
       undefined,
       timeOptions,
-    )} tot ${endDate.toLocaleDateString(undefined, dateOptions)} ${endDate.toLocaleTimeString(
+    )} tot ${event.endDate.toLocaleDateString(undefined, dateOptions)} ${event.endDate.toLocaleTimeString(
       undefined,
       timeOptions,
     )}`;
@@ -60,19 +52,35 @@ export default function EventCard({
   return (
     <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle>{event.title}</CardTitle>
         <CardDescription>
-          <time dateTime={startDate.toISOString()}>{dateTimeString}</time>
+          <time dateTime={event.startDate.toISOString()}>{dateTimeString}</time>
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow">{description}</CardContent>
-      {link && (
-        <CardFooter>
+      <CardContent className="flex-grow">
+        {event.description}
+        {event.location ? (
+          <>
+            <br />
+            Locatie: {event.location}
+          </>
+        ) : (
+          <></>
+        )}
+      </CardContent>
+      <CardFooter className="flex gap-2">
+        {event.facebookEventUrl && (
           <Button asChild variant="secondary">
-            <Link href={link}>{linkText ?? "Lees meer"}</Link>
+            <Link href={event.facebookEventUrl}>Facebook-evenement</Link>
           </Button>
-        </CardFooter>
-      )}
+        )}
+        {isLeiding() && (
+          <>
+            <DeleteEventDialog event={event} />
+            <UpdateEventDialog event={event} />
+          </>
+        )}
+      </CardFooter>
     </Card>
   );
 }
