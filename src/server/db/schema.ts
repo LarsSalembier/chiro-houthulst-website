@@ -67,11 +67,21 @@ export const events = createTable("events", {
 
 export type Event = typeof events.$inferSelect;
 
+export const workYears = createTable("work_years", {
+  id: serial("id").primaryKey(),
+  startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+  endDate: timestamp("end_date", { withTimezone: true }).notNull(),
+  canRegister: boolean("can_register").default(false).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
 export const departments = createTable("departments", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   color: varchar("color", { length: 255 }),
-  mascotImageUrl: varchar("mascot_image_url", { length: 255 }),
   description: text("description"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
@@ -99,12 +109,64 @@ export const members = createTable("members", {
   updatedBy: varchar("updated_by", { length: 255 }),
 });
 
-export const membersRelations = relations(members, ({ one }) => ({
-  department: one(departments, {
-    fields: [members.departmentId],
-    references: [departments.id],
+export const enrollments = createTable("enrollments", {
+  id: serial("id").primaryKey(),
+  memberId: integer("member_id")
+    .notNull()
+    .references(() => members.id),
+  workYearId: integer("work_year_id")
+    .notNull()
+    .references(() => workYears.id),
+  enrollmentStatus: varchar("enrollment_status", { length: 255 }).notNull(), // Bijv. "ACTIVE", "INACTIVE", "PENDING"
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+  createdBy: varchar("created_by", { length: 255 }),
+  updatedBy: varchar("updated_by", { length: 255 }),
+});
+
+export const memberDepartments = createTable(
+  "member_departments",
+  {
+    memberId: integer("member_id")
+      .notNull()
+      .references(() => members.id),
+    departmentId: integer("department_id")
+      .notNull()
+      .references(() => departments.id),
+    workYearId: integer("work_year_id")
+      .notNull()
+      .references(() => workYears.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }),
+    createdBy: varchar("created_by", { length: 255 }),
+    updatedBy: varchar("updated_by", { length: 255 }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.memberId, t.departmentId, t.workYearId] }),
   }),
-}));
+);
+
+export const memberDepartmentsRelations = relations(
+  memberDepartments,
+  ({ one }) => ({
+    member: one(members, {
+      fields: [memberDepartments.memberId],
+      references: [members.id],
+    }),
+    workYear: one(workYears, {
+      fields: [memberDepartments.workYearId],
+      references: [workYears.id],
+    }),
+    department: one(departments, {
+      fields: [memberDepartments.departmentId],
+      references: [departments.id],
+    }),
+  }),
+);
 
 export const parents = createTable("parents", {
   id: serial("id").primaryKey(),
@@ -130,9 +192,12 @@ export const membersParents = createTable(
     parentId: integer("parent_id")
       .notNull()
       .references(() => parents.id),
+    workYearId: integer("work_year_id")
+      .notNull()
+      .references(() => workYears.id),
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.memberId, t.parentId] }),
+    pk: primaryKey({ columns: [t.memberId, t.parentId, t.workYearId] }),
   }),
 );
 
@@ -144,6 +209,10 @@ export const membersParentsRelations = relations(membersParents, ({ one }) => ({
   parent: one(parents, {
     fields: [membersParents.parentId],
     references: [parents.id],
+  }),
+  workYear: one(workYears, {
+    fields: [membersParents.workYearId],
+    references: [workYears.id],
   }),
 }));
 
@@ -190,6 +259,9 @@ export const medicalInformation = createTable("medical_information", {
   memberId: integer("member_id")
     .notNull()
     .references(() => members.id),
+  workYearId: integer("work_year_id")
+    .notNull()
+    .references(() => workYears.id),
   generalPractitionerId: integer("general_practitioner_id").references(
     () => generalPractitioners.id,
   ),
@@ -242,6 +314,10 @@ export const medicalInformationRelations = relations(
     member: one(members, {
       fields: [medicalInformation.memberId],
       references: [members.id],
+    }),
+    workYear: one(workYears, {
+      fields: [medicalInformation.workYearId],
+      references: [workYears.id],
     }),
     generalPractitioner: one(generalPractitioners, {
       fields: [medicalInformation.generalPractitionerId],
