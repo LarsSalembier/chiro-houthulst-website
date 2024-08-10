@@ -1,6 +1,6 @@
-import Calendar from "~/app/(public)/kalender/calendar/calendar";
+import Calendar from "./_calendar/calendar";
 import { getAllEvents } from "~/server/queries/event-queries";
-import { isLeiding } from "~/utils/auth";
+import { isLeiding } from "~/lib/auth";
 
 export default async function CalendarWithData() {
   const eventsFromDatabase = await getAllEvents();

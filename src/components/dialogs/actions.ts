@@ -3,7 +3,7 @@
 import {
   type UpdateEventData,
   type CreateEventData,
-} from "../../../server/schemas/event-schemas";
+} from "~/server/schemas/event-schemas";
 import { revalidatePath } from "next/cache";
 import {
   createEvent,

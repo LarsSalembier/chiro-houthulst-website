@@ -1,7 +1,7 @@
 import "~/styles/globals.css";
 
-import { Footer } from "../../components/footer/footer";
-import { SiteHeader } from "~/components/header/site-header";
+import { Footer } from "./_footer/footer";
+import { SiteHeader } from "./_header/site-header";
 
 interface AppLayoutProps {
   children: React.ReactNode;

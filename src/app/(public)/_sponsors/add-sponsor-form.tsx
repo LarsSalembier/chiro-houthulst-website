@@ -18,9 +18,9 @@ import {
   type CreateSponsorData,
   createSponsorSchema,
 } from "~/server/schemas/sponsor-schemas";
-import { addSponsorAndRevalidate as createSponsorAndRevalidate } from "./actions";
+import { addSponsorAndRevalidate as createSponsorAndRevalidate } from "../actions";
 import { toast } from "sonner";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import { AuthenticationError, AuthorizationError } from "~/lib/errors";
 
 export default function AddSponsorForm() {
   const form = useForm<CreateSponsorData>({

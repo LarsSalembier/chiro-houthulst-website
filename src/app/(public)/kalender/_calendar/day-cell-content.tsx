@@ -9,15 +9,15 @@ import { format, isSameDay } from "date-fns";
 import { nl } from "date-fns/locale";
 import DayEventDots from "./day-event-dots";
 import DayEventsList from "./day-events-list";
-import AddEventDialog from "../add-event-dialog";
+import AddEventDialog from "~/components/dialogs/add-event-dialog";
 import React from "react";
 import { type Event } from "~/server/db/schema";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { Header4 } from "~/components/typography/headers";
 import { MutedText, Paragraph } from "~/components/typography/text";
-import UpdateEventDialog from "../update-event-dialog";
-import DeleteEventDialog from "../delete-event-dialog";
+import UpdateEventDialog from "~/components/dialogs/update-event-dialog";
+import DeleteEventDialog from "~/components/dialogs/delete-event-dialog";
 
 interface DayCellContentProps {
   day: Date;

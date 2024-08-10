@@ -1,7 +1,7 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { type Role } from "types/globals";
-import { isAdmin, isLoggedIn } from "~/utils/auth";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import { isAdmin, isLoggedIn } from "~/lib/auth";
+import { AuthenticationError, AuthorizationError } from "~/lib/errors";
 
 /**
  * Deletes a user.

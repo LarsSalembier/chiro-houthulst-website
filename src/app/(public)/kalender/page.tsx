@@ -8,7 +8,7 @@ import {
   PageActions,
 } from "~/components/page-header";
 import { Suspense } from "react";
-import LoadingCalendar from "~/components/loading/loading-calendar";
+import LoadingCalendar from "./_calendar/loading-calendar";
 import CalendarWithData from "./calendar-with-data";
 
 export const metadata: Metadata = {

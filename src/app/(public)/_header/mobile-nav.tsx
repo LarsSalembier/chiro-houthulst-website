@@ -9,9 +9,9 @@ import { cn } from "~/lib/utils";
 import { Icons } from "~/components/icons";
 import { navigationConfig } from "~/config/navigation";
 import { format } from "url";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
-import { Button } from "../ui/button";
-import { ScrollArea } from "../ui/scroll-area";
+import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
+import { Button } from "~/components/ui/button";
+import { ScrollArea } from "~/components/ui/scroll-area";
 
 export function MobileNav() {
   const [open, setOpen] = React.useState(false);

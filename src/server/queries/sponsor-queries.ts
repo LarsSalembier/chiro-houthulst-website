@@ -1,9 +1,9 @@
-import { isLeiding, isLoggedIn } from "~/utils/auth";
+import { isLeiding, isLoggedIn } from "~/lib/auth";
 import {
   type CreateSponsorData,
   createSponsorSchema,
 } from "../schemas/sponsor-schemas";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import { AuthenticationError, AuthorizationError } from "~/lib/errors";
 import { db } from "../db";
 import { sponsors } from "../db/schema";
 import { and, between, eq, gt, isNotNull, lt } from "drizzle-orm";

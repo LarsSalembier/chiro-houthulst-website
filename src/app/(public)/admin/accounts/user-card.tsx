@@ -16,7 +16,7 @@ import { type Role } from "types/globals";
 import { Badge } from "~/components/ui/badge";
 import { deleteUserAndRevalidate, setRoleAndRevalidate } from "./actions";
 import { toast } from "sonner";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import { AuthenticationError, AuthorizationError } from "~/lib/errors";
 
 interface UserCardProps {
   id: string;

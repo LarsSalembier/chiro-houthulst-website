@@ -10,9 +10,9 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { type Event } from "~/server/db/schema";
-import { isLeiding } from "~/utils/auth";
-import UpdateEventDialog from "./kalender/update-event-dialog";
-import DeleteEventDialog from "./kalender/delete-event-dialog";
+import { isLeiding } from "~/lib/auth";
+import UpdateEventDialog from "../../../components/dialogs/update-event-dialog";
+import DeleteEventDialog from "../../../components/dialogs/delete-event-dialog";
 import { format, isSameDay } from "date-fns";
 import { nlBE } from "date-fns/locale";
 

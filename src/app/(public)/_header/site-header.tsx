@@ -6,7 +6,7 @@ import { Icons } from "~/components/icons";
 import { MainNav } from "./main-nav";
 import { MobileNav } from "./mobile-nav";
 import { ModeToggle } from "./mode-toggle";
-import { Button } from "../ui/button";
+import { Button } from "~/components/ui/button";
 import { SignedIn, UserButton } from "@clerk/nextjs";
 
 export function SiteHeader() {

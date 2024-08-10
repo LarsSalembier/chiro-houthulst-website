@@ -1,11 +1,11 @@
-import { isLeiding, isLoggedIn } from "~/utils/auth";
+import { isLeiding, isLoggedIn } from "~/lib/auth";
 import {
   createEventSchema,
   type UpdateEventData,
   type CreateEventData,
   updateEventSchema,
 } from "../schemas/event-schemas";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import { AuthenticationError, AuthorizationError } from "~/lib/errors";
 import { db } from "../db";
 import { events } from "../db/schema";
 import { auth } from "@clerk/nextjs/server";

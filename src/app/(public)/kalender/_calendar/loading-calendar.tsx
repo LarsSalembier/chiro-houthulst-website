@@ -15,7 +15,7 @@ import { nlBE } from "date-fns/locale";
 
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "~/components/ui/skeleton";
 
 function DayEventsList({ eventCount }: { eventCount: number }) {
   return (

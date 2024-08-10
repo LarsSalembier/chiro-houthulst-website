@@ -29,7 +29,7 @@ import {
   createDepartmentSchema,
 } from "~/server/schemas/department-schemas";
 import { toast } from "sonner";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import { AuthenticationError, AuthorizationError } from "~/lib/errors";
 
 export default function AddDepartmentDialog() {
   const [isLoading, setIsLoading] = useState(false);

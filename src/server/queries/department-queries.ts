@@ -1,5 +1,5 @@
-import { isLeiding, isLoggedIn } from "~/utils/auth";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import { isLeiding, isLoggedIn } from "~/lib/auth";
+import { AuthenticationError, AuthorizationError } from "~/lib/errors";
 import {
   type CreateDepartmentData,
   createDepartmentSchema,

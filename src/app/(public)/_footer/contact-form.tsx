@@ -15,7 +15,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { toast } from "sonner";
-import { sendEmailFromContactForm } from "~/utils/send-email";
+import { sendEmailFromContactForm } from "~/lib/send-email";
 
 const formSchema = z.object({
   name: z

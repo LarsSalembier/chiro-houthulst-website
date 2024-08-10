@@ -1,12 +1,12 @@
-import { Grid } from "../grid";
+import { Grid } from "~/components/grid";
 import {
   Section,
   SectionContent,
   SectionFooter,
   SectionTitle,
-} from "../section";
+} from "~/components/section";
 import LoadingEventCard from "./loading-event-card";
-import { Button } from "../ui/button";
+import { Button } from "~/components/ui/button";
 import Link from "next/link";
 
 export default function LoadingUpcomingEvents() {

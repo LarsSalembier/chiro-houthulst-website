@@ -15,7 +15,7 @@ import {
 } from "~/components/section";
 import { Grid } from "~/components/grid";
 import { type Metadata } from "next";
-import { isLeiding } from "~/utils/auth";
+import { isLeiding } from "~/lib/auth";
 import { getAllDepartments } from "~/server/queries/department-queries";
 
 export const metadata: Metadata = {

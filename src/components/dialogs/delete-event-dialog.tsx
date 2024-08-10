@@ -17,7 +17,7 @@ import { nlBE } from "date-fns/locale";
 import { type Event } from "~/server/db/schema";
 import { deleteEventAndRevalidate } from "./actions";
 import { toast } from "sonner";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import { AuthenticationError, AuthorizationError } from "~/lib/errors";
 
 interface DeleteEventDialogProps {
   event: Event;

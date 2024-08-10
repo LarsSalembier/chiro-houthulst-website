@@ -7,7 +7,7 @@ import {
 } from "~/components/page-header";
 import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/nextjs";
 import { type Metadata } from "next";
-import { isAdmin } from "~/utils/auth";
+import { isAdmin } from "~/lib/auth";
 import { type Role } from "types/globals";
 import { getUsersByQuery } from "~/server/queries/user-queries";
 

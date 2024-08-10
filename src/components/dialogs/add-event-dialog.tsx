@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { CalendarIcon, EditIcon } from "lucide-react";
+import { CalendarIcon, PlusIcon } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -28,9 +28,9 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { cn } from "~/lib/utils";
-import { format } from "date-fns";
+import { format, getHours, set } from "date-fns";
 import { Calendar } from "~/components/ui/calendar";
-import TimePicker from "~/components/ui/date-time-picker/time-picker";
+import TimePicker from "~/components/date-time-picker/time-picker";
 import {
   Select,
   SelectContent,
@@ -41,57 +41,76 @@ import {
 import { useState } from "react";
 import { nlBE } from "date-fns/locale";
 import { type Event } from "~/server/db/schema";
-import { updateEventAndRevalidate } from "./actions";
+import { createEventAndRevalidate } from "./actions";
 import {
-  type UpdateEventData,
-  updateEventSchema,
+  createEventSchema,
+  type CreateEventData,
 } from "~/server/schemas/event-schemas";
 import { toast } from "sonner";
-import { AuthenticationError, AuthorizationError } from "~/utils/errors";
+import { AuthenticationError, AuthorizationError } from "~/lib/errors";
 
-interface UpdateEventDialogProps {
-  event: Event;
+interface AddEventDialogProps {
+  startDate: Date;
+  lastAddedEvent?: Event;
+  className?: string;
 }
 
-export default function UpdateEventDialog({ event }: UpdateEventDialogProps) {
+export default function AddEventDialog({
+  startDate,
+  lastAddedEvent,
+  className,
+}: AddEventDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<UpdateEventData>({
-    resolver: zodResolver(updateEventSchema),
+  const defaultStartDate = set(startDate, {
+    hours: getHours(lastAddedEvent?.startDate ?? startDate),
+    minutes: lastAddedEvent?.startDate.getMinutes() ?? 0,
+  });
+
+  const defaultEndDate = set(startDate, {
+    hours: getHours(lastAddedEvent?.endDate ?? startDate),
+    minutes: lastAddedEvent?.endDate.getMinutes() ?? 0,
+  });
+
+  const form = useForm<CreateEventData>({
+    resolver: zodResolver(createEventSchema),
     defaultValues: {
-      title: event.title,
-      description: event.description ?? "",
-      startDate: event.startDate,
-      endDate: event.endDate,
-      location: event.location ?? "",
-      facebookEventUrl: event.facebookEventUrl ?? "",
-      eventType: event.eventType,
+      title: lastAddedEvent?.title ?? "",
+      description: lastAddedEvent?.description ?? "",
+      startDate: defaultStartDate,
+      endDate: defaultEndDate,
+      location:
+        lastAddedEvent?.location ?? "Chiroheem - Jonkershovestraat 101s",
+      facebookEventUrl: lastAddedEvent?.facebookEventUrl ?? "",
+      eventType: lastAddedEvent?.eventType ?? "chiro",
     },
   });
 
-  async function onSubmit(values: UpdateEventData) {
+  async function onSubmit(values: CreateEventData) {
     setIsLoading(true);
     try {
-      await updateEventAndRevalidate(event.id, values);
+      await createEventAndRevalidate(values);
       toast.success(
         `${values.title} (${format(values.startDate, "PPP HH:mm", {
           locale: nlBE,
-        })}) succesvol aangepast.`,
+        })}) succesvol toegevoegd aan de kalender.`,
       );
     } catch (error) {
       if (error instanceof AuthenticationError) {
         toast.error("Je bent niet ingelogd.");
       } else if (error instanceof AuthorizationError) {
-        toast.error("Je hebt geen toestemming om een evenement aan te passen.");
+        toast.error("Je hebt geen toestemming om een evenement toe te voegen.");
       } else {
         toast.error(
-          `Er is een fout opgetreden bij het aanpassen van ${values.title} (${format(
+          `Er is een fout opgetreden bij het toevoegen van ${values.title} (${format(
             values.startDate,
             "PPP HH:mm",
             { locale: nlBE },
-          )}).`,
+          )}) aan de kalender.`,
         );
       }
+
+      console.error(`Error adding event ${values.title}:`, error);
     }
     setIsLoading(false);
   }
@@ -99,15 +118,20 @@ export default function UpdateEventDialog({ event }: UpdateEventDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="icon" type="submit" variant="secondary">
-          <EditIcon className="h-4 w-4" />
+        <Button
+          size="icon"
+          variant="outline"
+          className={cn("z-100 h-6 w-6 self-end lg:h-8 lg:w-8", className)}
+        >
+          <PlusIcon className="h-3 w-3 text-foreground lg:h-4 lg:w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Bewerk {event.title}</DialogTitle>
+          <DialogTitle>Voeg een evenement toe</DialogTitle>
           <DialogDescription>
-            Vul onderstaand formulier in om het evenement aan te passen.
+            Vul onderstaand formulier in om een evenement toe te voegen aan de
+            kalender.
           </DialogDescription>
         </DialogHeader>
         <div>
@@ -295,7 +319,7 @@ export default function UpdateEventDialog({ event }: UpdateEventDialogProps) {
               <div className="flex justify-end space-x-4">
                 <Button variant="outline">Annuleren</Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Opslaan..." : "Wijzigingen opslaan"}
+                  {isLoading ? "Opslaan..." : "Evenement toevoegen"}
                 </Button>
               </div>
             </form>

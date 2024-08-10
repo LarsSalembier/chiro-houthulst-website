@@ -7,8 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Skeleton } from "../ui/skeleton";
-import { LoadingButton } from "./loading-button";
+import { Skeleton } from "~/components/ui/skeleton";
+import { LoadingButton } from "~/components/loading/loading-button";
 
 export default function LoadingEventCard() {
   return (

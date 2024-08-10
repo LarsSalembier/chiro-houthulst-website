@@ -7,10 +7,10 @@ import {
   SectionFooter,
   SectionTitle,
 } from "~/components/section";
-import AddEventDialog from "./kalender/add-event-dialog";
+import AddEventDialog from "~/components/dialogs/add-event-dialog";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
-import { isLeiding } from "~/utils/auth";
+import { isLeiding } from "~/lib/auth";
 
 export default async function UpcomingEvents() {
   const upcomingEvents = await getUpcomingEvents(3);

@@ -7,13 +7,13 @@ import titosImage from "~/../public/groepen/titos.png";
 import kerelsImage from "~/../public/groepen/kerels.png";
 import tiptiensImage from "~/../public/groepen/tip10s.png";
 import aspisImage from "~/../public/groepen/aspis.png";
-import { Grid } from "../../components/grid";
+import { Grid } from "~/components/grid";
 import { FormattedLink } from "~/components/typography/links";
 import {
   HeroSection,
   HeroSectionDescription,
   HeroSectionTitle,
-} from "~/app/(public)/hero-section";
+} from "./hero-section";
 import mainImage from "~/../public/kampgroepsfoto.png";
 import { Section, SectionContent, SectionTitle } from "~/components/section";
 import {
@@ -24,15 +24,15 @@ import {
 } from "~/components/subsection";
 import { SignedIn } from "@clerk/nextjs";
 import { Suspense } from "react";
-import SponsorRow from "./sponsor-row";
+import SponsorRow from "./_sponsors/sponsor-row";
 import Link from "next/link";
 import NewsCard from "./news-card";
 import AgeGroupCard from "./age-group-card";
-import AddSponsorButton from "~/app/(public)/add-sponsor-button";
+import AddSponsorButton from "./_sponsors/add-sponsor-button";
 import { Paragraph } from "~/components/typography/text";
-import { isLeiding } from "~/utils/auth";
-import UpcomingEvents from "./upcoming-events";
-import LoadingUpcomingEvents from "~/components/loading/loading-upcoming-events";
+import { isLeiding } from "~/lib/auth";
+import UpcomingEvents from "./_upcoming-events/upcoming-events";
+import LoadingUpcomingEvents from "./_upcoming-events/loading-upcoming-events";
 
 const recentNews = [
   {

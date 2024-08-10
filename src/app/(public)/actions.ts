@@ -1,6 +1,6 @@
 "use server";
 
-import { type CreateSponsorData } from "../../server/schemas/sponsor-schemas";
+import { type CreateSponsorData } from "~/server/schemas/sponsor-schemas";
 import { revalidatePath } from "next/cache";
 import { createSponsor } from "~/server/queries/sponsor-queries";
 

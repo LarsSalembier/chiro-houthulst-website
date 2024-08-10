@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import { navigationConfig } from "~/config/navigation";
-import { Button } from "../ui/button";
+import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import {
   CommandDialog,
@@ -13,8 +13,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "../ui/command";
-import { Icons } from "../icons";
+} from "~/components/ui/command";
+import { Icons } from "~/components/icons";
 import { type DialogProps } from "@radix-ui/react-dialog";
 
 export function SearchMenu({ ...props }: DialogProps) {
