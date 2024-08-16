@@ -93,9 +93,6 @@ export const departments = createTable("departments", {
 
 export const members = createTable("members", {
   id: serial("id").primaryKey(),
-  departmentId: integer("department_id")
-    .notNull()
-    .references(() => departments.id),
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
   gender: varchar("gender", { length: 1 }).notNull(), // Use M/F/X
@@ -114,6 +111,9 @@ export const enrollments = createTable("enrollments", {
   memberId: integer("member_id")
     .notNull()
     .references(() => members.id),
+  departmentId: integer("department_id")
+    .notNull()
+    .references(() => departments.id),
   workYearId: integer("work_year_id")
     .notNull()
     .references(() => workYears.id),

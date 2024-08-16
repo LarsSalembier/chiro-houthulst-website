@@ -58,7 +58,7 @@ export default async function LeidingDashboardPage() {
           </PageHeaderDescription>
         </PageHeader>
         <Section>
-          <SectionTitle>Afdelingen</SectionTitle>
+          <SectionTitle>Inschrijvingen</SectionTitle>
           <SectionContent>
             <Grid>
               {departments.map((department) => (

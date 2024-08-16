@@ -31,6 +31,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
+import Logo from "~/components/icons/logo";
 export default function Dashboard() {
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -38,7 +39,7 @@ export default function Dashboard() {
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              <Package2 className="h-6 w-6" />
+              <Logo className="h-6 w-6" />
               <span className="">Chiro Houthulst</span>
             </Link>
             <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
