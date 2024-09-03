@@ -1,8 +1,8 @@
-import { type SidebarNavGroup, type MainNavItem } from "~/types/nav";
+import { type SidebarNavGroup, type MainNavigationItem } from "~/types/nav";
 
 export interface NavigationConfig {
-  mainNav: MainNavItem[];
-  sidebarNav: SidebarNavGroup[];
+  mainNav: MainNavigationItem[];
+  sidebarNavGroups: SidebarNavGroup[];
 }
 
 export const navigationConfig: NavigationConfig = {
@@ -28,7 +28,7 @@ export const navigationConfig: NavigationConfig = {
       href: "/#contacteer-ons",
     },
   ],
-  sidebarNav: [
+  sidebarNavGroups: [
     {
       title: "Algemeen",
       items: [

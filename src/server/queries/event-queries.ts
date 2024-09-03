@@ -61,9 +61,16 @@ export async function updateEvent(id: number, data: UpdateEventData) {
     throw new AuthorizationError();
   }
 
-  updateEventSchema.parse(data);
+  const fixedData = updateEventSchema.parse(data);
 
-  await db.update(events).set(data).where(eq(events.id, id)).execute();
+  const dataWithNulls = {
+    ...fixedData,
+    description: fixedData.description ?? null,
+    location: fixedData.location ?? null,
+    facebookEventUrl: fixedData.facebookEventUrl ?? null,
+  };
+
+  await db.update(events).set(dataWithNulls).where(eq(events.id, id)).execute();
 }
 
 /**

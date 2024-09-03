@@ -19,27 +19,6 @@ export const metadata: Metadata = {
 export default async function AdminDashboard(params: {
   searchParams: { search?: string };
 }) {
-  if (!isAdmin()) {
-    return (
-      <>
-        <SignedIn>
-          <div className="container relative flex flex-col gap-6 pb-8 md:pb-12 lg:pb-12">
-            <PageHeader>
-              <PageHeaderHeading>Adminportaal</PageHeaderHeading>
-              <PageHeaderDescription>
-                Je hebt geen toegang tot deze pagina. Wacht tot je account is
-                goedgekeurd als administrator.
-              </PageHeaderDescription>
-            </PageHeader>
-          </div>
-        </SignedIn>
-        <SignedOut>
-          <RedirectToSignIn />
-        </SignedOut>
-      </>
-    );
-  }
-
   const users = await getUsersByQuery(params.searchParams.search);
 
   return (
@@ -49,28 +28,35 @@ export default async function AdminDashboard(params: {
           <PageHeader>
             <PageHeaderHeading>Adminportaal</PageHeaderHeading>
             <PageHeaderDescription>
-              Hier kan je alle gebruikers vinden en beheren.
+              {isAdmin()
+                ? "Hier kan je alle gebruikers vinden en beheren."
+                : "Je hebt geen toegang tot deze pagina. Wacht tot je account is goedgekeurd als administrator."}
             </PageHeaderDescription>
           </PageHeader>
-          <UserSearchbar />
-          <div className="flex flex-col gap-4">
-            {users.map((user) => {
-              return (
-                <UserCard
-                  key={user.id}
-                  id={user.id}
-                  primaryEmail={user.primaryEmailAddress?.emailAddress}
-                  firstName={user.firstName ?? undefined}
-                  lastName={user.lastName ?? undefined}
-                  role={
-                    user?.publicMetadata?.role
-                      ? (user.publicMetadata.role as Role | undefined)
-                      : undefined
-                  }
-                />
-              );
-            })}
-          </div>
+
+          {isAdmin() && (
+            <>
+              <UserSearchbar />
+              <div className="flex flex-col gap-4">
+                {users.map((user) => {
+                  return (
+                    <UserCard
+                      key={user.id}
+                      id={user.id}
+                      primaryEmail={user.primaryEmailAddress?.emailAddress}
+                      firstName={user.firstName ?? undefined}
+                      lastName={user.lastName ?? undefined}
+                      role={
+                        user?.publicMetadata?.role
+                          ? (user.publicMetadata.role as Role | undefined)
+                          : undefined
+                      }
+                    />
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </SignedIn>
       <SignedOut>

@@ -1,6 +1,6 @@
 import { type Icons } from "~/components/icons";
 
-export interface MainNavItem {
+export interface MainNavigationItem {
   title: string;
   href: string;
 }

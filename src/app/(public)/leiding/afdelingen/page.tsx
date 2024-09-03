@@ -26,56 +26,38 @@ export const metadata: Metadata = {
 export default async function LeidingDashboardPage() {
   const departments = await getAllDepartments();
 
-  if (!isLeiding()) {
-    return (
-      <>
-        <SignedIn>
-          <div className="container relative flex flex-col gap-6 pb-8 md:pb-12 lg:pb-12">
-            <PageHeader>
-              <PageHeaderHeading>Leidingsportaal</PageHeaderHeading>
-              <PageHeaderDescription>
-                Je hebt geen toegang tot deze pagina. Wacht tot je account is
-                goedgekeurd.
-              </PageHeaderDescription>
-            </PageHeader>
-          </div>
-        </SignedIn>
-        <SignedOut>
-          <RedirectToSignIn />
-        </SignedOut>
-      </>
-    );
-  }
-
   return (
     <div className="container relative flex flex-col gap-6 pb-8 md:pb-12 lg:pb-12">
       <SignedIn>
         <PageHeader>
           <PageHeaderHeading>Leidingsportaal</PageHeaderHeading>
           <PageHeaderDescription>
-            Welkom op het leidingsportaal. Hier kan je alle informatie vinden
-            die je nodig hebt als leiding.
+            {isLeiding()
+              ? "Hier kan je alle afdelingen vinden en beheren."
+              : "Je hebt geen toegang tot deze pagina. Wacht tot je account is goedgekeurd als leiding."}
           </PageHeaderDescription>
         </PageHeader>
-        <Section>
-          <SectionTitle>Inschrijvingen</SectionTitle>
-          <SectionContent>
-            <Grid>
-              {departments.map((department) => (
-                <Card key={department.id}>
-                  <CardHeader>
-                    <CardTitle>{department.name}</CardTitle>
-                    <Paragraph>{department.description}</Paragraph>
-                  </CardHeader>
-                  <CardContent></CardContent>
-                </Card>
-              ))}
-            </Grid>
-          </SectionContent>
-          <SectionFooter>
-            <AddDepartmentDialog />
-          </SectionFooter>
-        </Section>
+        {isLeiding() && (
+          <Section>
+            <SectionTitle>Inschrijvingen</SectionTitle>
+            <SectionContent>
+              <Grid>
+                {departments.map((department) => (
+                  <Card key={department.id}>
+                    <CardHeader>
+                      <CardTitle>{department.name}</CardTitle>
+                      <Paragraph>{department.description}</Paragraph>
+                    </CardHeader>
+                    <CardContent></CardContent>
+                  </Card>
+                ))}
+              </Grid>
+            </SectionContent>
+            <SectionFooter>
+              <AddDepartmentDialog />
+            </SectionFooter>
+          </Section>
+        )}
       </SignedIn>
       <SignedOut>
         <RedirectToSignIn />

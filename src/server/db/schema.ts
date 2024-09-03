@@ -43,7 +43,7 @@ export const sponsors = createTable("sponsors", {
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
 
 export type Sponsor = typeof sponsors.$inferSelect;
@@ -61,16 +61,15 @@ export const events = createTable("events", {
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
-  createdBy: varchar("created_by", { length: 255 }).notNull(),
-  updatedBy: varchar("updated_by", { length: 255 }),
 });
 
 export type Event = typeof events.$inferSelect;
 
 export const workYears = createTable("work_years", {
   id: serial("id").primaryKey(),
-  startDate: timestamp("start_date", { withTimezone: true }).notNull(),
-  endDate: timestamp("end_date", { withTimezone: true }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
   canRegister: boolean("can_register").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
@@ -83,12 +82,12 @@ export const departments = createTable("departments", {
   name: varchar("name", { length: 255 }).notNull(),
   color: varchar("color", { length: 255 }),
   description: text("description"),
+  minSchoolGrade: varchar("min_school_grade", { length: 255 }),
+  maxSchoolGrade: varchar("max_school_grade", { length: 255 }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
-  createdBy: varchar("created_by", { length: 255 }).notNull(),
-  updatedBy: varchar("updated_by", { length: 255 }),
 });
 
 export const members = createTable("members", {
@@ -96,91 +95,25 @@ export const members = createTable("members", {
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
   gender: varchar("gender", { length: 1 }).notNull(), // Use M/F/X
-  dateOfBirth: timestamp("date_of_birth", { withTimezone: true }).notNull(),
+  dateOfBirth: timestamp("date_of_birth").notNull(),
   permissionPhotos: boolean("permission_photos").default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
-  createdBy: varchar("created_by", { length: 255 }),
-  updatedBy: varchar("updated_by", { length: 255 }),
 });
-
-export const enrollments = createTable("enrollments", {
-  id: serial("id").primaryKey(),
-  memberId: integer("member_id")
-    .notNull()
-    .references(() => members.id),
-  departmentId: integer("department_id")
-    .notNull()
-    .references(() => departments.id),
-  workYearId: integer("work_year_id")
-    .notNull()
-    .references(() => workYears.id),
-  enrollmentStatus: varchar("enrollment_status", { length: 255 }).notNull(), // Bijv. "ACTIVE", "INACTIVE", "PENDING"
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }),
-  createdBy: varchar("created_by", { length: 255 }),
-  updatedBy: varchar("updated_by", { length: 255 }),
-});
-
-export const memberDepartments = createTable(
-  "member_departments",
-  {
-    memberId: integer("member_id")
-      .notNull()
-      .references(() => members.id),
-    departmentId: integer("department_id")
-      .notNull()
-      .references(() => departments.id),
-    workYearId: integer("work_year_id")
-      .notNull()
-      .references(() => workYears.id),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }),
-    createdBy: varchar("created_by", { length: 255 }),
-    updatedBy: varchar("updated_by", { length: 255 }),
-  },
-  (t) => ({
-    pk: primaryKey({ columns: [t.memberId, t.departmentId, t.workYearId] }),
-  }),
-);
-
-export const memberDepartmentsRelations = relations(
-  memberDepartments,
-  ({ one }) => ({
-    member: one(members, {
-      fields: [memberDepartments.memberId],
-      references: [members.id],
-    }),
-    workYear: one(workYears, {
-      fields: [memberDepartments.workYearId],
-      references: [workYears.id],
-    }),
-    department: one(departments, {
-      fields: [memberDepartments.departmentId],
-      references: [departments.id],
-    }),
-  }),
-);
 
 export const parents = createTable("parents", {
   id: serial("id").primaryKey(),
-  type: varchar("type", { length: 255 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // e.g., "MOTHER", "FATHER", "GUARDIAN"
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
-  phone1: varchar("phone", { length: 20 }),
-  email1: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 20 }),
+  email: varchar("email", { length: 255 }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
-  createdBy: varchar("created_by", { length: 255 }),
-  updatedBy: varchar("updated_by", { length: 255 }),
 });
 
 export const membersParents = createTable(
@@ -192,12 +125,10 @@ export const membersParents = createTable(
     parentId: integer("parent_id")
       .notNull()
       .references(() => parents.id),
-    workYearId: integer("work_year_id")
-      .notNull()
-      .references(() => workYears.id),
+    isPrimary: boolean("is_primary").default(false).notNull(),
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.memberId, t.parentId, t.workYearId] }),
+    pk: primaryKey({ columns: [t.memberId, t.parentId] }),
   }),
 );
 
@@ -210,17 +141,10 @@ export const membersParentsRelations = relations(membersParents, ({ one }) => ({
     fields: [membersParents.parentId],
     references: [parents.id],
   }),
-  workYear: one(workYears, {
-    fields: [membersParents.workYearId],
-    references: [workYears.id],
-  }),
 }));
 
 export const addresses = createTable("addresses", {
   id: serial("id").primaryKey(),
-  parentId: integer("parent_id")
-    .notNull()
-    .references(() => parents.id),
   street: varchar("street", { length: 255 }).notNull(),
   houseNumber: varchar("house_number", { length: 10 }).notNull(),
   box: varchar("box", { length: 10 }),
@@ -230,14 +154,109 @@ export const addresses = createTable("addresses", {
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
-  createdBy: varchar("created_by", { length: 255 }),
-  updatedBy: varchar("updated_by", { length: 255 }),
 });
 
-export const addressesRelations = relations(addresses, ({ one }) => ({
-  parent: one(parents, {
-    fields: [addresses.parentId],
-    references: [parents.id],
+export const parentAddresses = createTable(
+  "parent_addresses",
+  {
+    parentId: integer("parent_id")
+      .notNull()
+      .references(() => parents.id),
+    addressId: integer("address_id")
+      .notNull()
+      .references(() => addresses.id),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.parentId, t.addressId] }),
+  }),
+);
+
+export const parentAddressesRelations = relations(
+  parentAddresses,
+  ({ one }) => ({
+    parent: one(parents, {
+      fields: [parentAddresses.parentId],
+      references: [parents.id],
+    }),
+    address: one(addresses, {
+      fields: [parentAddresses.addressId],
+      references: [addresses.id],
+    }),
+  }),
+);
+
+export const activities = createTable("activities", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // e.g., "WORK_YEAR", "CAMP", "GROUP_EXERCISE"
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  description: text("description"),
+  location: varchar("location", { length: 255 }),
+  maxParticipants: integer("max_participants"),
+  workYearId: integer("work_year_id").references(() => workYears.id),
+  departmentId: integer("department_id").references(() => departments.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export const activitiesRelations = relations(activities, ({ one }) => ({
+  workYear: one(workYears, {
+    fields: [activities.workYearId],
+    references: [workYears.id],
+  }),
+  department: one(departments, {
+    fields: [activities.departmentId],
+    references: [departments.id],
+  }),
+}));
+
+export const subscriptions = createTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  memberId: integer("member_id")
+    .notNull()
+    .references(() => members.id),
+  activityId: integer("activity_id")
+    .notNull()
+    .references(() => activities.id),
+  status: varchar("status", { length: 50 }).notNull(), // e.g., "PENDING", "APPROVED", "CANCELLED"
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  member: one(members, {
+    fields: [subscriptions.memberId],
+    references: [members.id],
+  }),
+  activity: one(activities, {
+    fields: [subscriptions.activityId],
+    references: [activities.id],
+  }),
+}));
+
+export const payments = createTable("payments", {
+  id: serial("id").primaryKey(),
+  subscriptionId: integer("subscription_id")
+    .notNull()
+    .references(() => subscriptions.id),
+  amount: integer("amount").notNull(),
+  paymentStatus: varchar("payment_status", { length: 50 }).notNull(), // e.g., "PENDING", "PAID", "CANCELLED"
+  paymentDate: timestamp("payment_date", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  subscription: one(subscriptions, {
+    fields: [payments.subscriptionId],
+    references: [subscriptions.id],
   }),
 }));
 
@@ -250,8 +269,6 @@ export const generalPractitioners = createTable("general_practitioners", {
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
-  createdBy: varchar("created_by", { length: 255 }),
-  updatedBy: varchar("updated_by", { length: 255 }),
 });
 
 export const medicalInformation = createTable("medical_information", {
@@ -304,8 +321,6 @@ export const medicalInformation = createTable("medical_information", {
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
-  createdBy: varchar("created_by", { length: 255 }),
-  updatedBy: varchar("updated_by", { length: 255 }),
 });
 
 export const medicalInformationRelations = relations(
@@ -315,13 +330,22 @@ export const medicalInformationRelations = relations(
       fields: [medicalInformation.memberId],
       references: [members.id],
     }),
-    workYear: one(workYears, {
-      fields: [medicalInformation.workYearId],
-      references: [workYears.id],
-    }),
     generalPractitioner: one(generalPractitioners, {
       fields: [medicalInformation.generalPractitionerId],
       references: [generalPractitioners.id],
     }),
   }),
 );
+
+export const auditLogs = createTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  tableName: varchar("table_name", { length: 255 }).notNull(),
+  recordId: integer("record_id").notNull(),
+  action: varchar("action", { length: 50 }).notNull(), // INSERT, UPDATE, DELETE
+  oldValues: text("old_values"), // JSONB
+  newValues: text("new_values"), // JSONB
+  userId: varchar("user_id", { length: 255 }),
+  timestamp: timestamp("timestamp", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});

@@ -14,8 +14,10 @@ import {
   GlobeLock,
   Construction,
   FolderLock,
+  MapPin,
 } from "lucide-react";
 import Logo from "./icons/logo";
+import HamburgerIcon from "./icons/hamburger";
 
 export type IconProps = React.HTMLAttributes<SVGElement>;
 
@@ -80,4 +82,6 @@ export const Icons = {
   GlobeLock: (props: IconProps) => <GlobeLock {...props} />,
   FolderLock: (props: IconProps) => <FolderLock {...props} />,
   Construction: (props: IconProps) => <Construction {...props} />,
+  Hamburger: (props: IconProps) => <HamburgerIcon {...props} />,
+  MapPin: (props: IconProps) => <MapPin {...props} />,
 };

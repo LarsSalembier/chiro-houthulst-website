@@ -96,23 +96,26 @@ export default function AddEventDialog({
         })}) succesvol toegevoegd aan de kalender.`,
       );
     } catch (error) {
-      if (error instanceof AuthenticationError) {
-        toast.error("Je bent niet ingelogd.");
-      } else if (error instanceof AuthorizationError) {
-        toast.error("Je hebt geen toestemming om een evenement toe te voegen.");
-      } else {
-        toast.error(
-          `Er is een fout opgetreden bij het toevoegen van ${values.title} (${format(
-            values.startDate,
-            "PPP HH:mm",
-            { locale: nlBE },
-          )}) aan de kalender.`,
-        );
-      }
-
-      console.error(`Error adding event ${values.title}:`, error);
+      handleError(error, values.title, values.startDate);
     }
     setIsLoading(false);
+  }
+
+  function handleError(
+    error: unknown,
+    eventTitle: string,
+    eventStartDate: Date,
+  ) {
+    if (error instanceof AuthenticationError) {
+      toast.error("Je bent niet ingelogd.");
+    } else if (error instanceof AuthorizationError) {
+      toast.error("Je hebt geen toestemming om een evenement toe te voegen.");
+    } else {
+      toast.error(
+        `Er is een fout opgetreden bij het toevoegen van ${eventTitle} (${format(eventStartDate, "PPP HH:mm", { locale: nlBE })}) aan de kalender.`,
+      );
+      console.error(`Error adding event ${eventTitle}:`, error);
+    }
   }
 
   return (
