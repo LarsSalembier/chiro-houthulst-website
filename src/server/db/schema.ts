@@ -11,6 +11,7 @@ import {
   varchar,
   boolean,
   text,
+  numeric,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -35,7 +36,7 @@ export const sponsors = createTable("sponsors", {
   mobile: varchar("mobile", { length: 256 }),
   email: varchar("email", { length: 256 }),
   websiteUrl: varchar("website_url", { length: 256 }),
-  amount: integer("amount").notNull(),
+  amount: numeric("amount").notNull(),
   logoUrl: varchar("logo_url", { length: 256 }),
   paid: boolean("paid").default(false).notNull(),
   startDate: timestamp("start_date", { withTimezone: true }).notNull(),
@@ -70,12 +71,16 @@ export const workYears = createTable("work_years", {
   name: varchar("name", { length: 255 }).notNull(),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
-  canRegister: boolean("can_register").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
+
+export const workYearsRelations = relations(workYears, ({ many }) => ({
+  activities: many(activities),
+  memberDepartments: many(memberDepartments),
+}));
 
 export const departments = createTable("departments", {
   id: serial("id").primaryKey(),
@@ -90,6 +95,10 @@ export const departments = createTable("departments", {
   updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
 
+export const departmentsRelations = relations(departments, ({ many }) => ({
+  memberDepartments: many(memberDepartments),
+}));
+
 export const members = createTable("members", {
   id: serial("id").primaryKey(),
   firstName: varchar("first_name", { length: 255 }).notNull(),
@@ -97,24 +106,78 @@ export const members = createTable("members", {
   gender: varchar("gender", { length: 1 }).notNull(), // Use M/F/X
   dateOfBirth: timestamp("date_of_birth").notNull(),
   permissionPhotos: boolean("permission_photos").default(false),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
 
+export const membersRelations = relations(members, ({ many, one }) => ({
+  memberDepartments: many(memberDepartments),
+  membersParents: many(membersParents),
+  subscriptions: many(subscriptions),
+  medicalInformation: one(medicalInformation),
+}));
+
+export const memberDepartments = createTable(
+  "member_departments",
+  {
+    memberId: integer("member_id")
+      .notNull()
+      .references(() => members.id),
+    departmentId: integer("department_id")
+      .notNull()
+      .references(() => departments.id),
+    workYearId: integer("work_year_id")
+      .notNull()
+      .references(() => workYears.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.memberId, t.workYearId] }),
+  }),
+);
+
+export const memberDepartmentsRelations = relations(
+  memberDepartments,
+  ({ one }) => ({
+    member: one(members, {
+      fields: [memberDepartments.memberId],
+      references: [members.id],
+    }),
+    department: one(departments, {
+      fields: [memberDepartments.departmentId],
+      references: [departments.id],
+    }),
+    workYear: one(workYears, {
+      fields: [memberDepartments.workYearId],
+      references: [workYears.id],
+    }),
+  }),
+);
+
 export const parents = createTable("parents", {
   id: serial("id").primaryKey(),
   type: varchar("type", { length: 50 }).notNull(), // e.g., "MOTHER", "FATHER", "GUARDIAN"
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
-  phone: varchar("phone", { length: 20 }),
-  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
+
+export const parentsRelations = relations(parents, ({ many }) => ({
+  membersParents: many(membersParents),
+  parentAddresses: many(parentAddresses),
+}));
 
 export const membersParents = createTable(
   "members_parents",
@@ -156,6 +219,11 @@ export const addresses = createTable("addresses", {
   updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
 
+export const addressesRelations = relations(addresses, ({ many }) => ({
+  parentAddresses: many(parentAddresses),
+  auditLogs: many(auditLogs),
+}));
+
 export const parentAddresses = createTable(
   "parent_addresses",
   {
@@ -189,28 +257,27 @@ export const activities = createTable("activities", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   type: varchar("type", { length: 50 }).notNull(), // e.g., "WORK_YEAR", "CAMP", "GROUP_EXERCISE"
+  price: numeric("price").notNull(),
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
   description: text("description"),
   location: varchar("location", { length: 255 }),
   maxParticipants: integer("max_participants"),
-  workYearId: integer("work_year_id").references(() => workYears.id),
-  departmentId: integer("department_id").references(() => departments.id),
+  workYearId: integer("work_year_id")
+    .notNull()
+    .references(() => workYears.id),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
 
-export const activitiesRelations = relations(activities, ({ one }) => ({
+export const activitiesRelations = relations(activities, ({ one, many }) => ({
   workYear: one(workYears, {
     fields: [activities.workYearId],
     references: [workYears.id],
   }),
-  department: one(departments, {
-    fields: [activities.departmentId],
-    references: [departments.id],
-  }),
+  subscriptions: many(subscriptions),
 }));
 
 export const subscriptions = createTable("subscriptions", {
@@ -239,49 +306,32 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   }),
 }));
 
-export const payments = createTable("payments", {
-  id: serial("id").primaryKey(),
-  subscriptionId: integer("subscription_id")
-    .notNull()
-    .references(() => subscriptions.id),
-  amount: integer("amount").notNull(),
-  paymentStatus: varchar("payment_status", { length: 50 }).notNull(), // e.g., "PENDING", "PAID", "CANCELLED"
-  paymentDate: timestamp("payment_date", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }),
-});
-
-export const paymentsRelations = relations(payments, ({ one }) => ({
-  subscription: one(subscriptions, {
-    fields: [payments.subscriptionId],
-    references: [subscriptions.id],
-  }),
-}));
-
 export const generalPractitioners = createTable("general_practitioners", {
   id: serial("id").primaryKey(),
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
-  phoneNumber: varchar("phone_number", { length: 20 }),
+  phoneNumber: varchar("phone_number", { length: 20 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
+
+export const generalPractitionersRelations = relations(
+  generalPractitioners,
+  ({ many }) => ({
+    medicalInformation: many(medicalInformation),
+  }),
+);
 
 export const medicalInformation = createTable("medical_information", {
   id: serial("id").primaryKey(),
   memberId: integer("member_id")
     .notNull()
     .references(() => members.id),
-  workYearId: integer("work_year_id")
+  generalPractitionerId: integer("general_practitioner_id")
     .notNull()
-    .references(() => workYears.id),
-  generalPractitionerId: integer("general_practitioner_id").references(
-    () => generalPractitioners.id,
-  ),
+    .references(() => generalPractitioners.id),
   pastMedicalHistory: text("past_medical_history"),
   tetanusVaccination: boolean("tetanus_vaccination").default(false),
   tetanusVaccinationYear: integer("tetanus_vaccination_year"),

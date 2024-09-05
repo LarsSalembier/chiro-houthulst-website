@@ -7,7 +7,7 @@ import {
 } from "../schemas/event-schemas";
 import { AuthenticationError, AuthorizationError } from "~/lib/errors";
 import { db } from "../db";
-import { events } from "../db/schema";
+import { auditLogs, events } from "../db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, gte } from "drizzle-orm";
 
@@ -20,25 +20,33 @@ import { eq, gte } from "drizzle-orm";
  * @throws An AuthorizationError if the user is not leiding.
  * @throws A ZodError if the event data is invalid.
  * @throws If the event could not be added.
+ *
+ * @returns The newly created event.
  */
 export async function createEvent(data: CreateEventData) {
-  if (!isLoggedIn()) {
-    throw new AuthenticationError();
-  }
-
-  if (!isLeiding()) {
-    throw new AuthorizationError();
-  }
+  if (!isLoggedIn()) throw new AuthenticationError();
+  if (!isLeiding()) throw new AuthorizationError();
 
   createEventSchema.parse(data);
 
-  await db
-    .insert(events)
-    .values({
-      ...data,
-      createdBy: auth().userId!,
-    })
-    .execute();
+  const newEvent = await db.transaction(async (tx) => {
+    const [event] = await tx.insert(events).values(data).returning();
+
+    if (event) {
+      await tx.insert(auditLogs).values({
+        tableName: "events",
+        recordId: event.id,
+        action: "INSERT",
+        newValues: JSON.stringify(event),
+        userId: auth().userId!,
+        timestamp: new Date(),
+      });
+    }
+
+    return event;
+  });
+
+  return newEvent;
 }
 
 /**
@@ -51,30 +59,41 @@ export async function createEvent(data: CreateEventData) {
  * @throws An AuthorizationError if the user is not leiding.
  * @throws A ZodError if the event data is invalid.
  * @throws If the event could not be updated.
+ *
+ * @returns The updated event.
  */
 export async function updateEvent(id: number, data: UpdateEventData) {
-  if (!isLoggedIn()) {
-    throw new AuthenticationError();
-  }
-
-  if (!isLeiding()) {
-    throw new AuthorizationError();
-  }
+  if (!isLoggedIn()) throw new AuthenticationError();
+  if (!isLeiding()) throw new AuthorizationError();
 
   const fixedData = updateEventSchema.parse(data);
 
-  const dataWithNulls = {
-    ...fixedData,
-    description: fixedData.description ?? null,
-    location: fixedData.location ?? null,
-    facebookEventUrl: fixedData.facebookEventUrl ?? null,
-  };
+  const updatedEvent = await db.transaction(async (tx) => {
+    const [oldEvent] = await tx.select().from(events).where(eq(events.id, id));
+    const [event] = await tx
+      .update(events)
+      .set(fixedData)
+      .where(eq(events.id, id))
+      .returning();
 
-  await db.update(events).set(dataWithNulls).where(eq(events.id, id)).execute();
+    await tx.insert(auditLogs).values({
+      tableName: "events",
+      recordId: id,
+      action: "UPDATE",
+      oldValues: JSON.stringify(oldEvent),
+      newValues: JSON.stringify(event),
+      userId: auth().userId!,
+      timestamp: new Date(),
+    });
+
+    return event;
+  });
+
+  return updatedEvent;
 }
 
 /**
- * Deletes an event.
+ * Delete an event.
  *
  * @param id The id of the event to delete.
  *
@@ -83,15 +102,22 @@ export async function updateEvent(id: number, data: UpdateEventData) {
  * @throws If the event could not be deleted.
  */
 export async function deleteEvent(id: number) {
-  if (!isLoggedIn()) {
-    throw new AuthenticationError();
-  }
+  if (!isLoggedIn()) throw new AuthenticationError();
+  if (!isLeiding()) throw new AuthorizationError();
 
-  if (!isLeiding()) {
-    throw new AuthorizationError();
-  }
+  await db.transaction(async (tx) => {
+    const [oldEvent] = await tx.select().from(events).where(eq(events.id, id));
+    await tx.delete(events).where(eq(events.id, id));
 
-  await db.delete(events).where(eq(events.id, id));
+    await tx.insert(auditLogs).values({
+      tableName: "events",
+      recordId: id,
+      action: "DELETE",
+      oldValues: JSON.stringify(oldEvent),
+      userId: auth().userId!,
+      timestamp: new Date(),
+    });
+  });
 }
 
 /**

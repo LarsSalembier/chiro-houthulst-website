@@ -12,7 +12,7 @@ export const createEventSchema = z.object({
       .string()
       .trim()
       .min(10, "Beschrijving is te kort.")
-      .max(500, "Beschrijving is te lang.")
+      .max(1000, "Beschrijving is te lang.")
       .optional(),
   ),
   startDate: z.date({

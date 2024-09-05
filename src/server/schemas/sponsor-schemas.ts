@@ -12,7 +12,7 @@ export const createSponsorSchema = z.object({
       .string()
       .trim()
       .min(2, "Vul de naam van de zaakvoerder in.")
-      .max(256, "Naam van de zaakvoerder is te lang.")
+      .max(256, "Naam is te lang.")
       .optional(),
   ),
   municipality: z.preprocess(
@@ -43,7 +43,7 @@ export const createSponsorSchema = z.object({
   ),
   number: z.preprocess(
     (val) => (val === "" ? undefined : val),
-    z.string().trim().max(64, "Huisnummer is te lang.").optional(),
+    z.string().trim().max(10, "Huisnummer is te lang.").optional(),
   ),
   landline: z.preprocess(
     (val) => (val === "" ? undefined : val),
@@ -98,3 +98,7 @@ export const createSponsorSchema = z.object({
 });
 
 export type CreateSponsorData = z.infer<typeof createSponsorSchema>;
+
+export const updateSponsorSchema = createSponsorSchema;
+
+export type UpdateSponsorData = z.infer<typeof updateSponsorSchema>;

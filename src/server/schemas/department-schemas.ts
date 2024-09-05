@@ -25,6 +25,24 @@ export const createDepartmentSchema = z.object({
     (val) => (val === "" ? undefined : val),
     z.string().trim().max(1000, "Beschrijving is te lang.").optional(),
   ),
+  minSchoolGrade: z.preprocess(
+    (val) => (val === "" ? undefined : val),
+    z
+      .string()
+      .trim()
+      .min(1, "Vul het minimum schooljaar in.")
+      .max(255, "Minimum schooljaar is te lang.")
+      .optional(),
+  ),
+  maxSchoolGrade: z.preprocess(
+    (val) => (val === "" ? undefined : val),
+    z
+      .string()
+      .trim()
+      .min(1, "Vul het maximum schooljaar in.")
+      .max(255, "Maximum schooljaar is te lang.")
+      .optional(),
+  ),
 });
 
 export type CreateDepartmentData = z.infer<typeof createDepartmentSchema>;
