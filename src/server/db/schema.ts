@@ -105,6 +105,8 @@ export const members = createTable("members", {
   lastName: varchar("last_name", { length: 255 }).notNull(),
   gender: varchar("gender", { length: 1 }).notNull(), // Use M/F/X
   dateOfBirth: timestamp("date_of_birth").notNull(),
+  emailAddress: varchar("email_address", { length: 255 }),
+  phoneNumber: varchar("phone_number", { length: 20 }),
   permissionPhotos: boolean("permission_photos").default(false),
   userId: varchar("user_id", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
@@ -165,8 +167,8 @@ export const parents = createTable("parents", {
   type: varchar("type", { length: 50 }).notNull(), // e.g., "MOTHER", "FATHER", "GUARDIAN"
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
-  phone: varchar("phone", { length: 20 }).notNull(),
-  email: varchar("email", { length: 255 }).notNull(),
+  phoneNumber: varchar("phone", { length: 20 }).notNull(),
+  emailAddress: varchar("email", { length: 255 }).notNull(),
   userId: varchar("user_id", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)

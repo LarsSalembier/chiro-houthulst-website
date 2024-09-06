@@ -16,9 +16,7 @@ import { Paragraph } from "~/components/typography/text";
 import { Grid } from "~/components/grid";
 import { getMembersForLoggedInUser } from "~/server/queries/member-queries";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Dialog } from "@radix-ui/react-dialog";
-import { DialogContent, DialogTrigger } from "~/components/ui/dialog";
-import RegistrationForm from "./registration-form";
+import AddMemberDialog from "./add-member-dialog";
 
 export const metadata: Metadata = {
   title: "Ledenportaal",
@@ -60,9 +58,12 @@ export default async function SignUpPage() {
           <Section id="algemeen">
             <SectionTitle>Inschrijvingen</SectionTitle>
             <SectionContent>
-              <Paragraph>
-                Hier kan je jouw inschrijvingen bekijken en wijzigen.
-              </Paragraph>
+              {members.length === 0 && (
+                <Paragraph>
+                  Je hebt nog geen kinderen ingeschreven. Schrijf een nieuw lid
+                  in om te beginnen.
+                </Paragraph>
+              )}
               <Grid>
                 {members.map((member) => (
                   <Card key={member.id}>
@@ -85,16 +86,7 @@ export default async function SignUpPage() {
               </Grid>
             </SectionContent>
             <SectionFooter>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="lg" className="w-fit">
-                    Nieuw lid inschrijven
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <RegistrationForm />
-                </DialogContent>
-              </Dialog>
+              <AddMemberDialog />
             </SectionFooter>
           </Section>
         </SignedIn>

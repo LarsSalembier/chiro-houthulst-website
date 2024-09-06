@@ -2,7 +2,7 @@ import { db } from "../db";
 import {
   members,
   // membersParents,
-  // auditLogs,
+  auditLogs,
   // subscriptions,
   // activities,
   // memberDepartments,
@@ -16,10 +16,10 @@ import {
   // isLeiding,
   isLoggedIn,
 } from "~/lib/auth";
-// import {
-//   type UpdateMemberData,
-//   type CreateMemberData,
-// } from "../schemas/member-schemas";
+import {
+  //   type UpdateMemberData,
+  type CreateMemberData,
+} from "../schemas/member-schemas";
 import { auth } from "@clerk/nextjs/server";
 import {
   // and,
@@ -39,33 +39,33 @@ export async function getMembersForLoggedInUser() {
   return result;
 }
 
-// export async function createMember(data: CreateMemberData) {
-//   if (!isLoggedIn()) throw new AuthenticationError();
+export async function createMember(data: CreateMemberData) {
+  if (!isLoggedIn()) throw new AuthenticationError();
 
-//   const newMember = await db.transaction(async (tx) => {
-//     const [member] = await tx
-//       .insert(members)
-//       .values({
-//         ...data,
-//         userId: auth().userId!,
-//       })
-//       .returning();
+  const newMember = await db.transaction(async (tx) => {
+    const [member] = await tx
+      .insert(members)
+      .values({
+        ...data,
+        userId: auth().userId!,
+      })
+      .returning();
 
-//     if (!member) return;
+    if (!member) return;
 
-//     await tx.insert(auditLogs).values({
-//       tableName: "members",
-//       recordId: member.id,
-//       action: "INSERT",
-//       newValues: JSON.stringify(member),
-//       userId: auth().userId!,
-//     });
+    await tx.insert(auditLogs).values({
+      tableName: "members",
+      recordId: member.id,
+      action: "INSERT",
+      newValues: JSON.stringify(member),
+      userId: auth().userId!,
+    });
 
-//     return member;
-//   });
+    return member;
+  });
 
-//   return newMember;
-// }
+  return newMember;
+}
 
 // export async function updateMember(
 //   memberId: number,

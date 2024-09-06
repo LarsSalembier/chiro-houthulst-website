@@ -68,6 +68,9 @@ export async function updateEvent(id: number, data: UpdateEventData) {
 
   const fixedData = updateEventSchema.parse(data);
 
+  // TODO: handle the case where we remove description, location, or facebookEventUrl
+  // at the moment, this will not actually remove the field from the database
+
   const updatedEvent = await db.transaction(async (tx) => {
     const [oldEvent] = await tx.select().from(events).where(eq(events.id, id));
     const [event] = await tx
