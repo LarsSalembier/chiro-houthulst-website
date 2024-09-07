@@ -5,8 +5,8 @@ import MainNav from "./main-nav";
 import MobileNav from "./mobile-nav/mobile-nav";
 import SearchMenu from "./search-menu/search-menu";
 import { Icons } from "~/components/icons";
-import ModeToggle from "./mode-toggle";
 import SocialLink from "./social-link";
+import ThemeToggleButton from "./theme-toggle-button";
 
 export function SiteHeader() {
   return (
@@ -29,7 +29,7 @@ export function SiteHeader() {
             <SocialLink href={siteConfig.links.instagram} label="Instagram">
               <Icons.Instagram className="h-4 w-4" />
             </SocialLink>
-            <ModeToggle />
+            <ThemeToggleButton />
             <SignedIn>
               <UserButton />
             </SignedIn>
