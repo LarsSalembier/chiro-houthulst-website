@@ -16,7 +16,7 @@ import { Paragraph } from "~/components/typography/text";
 import { Grid } from "~/components/grid";
 import { getMembersForLoggedInUser } from "~/server/queries/member-queries";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import AddMemberDialog from "./add-member-dialog";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Ledenportaal",
@@ -86,7 +86,11 @@ export default async function SignUpPage() {
               </Grid>
             </SectionContent>
             <SectionFooter>
-              <AddMemberDialog />
+              <Button size="lg" asChild className="w-fit">
+                <Link href="/ledenportaal/nieuw-lid-inschrijven">
+                  Nieuw lid inschrijven
+                </Link>
+              </Button>
             </SectionFooter>
           </Section>
         </SignedIn>
