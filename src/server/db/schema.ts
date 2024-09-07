@@ -255,6 +255,31 @@ export const parentAddressesRelations = relations(
   }),
 );
 
+export const extraContactPersons = createTable("extra_contact_persons", {
+  id: serial("id").primaryKey(),
+  firstName: varchar("first_name", { length: 255 }).notNull(),
+  lastName: varchar("last_name", { length: 255 }).notNull(),
+  phoneNumber: varchar("phone_number", { length: 255 }).notNull(),
+  relationship: varchar("relationship", { length: 255 }).notNull(),
+  memberId: integer("member_id")
+    .notNull()
+    .references(() => members.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export const extraContactPersonsRelations = relations(
+  extraContactPersons,
+  ({ one }) => ({
+    member: one(members, {
+      fields: [extraContactPersons.memberId],
+      references: [members.id],
+    }),
+  }),
+);
+
 export const activities = createTable("activities", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
