@@ -6,7 +6,7 @@ import {
   PageHeaderHeading,
   PageHeaderDescription,
 } from "~/components/page-header";
-import AddMemberDialog from "./add-member-form";
+import AddMemberDialog from "./registration-form";
 
 export default function RegisterNewMemberPage() {
   return (
