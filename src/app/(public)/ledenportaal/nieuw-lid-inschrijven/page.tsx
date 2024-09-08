@@ -6,7 +6,7 @@ import {
   PageHeaderHeading,
   PageHeaderDescription,
 } from "~/components/page-header";
-import AddMemberDialog from "../add-member-form";
+import AddMemberDialog from "./add-member-form";
 
 export default function RegisterNewMemberPage() {
   return (
@@ -20,8 +20,7 @@ export default function RegisterNewMemberPage() {
             Schrijf je nu in als lid van Chiro Houthulst!
           </PageHeaderHeading>
           <PageHeaderDescription>
-            Vul het onderstaande formulier in om je kind of jezelf aan te melden
-            als nieuw lid.
+            Vul onderstaand formulier in om je kind of jezelf in te schrijven.
           </PageHeaderDescription>
         </PageHeader>
         <div className="pb-8 md:pb-12 lg:pb-12">

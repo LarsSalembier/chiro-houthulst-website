@@ -103,7 +103,7 @@ export const members = createTable("members", {
   id: serial("id").primaryKey(),
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
-  gender: varchar("gender", { length: 1 }).notNull(), // Use M/F/X
+  gender: varchar("gender", { length: 1 }).notNull(), // "M", "F", "X"
   dateOfBirth: timestamp("date_of_birth").notNull(),
   emailAddress: varchar("email_address", { length: 255 }),
   phoneNumber: varchar("phone_number", { length: 20 }),
@@ -120,6 +120,7 @@ export const membersRelations = relations(members, ({ many, one }) => ({
   membersParents: many(membersParents),
   subscriptions: many(subscriptions),
   medicalInformation: one(medicalInformation),
+  memberExtraContactPersons: many(memberExtraContactPersons),
 }));
 
 export const memberDepartments = createTable(
@@ -164,7 +165,7 @@ export const memberDepartmentsRelations = relations(
 
 export const parents = createTable("parents", {
   id: serial("id").primaryKey(),
-  type: varchar("type", { length: 50 }).notNull(), // e.g., "MOTHER", "FATHER", "GUARDIAN"
+  type: varchar("type", { length: 50 }).notNull(), // "MOTHER", "FATHER", "GUARDIAN", "PLUSFATHER", "PLUSMOTHER"
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
   phoneNumber: varchar("phone", { length: 20 }).notNull(),
@@ -260,10 +261,7 @@ export const extraContactPersons = createTable("extra_contact_persons", {
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
   phoneNumber: varchar("phone_number", { length: 255 }).notNull(),
-  relationship: varchar("relationship", { length: 255 }).notNull(),
-  memberId: integer("member_id")
-    .notNull()
-    .references(() => members.id),
+  relationship: varchar("relationship", { length: 255 }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -272,10 +270,36 @@ export const extraContactPersons = createTable("extra_contact_persons", {
 
 export const extraContactPersonsRelations = relations(
   extraContactPersons,
+  ({ many }) => ({
+    memberExtraContactPersons: many(memberExtraContactPersons),
+  }),
+);
+
+export const memberExtraContactPersons = createTable(
+  "member_extra_contact_persons",
+  {
+    memberId: integer("member_id")
+      .notNull()
+      .references(() => members.id),
+    extraContactPersonId: integer("extra_contact_person_id")
+      .notNull()
+      .references(() => extraContactPersons.id),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.memberId, t.extraContactPersonId] }),
+  }),
+);
+
+export const memberExtraContactPersonsRelations = relations(
+  memberExtraContactPersons,
   ({ one }) => ({
     member: one(members, {
-      fields: [extraContactPersons.memberId],
+      fields: [memberExtraContactPersons.memberId],
       references: [members.id],
+    }),
+    extraContactPerson: one(extraContactPersons, {
+      fields: [memberExtraContactPersons.extraContactPersonId],
+      references: [extraContactPersons.id],
     }),
   }),
 );
@@ -333,32 +357,11 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   }),
 }));
 
-export const generalPractitioners = createTable("general_practitioners", {
-  id: serial("id").primaryKey(),
-  firstName: varchar("first_name", { length: 255 }).notNull(),
-  lastName: varchar("last_name", { length: 255 }).notNull(),
-  phoneNumber: varchar("phone_number", { length: 20 }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }),
-});
-
-export const generalPractitionersRelations = relations(
-  generalPractitioners,
-  ({ many }) => ({
-    medicalInformation: many(medicalInformation),
-  }),
-);
-
 export const medicalInformation = createTable("medical_information", {
   id: serial("id").primaryKey(),
   memberId: integer("member_id")
     .notNull()
     .references(() => members.id),
-  generalPractitionerId: integer("general_practitioner_id")
-    .notNull()
-    .references(() => generalPractitioners.id),
   pastMedicalHistory: text("past_medical_history"),
   tetanusVaccination: boolean("tetanus_vaccination").default(false),
   tetanusVaccinationYear: integer("tetanus_vaccination_year"),
@@ -383,17 +386,17 @@ export const medicalInformation = createTable("medical_information", {
   foodAllergies: text("food_allergies"),
   substanceAllergies: text("substance_allergies"),
   medicationAllergies: text("medication_allergies"),
-  medicationDuringStay: text("medication_during_stay"),
+  medication: text("medication"),
+  otherMedicalConditions: text("other_medical_conditions"),
   getsTiredQuickly: boolean("gets_tired_quickly").default(false),
-  getsTiredQuicklyInfo: varchar("gets_tired_quickly_info", { length: 255 }),
   canParticipateSports: boolean("can_participate_sports").default(false),
-  canParticipateSportsInfo: varchar("can_participate_sports_info", {
-    length: 255,
-  }),
   canSwim: boolean("can_swim").default(false),
-  canSwimInfo: varchar("can_swim_info", { length: 255 }),
   otherRemarks: text("other_remarks"),
   permissionMedication: boolean("permission_medication").default(false),
+  doctorFirstName: varchar("first_name", { length: 255 }).notNull(),
+  doctorLastName: varchar("last_name", { length: 255 }).notNull(),
+  doctorPhoneNumber: varchar("phone_number", { length: 20 }).notNull(),
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -406,10 +409,6 @@ export const medicalInformationRelations = relations(
     member: one(members, {
       fields: [medicalInformation.memberId],
       references: [members.id],
-    }),
-    generalPractitioner: one(generalPractitioners, {
-      fields: [medicalInformation.generalPractitionerId],
-      references: [generalPractitioners.id],
     }),
   }),
 );
