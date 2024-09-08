@@ -16,9 +16,7 @@ export default function RegisterNewMemberPage() {
       </SignedOut>
       <SignedIn>
         <PageHeader>
-          <PageHeaderHeading>
-            Schrijf je nu in als lid van Chiro Houthulst!
-          </PageHeaderHeading>
+          <PageHeaderHeading>Inschrijvingsformulier</PageHeaderHeading>
           <PageHeaderDescription>
             Vul onderstaand formulier in om je kind of jezelf in te schrijven.
           </PageHeaderDescription>
