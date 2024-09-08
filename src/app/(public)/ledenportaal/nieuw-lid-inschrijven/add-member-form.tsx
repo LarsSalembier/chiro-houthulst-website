@@ -3,7 +3,7 @@
 import { toast } from "sonner";
 import { AuthenticationError } from "~/lib/errors";
 import { Button } from "~/components/ui/button";
-import { z } from "zod";
+import { type z } from "zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
@@ -38,319 +38,12 @@ import {
 import { type Metadata } from "next";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Textarea } from "~/components/ui/textarea";
-
-const calculateAge = (birthday: Date) => {
-  const ageDifMs = Date.now() - birthday.getTime();
-  const ageDate = new Date(ageDifMs);
-  return Math.abs(ageDate.getUTCFullYear() - 1970);
-};
-
-const parentSchema = z.object({
-  type: z.enum(["MOTHER", "FATHER", "GUARDIAN", "PLUSMOTHER", "PLUSFATHER"], {
-    required_error: "Kies een type ouder/voogd.",
-  }),
-  firstName: z
-    .string({
-      required_error: "Voornaam ontbreekt!",
-    })
-    .min(1, "Voornaam ontbreekt!")
-    .max(255, "Voornaam is te lang."),
-  lastName: z
-    .string({
-      required_error: "Achternaam ontbreekt!",
-    })
-    .min(1, "Achternaam ontbreekt!")
-    .max(255, "Achternaam is te lang."),
-  phoneNumber: z
-    .string({
-      required_error: "GSM-nummer ontbreekt!",
-    })
-    .regex(
-      /^\d{3,4} \d{2} \d{2} \d{2}$/,
-      "Geef een geldig GSM-nummer in in het formaat 0495 12 34 56 of 051 12 34 56",
-    ),
-  emailAddress: z
-    .string({
-      required_error: "E-mailadres ontbreekt!",
-    })
-    .email("Geef een geldig e-mailadres in."),
-  street: z
-    .string({
-      required_error: "Straatnaam ontbreekt!",
-    })
-    .min(1, "Straatnaam ontbreekt!")
-    .max(255, "Straatnaam is te lang."),
-  houseNumber: z
-    .string({
-      required_error: "Huisnummer ontbreekt!",
-    })
-    .min(1, "Huisnummer ontbreekt!")
-    .max(10, "Huisnummer is te lang."),
-  bus: z.preprocess(
-    (val) => (val === "" ? undefined : val),
-    z.string().max(10, "Busnummer is te lang.").optional(),
-  ),
-  postalCode: z
-    .string({
-      required_error: "Postcode ontbreekt!",
-    })
-    .regex(/^\d{4}$/, "Geef een geldige postcode in."),
-  municipality: z
-    .string({
-      required_error: "Gemeente ontbreekt!",
-    })
-    .min(1, "Gemeente ontbreekt!")
-    .max(255, "Gemeente is te lang."),
-});
-
-const formSchema = z
-  .object({
-    memberFirstName: z
-      .string({
-        required_error: "Voornaam ontbreekt!",
-      })
-      .trim()
-      .min(1, "Voornaam ontbreekt!")
-      .max(255, "Voornaam is te lang."),
-    memberLastName: z
-      .string({
-        required_error: "Achternaam ontbreekt!",
-      })
-      .trim()
-      .min(1, "Achternaam ontbreekt!")
-      .max(255, "Achternaam is te lang."),
-    memberGender: z.enum(["M", "F", "X"], {
-      required_error: "Kies een geslacht.",
-    }),
-    memberDateOfBirth: z.date({
-      required_error: "Geef een geldige geboortedatum in.",
-    }),
-    memberEmailAddress: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().email("Geef een geldig e-mailadres in.").optional(),
-    ),
-    memberPhoneNumber: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z
-        .string()
-        .trim()
-        .regex(
-          /^\d{3,4} \d{2} \d{2} \d{2}$/,
-          "Geef een geldig GSM-nummer in in het formaat 0495 12 34 56 of 051 12 34 56",
-        )
-        .optional(),
-    ),
-    extraContactPersonFirstName: z
-      .string({
-        required_error: "Voornaam ontbreekt!",
-      })
-      .trim()
-      .min(1, "Voornaam ontbreekt!")
-      .max(255, "Voornaam is te lang."),
-    extraContactPersonLastName: z
-      .string({
-        required_error: "Achternaam ontbreekt!",
-      })
-      .trim()
-      .min(1, "Achternaam ontbreekt!")
-      .max(255, "Achternaam is te lang."),
-    extraContactPersonPhoneNumber: z
-      .string({
-        required_error: "GSM-nummer ontbreekt!",
-      })
-      .trim()
-      .regex(
-        /^\d{3,4} \d{2} \d{2} \d{2}$/,
-        "Geef een geldig GSM-nummer in in het formaat 0495 12 34 56 of 051 12 34 56",
-      ),
-    extraContactPersonRelationship: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z
-        .string()
-        .trim()
-        .min(1, "Relatie tot uw kind ontbreekt!")
-        .max(255, "Relatie tot uw kind is te lang."),
-    ),
-    permissionPhotos: z.boolean().default(true),
-    permissionMedication: z.boolean().default(false),
-    parents: z
-      .array(parentSchema, {
-        required_error: "Voeg minstens één ouder toe.",
-      })
-      .min(1, "Voeg minstens één ouder toe."),
-    foodAllergies: z.boolean().default(false),
-    foodAllergiesInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(1000, "Informatie is te lang.").optional(),
-    ),
-    substanceAllergies: z.boolean().default(false),
-    substanceAllergiesInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(1000, "Informatie is te lang.").optional(),
-    ),
-    medicationAllergies: z.boolean().default(false),
-    medicationAllergiesInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(1000, "Informatie is te lang.").optional(),
-    ),
-    hayFever: z.boolean().default(false),
-    hayFeverInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(1000, "Informatie is te lang.").optional(),
-    ),
-    asthma: z.boolean().default(false),
-    asthmaInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(255, "Informatie is te lang.").optional(),
-    ),
-    bedwetting: z.boolean().default(false),
-    bedwettingInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(255, "Informatie is te lang.").optional(),
-    ),
-    epilepsy: z.boolean().default(false),
-    epilepsyInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(255, "Informatie is te lang.").optional(),
-    ),
-    heartCondition: z.boolean().default(false),
-    heartConditionInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(255, "Informatie is te lang.").optional(),
-    ),
-    skinCondition: z.boolean().default(false),
-    skinConditionInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(255, "Informatie is te lang.").optional(),
-    ),
-    rheumatism: z.boolean().default(false),
-    rheumatismInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(255, "Informatie is te lang.").optional(),
-    ),
-    sleepwalking: z.boolean().default(false),
-    sleepwalkingInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(255, "Informatie is te lang.").optional(),
-    ),
-    diabetes: z.boolean().default(false),
-    diabetesInfo: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(255, "Informatie is te lang.").optional(),
-    ),
-    otherMedicalConditions: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(1000, "Informatie is te lang.").optional(),
-    ),
-    tetanusVaccination: z.boolean().default(false),
-    tetanusVaccinationYear: z.preprocess(
-      (val) => (val ? undefined : val),
-      z.number().int().min(1900).max(new Date().getFullYear()).optional(),
-    ),
-    pastMedicalHistory: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(1000, "Informatie is te lang.").optional(),
-    ),
-    hasToTakeMedication: z.boolean().default(false),
-    medication: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(1000, "Informatie is te lang.").optional(),
-    ),
-    getsTiredQuickly: z.boolean().default(false),
-    canParticipateSports: z.boolean().default(false),
-    canSwim: z.boolean().default(false),
-    otherRemarks: z.preprocess(
-      (val) => (val === "" ? undefined : val),
-      z.string().trim().max(1000, "Informatie is te lang.").optional(),
-    ),
-    doctorFirstName: z
-      .string({
-        required_error: "Voornaam ontbreekt!",
-      })
-      .trim()
-      .min(1, "Voornaam ontbreekt!")
-      .max(255, "Voornaam is te lang."),
-    doctorLastName: z
-      .string({
-        required_error: "Achternaam ontbreekt!",
-      })
-      .trim()
-      .min(1, "Achternaam ontbreekt!")
-      .max(255, "Achternaam is te lang."),
-    doctorPhoneNumber: z
-      .string({
-        required_error: "GSM-nummer ontbreekt!",
-      })
-      .trim()
-      .regex(
-        /^\d{3,4} \d{2} \d{2} \d{2}$/,
-        "Geef een geldig GSM-nummer in in het formaat 0495 12 34 56 of 051 12 34 56",
-      ),
-  })
-  .refine(
-    (data) => {
-      const age = calculateAge(data.memberDateOfBirth);
-      if (age >= 15) {
-        return data.memberPhoneNumber;
-      }
-      return true;
-    },
-    {
-      message: "GSM-nummer is verplicht voor leden van 15 jaar en ouder.",
-      path: ["memberPhoneNumber"],
-    },
-  )
-  .refine(
-    (data) => {
-      const age = calculateAge(data.memberDateOfBirth);
-      if (age >= 15) {
-        return data.memberEmailAddress;
-      }
-      return true;
-    },
-    {
-      message: "E-mailadres is verplicht voor leden van 15 jaar en ouder.",
-      path: ["memberEmailAddress"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.substanceAllergies && !data.substanceAllergiesInfo) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Welke stofallergieën heeft uw kind?",
-      path: ["substanceAllergiesInfo"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.medicationAllergies && !data.medicationAllergiesInfo) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Welke medicatieallergieën heeft uw kind?",
-      path: ["medicationAllergiesInfo"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.foodAllergies && !data.foodAllergiesInfo) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Welke voedselallergieën heeft uw kind?",
-      path: ["foodAllergiesInfo"],
-    },
-  );
-
-type FormValues = z.infer<typeof formSchema>;
+import {
+  type parentSchema,
+  registrationFormSchema,
+  type RegistrationFormValues,
+} from "./schemas";
+import { calculateAge } from "./calculate-age";
 
 export const metadata: Metadata = {
   title: "Uw kind inschrijven",
@@ -358,8 +51,8 @@ export const metadata: Metadata = {
 };
 
 export default function AddMemberForm() {
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<RegistrationFormValues>({
+    resolver: zodResolver(registrationFormSchema),
     defaultValues: {
       parents: [{}],
       permissionPhotos: true,
@@ -451,7 +144,7 @@ export default function AddMemberForm() {
     return () => subscription.unsubscribe();
   }, [form]);
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: RegistrationFormValues) => {
     try {
       // await createMemberAndRevalidate(data);
       console.log(data);
