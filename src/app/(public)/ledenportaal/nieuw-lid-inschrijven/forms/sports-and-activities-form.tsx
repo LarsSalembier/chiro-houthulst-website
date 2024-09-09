@@ -1,8 +1,8 @@
 import React from "react";
 import { type UseFormReturn } from "react-hook-form";
-import CardWrapper from "./card-wrapper";
-import CheckboxField from "./checkbox-field";
-import { type RegistrationFormValues } from "./schemas";
+import CardWrapper from "../../../../../components/card-wrapper";
+import CheckboxField from "../../../../../components/forms/checkbox-field";
+import { type RegistrationFormValues } from "../schemas";
 
 interface SportsAndActivitiesFormProps {
   form: UseFormReturn<RegistrationFormValues>;

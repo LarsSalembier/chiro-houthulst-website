@@ -1,8 +1,8 @@
 import React from "react";
 import { type UseFormReturn } from "react-hook-form";
-import CardWrapper from "./card-wrapper";
-import FormFieldComponent from "./form-field";
-import { type RegistrationFormValues } from "./schemas";
+import CardWrapper from "../../../../../components/card-wrapper";
+import FormFieldComponent from "../form-field";
+import { type RegistrationFormValues } from "../schemas";
 
 interface DoctorContactFormProps {
   form: UseFormReturn<RegistrationFormValues>;

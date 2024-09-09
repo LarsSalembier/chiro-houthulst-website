@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { type UseFormReturn } from "react-hook-form";
-import CardWrapper from "./card-wrapper";
-import CheckboxField from "./checkbox-field";
-import ConditionalField from "./conditional-field";
-import FormFieldComponent from "./form-field";
-import { type RegistrationFormValues } from "./schemas";
+import CardWrapper from "../../../../../components/card-wrapper";
+import CheckboxField from "../../../../../components/forms/checkbox-field";
+import ConditionalField from "../../../../../components/forms/conditional-field";
+import FormFieldComponent from "../form-field";
+import { type RegistrationFormValues } from "../schemas";
 
 interface MedicalConditionsFormProps {
   form: UseFormReturn<RegistrationFormValues>;

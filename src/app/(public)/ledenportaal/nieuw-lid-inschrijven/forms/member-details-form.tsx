@@ -2,13 +2,13 @@
 
 import React, { useEffect } from "react";
 import { type UseFormReturn } from "react-hook-form";
-import { type RegistrationFormValues } from "./schemas";
-import { calculateAge } from "./calculate-age";
+import { type RegistrationFormValues } from "../schemas";
+import { calculateAge } from "../calculate-age";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { FormDescription } from "~/components/ui/form";
-import FormFieldComponent from "./form-field";
-import DatePicker from "./date-picker";
-import RadioGroupField from "./radio-group-field";
+import FormFieldComponent from "../form-field";
+import DatePicker from "../../../../../components/forms/date-picker";
+import RadioGroupField from "../../../../../components/forms/radio-group-field";
 
 interface MemberDetailsFormProps {
   form: UseFormReturn<RegistrationFormValues>;

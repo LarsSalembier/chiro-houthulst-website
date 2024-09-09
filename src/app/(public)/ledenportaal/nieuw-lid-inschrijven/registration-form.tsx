@@ -13,17 +13,17 @@ import {
   registrationFormSchema,
   type RegistrationFormValues,
 } from "./schemas";
-import MemberDetailsForm from "./member-details-form";
-import { ParentForm } from "./parent-form";
-import { AllergiesForm } from "./allergies-form";
-import DoctorContactForm from "./doctor-contact-form";
-import ExtraContactPersonForm from "./extra-contact-person-form";
-import MedicalConditionsForm from "./medical-conditions-form";
-import { MedicalInformationForm } from "./medical-information-form";
-import PrivacyForm from "./privacy-form";
-import SportsAndActivitiesForm from "./sports-and-activities-form";
+import MemberDetailsForm from "./forms/member-details-form";
+import { ParentForm } from "./forms/parent-form";
+import { AllergiesForm } from "./forms/allergies-form";
+import DoctorContactForm from "./forms/doctor-contact-form";
+import ExtraContactPersonForm from "./forms/extra-contact-person-form";
+import MedicalConditionsForm from "./forms/medical-conditions-form";
+import { MedicalInformationForm } from "./forms/medical-information-form";
+import PrivacyForm from "./forms/privacy-form";
+import SportsAndActivitiesForm from "./forms/sports-and-activities-form";
 import FormFieldComponent from "./form-field";
-import CardWrapper from "./card-wrapper";
+import CardWrapper from "../../../../components/card-wrapper";
 import { type z } from "zod";
 import { createMemberRegistrationAndRevalidate } from "./actions";
 
