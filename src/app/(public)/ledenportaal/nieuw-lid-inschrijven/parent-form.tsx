@@ -1,28 +1,25 @@
 import React from "react";
-import {
-  type UseFormReturn,
-  type FieldPath,
-  type FieldValues,
-} from "react-hook-form";
+import { type UseFormReturn } from "react-hook-form";
 import { Button } from "~/components/ui/button";
 import { TrashIcon } from "lucide-react";
 import CardWrapper from "./card-wrapper";
 import FormFieldComponent from "./form-field";
 import RadioGroupField from "./radio-group-field";
+import { type RegistrationFormValues } from "./schemas";
 
-interface ParentFormProps<TFieldValues extends FieldValues> {
-  form: UseFormReturn<TFieldValues>;
+interface ParentFormProps {
+  form: UseFormReturn<RegistrationFormValues>;
   index: number;
   onRemove: () => void;
   isRemovable: boolean;
 }
 
-export function ParentForm<TFieldValues extends FieldValues>({
+export function ParentForm({
   form,
   index,
   onRemove,
   isRemovable,
-}: ParentFormProps<TFieldValues>) {
+}: ParentFormProps) {
   const parentTypeOptions = [
     { value: "MOTHER", label: "Mama" },
     { value: "FATHER", label: "Papa" },
@@ -43,61 +40,60 @@ export function ParentForm<TFieldValues extends FieldValues>({
       <div className="space-y-4">
         <RadioGroupField
           form={form}
-          name={`parents.${index}.type` as FieldPath<TFieldValues>}
-          label="Type"
+          name={`parents.${index}.type`}
           options={parentTypeOptions}
         />
         <div className="grid grid-cols-2 gap-4">
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.firstName` as FieldPath<TFieldValues>}
+            name={`parents.${index}.firstName`}
             label="Voornaam"
           />
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.lastName` as FieldPath<TFieldValues>}
+            name={`parents.${index}.lastName`}
             label="Achternaam"
           />
         </div>
         <FormFieldComponent
           form={form}
-          name={`parents.${index}.phoneNumber` as FieldPath<TFieldValues>}
+          name={`parents.${index}.phoneNumber`}
           label="GSM-nummer"
           placeholder="Mobiel nummer van ouder"
         />
         <FormFieldComponent
           form={form}
-          name={`parents.${index}.emailAddress` as FieldPath<TFieldValues>}
+          name={`parents.${index}.emailAddress`}
           label="E-mailadres"
           type="email"
           placeholder="Voor belangrijke mededelingen"
         />
         <FormFieldComponent
           form={form}
-          name={`parents.${index}.street` as FieldPath<TFieldValues>}
+          name={`parents.${index}.street`}
           label="Straat"
         />
         <div className="grid grid-cols-2 gap-4">
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.houseNumber` as FieldPath<TFieldValues>}
+            name={`parents.${index}.houseNumber`}
             label="Huisnummer"
           />
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.bus` as FieldPath<TFieldValues>}
+            name={`parents.${index}.bus`}
             label="Bus (optioneel)"
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.postalCode` as FieldPath<TFieldValues>}
+            name={`parents.${index}.postalCode`}
             label="Postcode"
           />
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.municipality` as FieldPath<TFieldValues>}
+            name={`parents.${index}.municipality`}
             label="Gemeente"
           />
         </div>

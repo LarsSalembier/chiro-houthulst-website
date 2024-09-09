@@ -20,7 +20,7 @@ interface RadioOption {
 interface RadioGroupFieldProps<TFieldValues extends FieldValues> {
   form: UseFormReturn<TFieldValues>;
   name: FieldPath<TFieldValues>;
-  label: string;
+  label?: string;
   options: RadioOption[];
 }
 
@@ -36,12 +36,12 @@ export default function RadioGroupField<TFieldValues extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
             <RadioGroup
               onValueChange={field.onChange}
               defaultValue={field.value}
-              className="flex flex-row space-x-2"
+              className="flex flex-wrap gap-2"
             >
               {options.map(({ value, label }) => (
                 <FormItem

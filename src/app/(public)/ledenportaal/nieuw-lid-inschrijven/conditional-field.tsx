@@ -17,6 +17,7 @@ interface ConditionalFieldProps<TFieldValues extends FieldValues> {
   name: FieldPath<TFieldValues>;
   placeholder: string;
   condition: boolean;
+  numberOfLines?: number;
 }
 
 export default function ConditionalField<TFieldValues extends FieldValues>({
@@ -24,6 +25,7 @@ export default function ConditionalField<TFieldValues extends FieldValues>({
   name,
   placeholder,
   condition,
+  numberOfLines = 3,
 }: ConditionalFieldProps<TFieldValues>) {
   if (!condition) return null;
 
@@ -34,7 +36,11 @@ export default function ConditionalField<TFieldValues extends FieldValues>({
       render={({ field }) => (
         <FormItem>
           <FormControl>
-            <Textarea placeholder={placeholder} {...field} />
+            <Textarea
+              placeholder={placeholder}
+              {...field}
+              rows={numberOfLines}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

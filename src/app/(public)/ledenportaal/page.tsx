@@ -14,9 +14,9 @@ import {
 } from "~/components/section";
 import { Paragraph } from "~/components/typography/text";
 import { Grid } from "~/components/grid";
-import { getMembersForLoggedInUser } from "~/server/queries/member-queries";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import Link from "next/link";
+import { getMembersForLoggedInUser } from "~/server/queries/registration-queries";
 
 export const metadata: Metadata = {
   title: "Ledenportaal",

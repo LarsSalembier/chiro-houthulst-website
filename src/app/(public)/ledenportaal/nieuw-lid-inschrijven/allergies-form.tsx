@@ -48,6 +48,7 @@ export function AllergiesForm({ form }: AllergiesFormProps) {
             name="foodAllergiesInfo"
             placeholder="Som hier op welke zaken (bv. noten, lactose, ...). Hoe ernstig is de allergie? Wat zijn de symptomen? Wat moet er gebeuren bij een allergische reactie?"
             condition={form.watch("foodAllergies")}
+            numberOfLines={4}
           />
         </div>
         <div className="space-y-3">
@@ -61,6 +62,7 @@ export function AllergiesForm({ form }: AllergiesFormProps) {
             name="medicationAllergiesInfo"
             placeholder="Som hier op welke zaken (bv. bepaalde antibiotica, ontsmettingsmiddelen, pijnstillers, ...). Hoe ernstig is de allergie? Wat zijn de symptomen? Wat moet er gebeuren bij een allergische reactie?"
             condition={form.watch("medicationAllergies")}
+            numberOfLines={4}
           />
         </div>
         <div className="space-y-3">
@@ -74,6 +76,7 @@ export function AllergiesForm({ form }: AllergiesFormProps) {
             name="substanceAllergiesInfo"
             placeholder="Som hier op welke zaken (bv. verf, zonnecrème, insectenbeten, ...). Hoe ernstig is de allergie? Wat zijn de symptomen? Wat moet er gebeuren bij een allergische reactie?"
             condition={form.watch("substanceAllergies")}
+            numberOfLines={4}
           />
         </div>
         <div className="space-y-3">

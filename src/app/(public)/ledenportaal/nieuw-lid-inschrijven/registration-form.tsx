@@ -25,6 +25,7 @@ import SportsAndActivitiesForm from "./sports-and-activities-form";
 import FormFieldComponent from "./form-field";
 import CardWrapper from "./card-wrapper";
 import { type z } from "zod";
+import { createMemberRegistrationAndRevalidate } from "./actions";
 
 export const metadata: Metadata = {
   title: "Uw kind inschrijven",
@@ -47,9 +48,9 @@ export default function RegistrationForm() {
 
   const onSubmit = async (data: RegistrationFormValues) => {
     try {
-      // await createMemberAndRevalidate(data);
+      await createMemberRegistrationAndRevalidate(data);
       console.log(data);
-      toast.success(`Lid is succesvol toegevoegd.`);
+      toast.success(`${data.memberFirstName} is ingeschreven!`);
     } catch (error) {
       handleError(error);
     }

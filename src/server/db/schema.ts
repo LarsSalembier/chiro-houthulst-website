@@ -224,7 +224,6 @@ export const addresses = createTable("addresses", {
 
 export const addressesRelations = relations(addresses, ({ many }) => ({
   parentAddresses: many(parentAddresses),
-  auditLogs: many(auditLogs),
 }));
 
 export const parentAddresses = createTable(
