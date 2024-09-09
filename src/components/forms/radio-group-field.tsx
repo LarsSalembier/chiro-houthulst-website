@@ -22,6 +22,7 @@ interface RadioGroupFieldProps<TFieldValues extends FieldValues> {
   name: FieldPath<TFieldValues>;
   label?: string;
   options: RadioOption[];
+  showBelowEachother?: boolean;
 }
 
 export default function RadioGroupField<TFieldValues extends FieldValues>({
@@ -29,6 +30,7 @@ export default function RadioGroupField<TFieldValues extends FieldValues>({
   name,
   label,
   options,
+  showBelowEachother,
 }: RadioGroupFieldProps<TFieldValues>) {
   return (
     <FormField
@@ -41,7 +43,7 @@ export default function RadioGroupField<TFieldValues extends FieldValues>({
             <RadioGroup
               onValueChange={field.onChange}
               defaultValue={field.value}
-              className="flex flex-wrap gap-2"
+              className={`flex gap-2 ${showBelowEachother ? "flex-col" : "flex-wrap"}`}
             >
               {options.map(({ value, label }) => (
                 <FormItem

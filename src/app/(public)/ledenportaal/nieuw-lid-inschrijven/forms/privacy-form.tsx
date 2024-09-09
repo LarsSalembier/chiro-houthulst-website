@@ -1,7 +1,7 @@
 import React from "react";
 import { type UseFormReturn } from "react-hook-form";
-import CardWrapper from "../../../../../components/card-wrapper";
-import CheckboxField from "../../../../../components/forms/checkbox-field";
+import CardWrapper from "~/components/card-wrapper";
+import CheckboxField from "~/components/forms/checkbox-field";
 import { type RegistrationFormValues } from "../schemas";
 
 interface PrivacyFormProps {

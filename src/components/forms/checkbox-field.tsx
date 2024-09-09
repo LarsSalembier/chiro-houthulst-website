@@ -6,6 +6,7 @@ import {
 } from "react-hook-form";
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -16,12 +17,14 @@ interface CheckboxFieldProps<TFieldValues extends FieldValues> {
   form: UseFormReturn<TFieldValues>;
   name: FieldPath<TFieldValues>;
   label: string;
+  sublabel?: string;
 }
 
 export default function CheckboxField<TFieldValues extends FieldValues>({
   form,
   name,
   label,
+  sublabel,
 }: CheckboxFieldProps<TFieldValues>) {
   return (
     <FormField
@@ -34,6 +37,7 @@ export default function CheckboxField<TFieldValues extends FieldValues>({
           </FormControl>
           <div className="space-y-1 leading-none">
             <FormLabel>{label}</FormLabel>
+            {sublabel && <FormDescription>{sublabel}</FormDescription>}
           </div>
         </FormItem>
       )}

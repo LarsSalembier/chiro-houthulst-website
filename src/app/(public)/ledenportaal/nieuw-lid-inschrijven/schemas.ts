@@ -82,7 +82,9 @@ export const extraContactPersonSchema = z.object({
 
 export const permissionsSchema = z.object({
   permissionPhotos: z.boolean().default(true),
-  permissionMedication: createBooleanSchema(),
+  permissionMedication: z.enum(["true", "false"], {
+    required_error: "Gelieve een keuze te maken voor toestemming medicatie",
+  }),
 });
 
 export const allergiesSchema = z.object({
@@ -118,9 +120,14 @@ export const medicalConditionsSchema = z.object({
 
 export const medicalHistorySchema = z.object({
   pastMedicalHistory: createOptionalStringSchema(1000),
-  hasToTakeMedication: createBooleanSchema(),
+  hasToTakeMedication: z.enum(["true", "false"], {
+    required_error: "Gelieve aan te geven of uw kind medicatie moet nemen",
+  }),
   medication: createOptionalStringSchema(1000),
-  tetanusVaccination: createBooleanSchema(),
+  tetanusVaccination: z.enum(["true", "false"], {
+    required_error:
+      "Gelieve aan te geven of uw kind gevaccineerd is tegen tetanus",
+  }),
   tetanusVaccinationYear: z.preprocess(
     (val) => (val ? undefined : val),
     z.number().int().min(1900).max(new Date().getFullYear()).optional(),
@@ -128,9 +135,16 @@ export const medicalHistorySchema = z.object({
 });
 
 export const sportsAndActivitiesSchema = z.object({
-  getsTiredQuickly: createBooleanSchema(),
-  canParticipateSports: createBooleanSchema(),
-  canSwim: createBooleanSchema(),
+  getsTiredQuickly: z.enum(["true", "false"], {
+    required_error: "Gelieve aan te geven of uw kind snel moe is",
+  }),
+  canParticipateSports: z.enum(["true", "false"], {
+    required_error:
+      "Gelieve aan te geven of uw kind kan deelnemen aan sport en spel afgestemd op zijn/haar leeftijd",
+  }),
+  canSwim: z.enum(["true", "false"], {
+    required_error: "Gelieve aan te geven of uw kind kan zwemmen",
+  }),
 });
 
 export const doctorSchema = z.object({

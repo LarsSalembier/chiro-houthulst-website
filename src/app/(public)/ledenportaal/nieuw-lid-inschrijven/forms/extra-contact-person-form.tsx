@@ -2,7 +2,7 @@ import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import FormFieldComponent from "../form-field";
 import { type RegistrationFormValues } from "../schemas";
-import CardWrapper from "../../../../../components/card-wrapper";
+import CardWrapper from "~/components/card-wrapper";
 
 interface ExtraContactPersonFormProps {
   form: UseFormReturn<RegistrationFormValues>;

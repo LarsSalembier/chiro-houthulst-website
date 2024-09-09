@@ -6,17 +6,7 @@ import {
 } from "~/components/page-header";
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "~/components/ui/button";
-import {
-  Section,
-  SectionContent,
-  SectionFooter,
-  SectionTitle,
-} from "~/components/section";
-import { Paragraph } from "~/components/typography/text";
-import { Grid } from "~/components/grid";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import Link from "next/link";
-import { getMembersForLoggedInUser } from "~/server/queries/registration-queries";
+import SubscriptionDisplay from "./subscription-display";
 
 export const metadata: Metadata = {
   title: "Ledenportaal",
@@ -24,8 +14,6 @@ export const metadata: Metadata = {
 };
 
 export default async function SignUpPage() {
-  const members = await getMembersForLoggedInUser();
-
   return (
     <div className="container relative flex flex-col gap-6">
       <PageHeader>
@@ -40,10 +28,8 @@ export default async function SignUpPage() {
             wijzigen, documenten downloaden en inschrijven voor activiteiten.
           </SignedIn>
         </PageHeaderDescription>
-      </PageHeader>
-      <div className="px-4 pb-8 md:pb-12 lg:pb-12">
         <SignedOut>
-          <div className="flex flex-row gap-4">
+          <div className="flex flex-wrap gap-4 pt-4">
             <SignInButton>
               <Button size="lg">Inloggen</Button>
             </SignInButton>
@@ -54,47 +40,12 @@ export default async function SignUpPage() {
             </SignUpButton>
           </div>
         </SignedOut>
-        <SignedIn>
-          <Section id="algemeen">
-            <SectionTitle>Inschrijvingen</SectionTitle>
-            <SectionContent>
-              {members.length === 0 && (
-                <Paragraph>
-                  Je hebt nog geen kinderen ingeschreven. Schrijf een nieuw lid
-                  in om te beginnen.
-                </Paragraph>
-              )}
-              <Grid>
-                {members.map((member) => (
-                  <Card key={member.id}>
-                    <CardHeader>
-                      <CardTitle>
-                        {member.firstName} {member.lastName}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Paragraph>
-                        Geboortedatum: {member.dateOfBirth.toString()}
-                      </Paragraph>
-                      <Paragraph>Geslacht: {member.gender}</Paragraph>
-                      <Paragraph>
-                        Toestemming foto&apos;s: {member.permissionPhotos}
-                      </Paragraph>
-                    </CardContent>
-                  </Card>
-                ))}
-              </Grid>
-            </SectionContent>
-            <SectionFooter>
-              <Button size="lg" asChild className="w-fit">
-                <Link href="/ledenportaal/nieuw-lid-inschrijven">
-                  Nieuw lid inschrijven
-                </Link>
-              </Button>
-            </SectionFooter>
-          </Section>
-        </SignedIn>
-      </div>
+      </PageHeader>
+      <SignedIn>
+        <div className="pb-8 md:pb-12 lg:pb-12">
+          <SubscriptionDisplay />
+        </div>
+      </SignedIn>
     </div>
   );
 }

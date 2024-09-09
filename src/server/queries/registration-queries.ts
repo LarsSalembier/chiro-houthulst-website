@@ -148,7 +148,7 @@ export async function createMemberRegistration(data: RegistrationFormValues) {
       const [medicalInfo] = await tx.insert(medicalInformation).values({
         memberId: member.id,
         pastMedicalHistory: data.pastMedicalHistory,
-        tetanusVaccination: data.tetanusVaccination,
+        tetanusVaccination: data.tetanusVaccination === "true" ? true : false,
         tetanusVaccinationYear: data.tetanusVaccinationYear,
         asthma: data.asthma,
         asthmaInfo: data.asthmaInfo,
@@ -173,11 +173,13 @@ export async function createMemberRegistration(data: RegistrationFormValues) {
         medicationAllergies: data.medicationAllergiesInfo,
         medication: data.medication,
         otherMedicalConditions: data.otherMedicalConditions,
-        getsTiredQuickly: data.getsTiredQuickly,
-        canParticipateSports: data.canParticipateSports,
-        canSwim: data.canSwim,
+        getsTiredQuickly: data.getsTiredQuickly === "true" ? true : false,
+        canParticipateSports:
+          data.canParticipateSports === "true" ? true : false,
+        canSwim: data.canSwim === "true" ? true : false,
         otherRemarks: data.otherRemarks,
-        permissionMedication: data.permissionMedication,
+        permissionMedication:
+          data.permissionMedication === "true" ? true : false,
         doctorFirstName: data.doctorFirstName,
         doctorLastName: data.doctorLastName,
         doctorPhoneNumber: data.doctorPhoneNumber,

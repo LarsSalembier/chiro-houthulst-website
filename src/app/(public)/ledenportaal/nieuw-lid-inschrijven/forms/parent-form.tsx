@@ -2,9 +2,9 @@ import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import { Button } from "~/components/ui/button";
 import { TrashIcon } from "lucide-react";
-import CardWrapper from "../../../../../components/card-wrapper";
+import CardWrapper from "~/components/card-wrapper";
 import FormFieldComponent from "../form-field";
-import RadioGroupField from "../../../../../components/forms/radio-group-field";
+import RadioGroupField from "~/components/forms/radio-group-field";
 import { type RegistrationFormValues } from "../schemas";
 
 interface ParentFormProps {

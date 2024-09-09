@@ -15,6 +15,7 @@ import {
   Construction,
   FolderLock,
   MapPin,
+  UserCheck,
 } from "lucide-react";
 import Logo from "./icons/logo";
 import HamburgerIcon from "./icons/hamburger";
@@ -70,6 +71,7 @@ export const Icons = {
   SquareGanttChart: (props: IconProps) => <SquareGanttChart {...props} />,
   Tent: (props: IconProps) => <Tent {...props} />,
   UserPlus: (props: IconProps) => <UserPlus {...props} />,
+  UserCheck: (props: IconProps) => <UserCheck {...props} />,
   Shirt: (props: IconProps) => <Shirt {...props} />,
   ShieldCheck: (props: IconProps) => <ShieldCheck {...props} />,
   CalendarX: (props: IconProps) => <CalendarX {...props} />,

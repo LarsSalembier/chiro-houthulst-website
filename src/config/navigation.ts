@@ -43,11 +43,6 @@ export const navigationConfig: NavigationConfig = {
           icon: "Tent",
         },
         {
-          title: "Inschrijving",
-          href: "/#inschrijven",
-          icon: "UserPlus",
-        },
-        {
           title: "Uniform",
           href: "/#uniform",
           icon: "Shirt",
@@ -56,6 +51,21 @@ export const navigationConfig: NavigationConfig = {
           title: "Verzekering",
           href: "/verzekeringen",
           icon: "ShieldCheck",
+        },
+      ],
+    },
+    {
+      title: "Inschrijven",
+      items: [
+        {
+          title: "Nieuw lid inschrijven",
+          href: "/ledenportaal",
+          icon: "UserPlus",
+        },
+        {
+          title: "Inschrijving beheren",
+          href: "/ledenportaal",
+          icon: "UserCheck",
         },
       ],
     },

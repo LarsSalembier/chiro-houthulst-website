@@ -139,6 +139,9 @@ export default function HomePage() {
           ervaringen opdoen, samenleven en een kijk op zichzelf en de wereld
           ontwikkelen.
         </HeroSectionDescription>
+        <Button asChild variant="secondary" size="lg">
+          <Link href="/ledenportaal">Schrijf je in!</Link>
+        </Button>
       </HeroSection>
 
       <Section id="praktisch">
@@ -168,15 +171,21 @@ export default function HomePage() {
               </SubsectionContent>
             </Subsection>
             <Subsection id="inschrijving">
-              <SubsectionTitle>Inschrijving</SubsectionTitle>
+              <SubsectionTitle>Inschrijven</SubsectionTitle>
               <SubsectionContent>
                 <Paragraph>
                   Inschrijven in de Chiro kost €30 en kan elke zondag bij de
                   leiding. Zo zijn jullie ook verzekerd. Je kan altijd eens de
                   Chiro komen uittesten, inschrijven is niet verplicht vanaf de
-                  eerste zondag!
+                  eerste zondag! Via het ledenportaal kan je jezelf of je kind
+                  inschrijven.
                 </Paragraph>
               </SubsectionContent>
+              <SubsectionFooter>
+                <Button asChild className="w-fit">
+                  <Link href="/ledenportaal">Ga naar het ledenportaal</Link>
+                </Button>
+              </SubsectionFooter>
             </Subsection>
             <Subsection id="uniform">
               <SubsectionTitle>Uniform</SubsectionTitle>

@@ -7,8 +7,8 @@ import { calculateAge } from "../calculate-age";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { FormDescription } from "~/components/ui/form";
 import FormFieldComponent from "../form-field";
-import DatePicker from "../../../../../components/forms/date-picker";
-import RadioGroupField from "../../../../../components/forms/radio-group-field";
+import DatePicker from "~/components/forms/date-picker";
+import RadioGroupField from "~/components/forms/radio-group-field";
 
 interface MemberDetailsFormProps {
   form: UseFormReturn<RegistrationFormValues>;
@@ -37,7 +37,7 @@ export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Gegevens</CardTitle>
+        <CardTitle>Lid</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">

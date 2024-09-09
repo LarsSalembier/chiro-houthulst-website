@@ -26,6 +26,8 @@ import FormFieldComponent from "./form-field";
 import CardWrapper from "../../../../components/card-wrapper";
 import { type z } from "zod";
 import { createMemberRegistrationAndRevalidate } from "./actions";
+import MedicationPermissionForm from "./forms/medication-permission-form";
+import { Section, SectionContent, SectionTitle } from "~/components/section";
 
 export const metadata: Metadata = {
   title: "Uw kind inschrijven",
@@ -68,63 +70,74 @@ export default function RegistrationForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <MemberDetailsForm form={form} />
-        <div className="flex flex-col gap-4">
-          {fields.map((field, index) => (
-            <ParentForm
-              key={field.id}
-              form={form}
-              index={index}
-              onRemove={() => remove(index)}
-              isRemovable={index > 0}
-            />
-          ))}
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() =>
-              append({
-                street: form.watch(`parents.${fields.length - 1}.street`),
-                houseNumber: form.watch(
-                  `parents.${fields.length - 1}.houseNumber`,
-                ),
-                bus: form.watch(`parents.${fields.length - 1}.bus`),
-                postalCode: form.watch(
-                  `parents.${fields.length - 1}.postalCode`,
-                ),
-                municipality: form.watch(
-                  `parents.${fields.length - 1}.municipality`,
-                ),
-              } as z.infer<typeof parentSchema>)
-            }
-          >
-            <PlusIcon className="mr-2 h-4 w-4" />
-            Voeg nog een ouder toe
-          </Button>
-        </div>
-        <ExtraContactPersonForm form={form} />
-        <PrivacyForm form={form} />
-        <AllergiesForm form={form} />
-        <MedicalConditionsForm form={form} />
-        <MedicalInformationForm form={form} />
-        <SportsAndActivitiesForm form={form} />
-        <DoctorContactForm form={form} />
-        <CardWrapper title="Algemene opmerkingen">
-          <FormFieldComponent
-            form={form}
-            name="otherRemarks"
-            label="Zijn er nog zaken die we zeker moeten weten over uw kind? Zijn er zaken waar we extra rekening mee moeten houden?"
-            placeholder="Vul hier eventuele opmerkingen in"
-          />
-        </CardWrapper>
+        <Section>
+          <SectionTitle>Gegevens van het lid</SectionTitle>
+          <SectionContent>
+            <MemberDetailsForm form={form} />
+            <div className="flex flex-col gap-4">
+              {fields.map((field, index) => (
+                <ParentForm
+                  key={field.id}
+                  form={form}
+                  index={index}
+                  onRemove={() => remove(index)}
+                  isRemovable={index > 0}
+                />
+              ))}
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() =>
+                  append({
+                    street: form.watch(`parents.${fields.length - 1}.street`),
+                    houseNumber: form.watch(
+                      `parents.${fields.length - 1}.houseNumber`,
+                    ),
+                    bus: form.watch(`parents.${fields.length - 1}.bus`),
+                    postalCode: form.watch(
+                      `parents.${fields.length - 1}.postalCode`,
+                    ),
+                    municipality: form.watch(
+                      `parents.${fields.length - 1}.municipality`,
+                    ),
+                  } as z.infer<typeof parentSchema>)
+                }
+              >
+                <PlusIcon className="mr-2 h-4 w-4" />
+                Voeg nog een ouder toe
+              </Button>
+            </div>
+            <ExtraContactPersonForm form={form} />
+            <PrivacyForm form={form} />
+          </SectionContent>
+        </Section>
+        <Section>
+          <SectionTitle>Medische steekkaart</SectionTitle>
+          <SectionContent>
+            <MedicationPermissionForm form={form} />
+            <AllergiesForm form={form} />
+            <MedicalConditionsForm form={form} />
+            <MedicalInformationForm form={form} />
+            <SportsAndActivitiesForm form={form} />
+            <DoctorContactForm form={form} />
+            <CardWrapper title="Algemene opmerkingen">
+              <FormFieldComponent
+                form={form}
+                name="otherRemarks"
+                label="Zijn er nog zaken die we zeker moeten weten over uw kind? Zijn er zaken waar we extra rekening mee moeten houden?"
+                placeholder="Vul hier eventuele opmerkingen in"
+              />
+            </CardWrapper>
 
-        <div className="flex flex-col gap-4">
-          <Button type="submit">
-            {form.formState.isSubmitting
-              ? "Bezig met toevoegen..."
-              : "Inschrijven"}
-          </Button>
-        </div>
+            <div className="flex flex-col gap-4">
+              <Button type="submit">
+                {form.formState.isSubmitting
+                  ? "Bezig met toevoegen..."
+                  : "Inschrijven"}
+              </Button>
+            </div>
+          </SectionContent>
+        </Section>
       </form>
     </Form>
   );
