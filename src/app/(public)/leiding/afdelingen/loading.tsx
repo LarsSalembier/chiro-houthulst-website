@@ -1,5 +1,5 @@
-import LoadingProtectedPage from "~/components/loading/protected-page";
+// import LoadingProtectedPage from "~/components/loading/protected-page";
 
-export default function LoadingLeidingDashboardPage() {
-  return <LoadingProtectedPage pageTitle="Leidingportaal" />;
-}
+// export default function LoadingLeidingDashboardPage() {
+//   return <LoadingProtectedPage pageTitle="Leidingportaal" />;
+// }
