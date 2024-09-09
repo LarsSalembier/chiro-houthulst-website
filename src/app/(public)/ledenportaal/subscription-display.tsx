@@ -1,6 +1,5 @@
 import { PencilIcon } from "lucide-react";
 import Link from "next/link";
-import { Grid } from "~/components/grid";
 import {
   Section,
   SectionContent,
@@ -12,6 +11,7 @@ import {
   SubsectionContent,
   SubsectionTitle,
 } from "~/components/subsection";
+import { MutedText } from "~/components/typography/text";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -71,7 +71,7 @@ export default async function SubscriptionDisplay() {
           </TabsList>
           {members.map((member) => (
             <TabsContent key={member.id} value={member.id.toString()}>
-              <Grid className="gap-4">
+              <div className="flex flex-wrap gap-4">
                 <Card>
                   <CardHeader>
                     <CardTitle>
@@ -207,7 +207,7 @@ export default async function SubscriptionDisplay() {
 
                 <Subsection>
                   <SubsectionTitle>Medische steekkaart</SubsectionTitle>
-                  <SubsectionContent>
+                  <SubsectionContent className="flex flex-wrap gap-4">
                     <Card>
                       <CardHeader>
                         <CardTitle>Huisarts</CardTitle>
@@ -525,17 +525,18 @@ export default async function SubscriptionDisplay() {
                     </Button>
                   </CardFooter>
                 </Card> */}
-              </Grid>
+              </div>
             </TabsContent>
           ))}
         </Tabs>
       </SectionContent>
       <SectionFooter>
-        <Button size="lg" asChild className="w-fit">
-          <Link href="/ledenportaal/nieuw-lid-inschrijven">
-            Nieuw lid inschrijven
-          </Link>
+        <Button size="lg" className="w-fit" disabled>
+          <Link href="#">Nieuw lid inschrijven</Link>
         </Button>
+        <MutedText>
+          De inschrijvingen voor dit werkjaar zijn nog niet geopend.
+        </MutedText>
       </SectionFooter>
     </Section>
   );
