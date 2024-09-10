@@ -23,11 +23,9 @@ export const sponsors = createTable("sponsors", {
   companyName: varchar("company_name", { length: 256 }).notNull().unique(),
   companyOwnerFirstName: varchar("company_owner_first_name", { length: 256 }),
   companyOwnerLastName: varchar("company_owner_last_name", { length: 256 }),
-  street: varchar("street", { length: 255 }),
-  houseNumber: varchar("house_number", { length: 10 }),
-  box: varchar("box", { length: 10 }),
-  municipality: varchar("municipality", { length: 255 }),
-  postalCode: varchar("postal_code", { length: 10 }),
+  addressId: integer("address_id")
+    .notNull()
+    .references(() => addresses.id),
   phoneNumber: varchar("phone_number", { length: 20 }),
   emailAddress: varchar("email_address", { length: 256 }),
   websiteUrl: varchar("website_url", { length: 256 }),
@@ -81,6 +79,9 @@ export const members = createTable("members", {
   dateOfBirth: timestamp("date_of_birth").notNull(),
   emailAddress: varchar("email_address", { length: 255 }).unique(),
   phoneNumber: varchar("phone_number", { length: 20 }),
+  addressId: integer("address_id")
+    .notNull()
+    .references(() => addresses.id),
   permissionPhotos: boolean("permission_photos").notNull(),
   extraContactPersonFirstName: varchar("first_name", { length: 255 }).notNull(),
   extraContactPersonLastName: varchar("last_name", { length: 255 }).notNull(),
@@ -128,9 +129,13 @@ export const members = createTable("members", {
   updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
 
-export const membersRelations = relations(members, ({ many }) => ({
+export const membersRelations = relations(members, ({ many, one }) => ({
   memberDepartments: many(memberDepartments),
   membersParents: many(membersParents),
+  address: one(addresses, {
+    fields: [members.addressId],
+    references: [addresses.id],
+  }),
 }));
 
 export const memberDepartments = createTable(
@@ -173,19 +178,21 @@ export const parents = createTable("parents", {
   lastName: varchar("last_name", { length: 255 }).notNull(),
   phoneNumber: varchar("phone_number", { length: 20 }).notNull(),
   emailAddress: varchar("email_address", { length: 255 }).notNull().unique(),
-  street: varchar("street", { length: 255 }).notNull(),
-  houseNumber: varchar("house_number", { length: 10 }).notNull(),
-  box: varchar("box", { length: 10 }),
-  municipality: varchar("municipality", { length: 255 }).notNull(),
-  postalCode: varchar("postal_code", { length: 10 }).notNull(),
+  addressId: integer("address_id")
+    .notNull()
+    .references(() => addresses.id),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
 
-export const parentsRelations = relations(parents, ({ many }) => ({
+export const parentsRelations = relations(parents, ({ many, one }) => ({
   membersParents: many(membersParents),
+  address: one(addresses, {
+    fields: [parents.addressId],
+    references: [addresses.id],
+  }),
 }));
 
 export const membersParents = createTable(
@@ -214,6 +221,29 @@ export const membersParentsRelations = relations(membersParents, ({ one }) => ({
     references: [parents.id],
   }),
 }));
+
+export const addresses = createTable(
+  "addresses",
+  {
+    id: serial("id").primaryKey(),
+    street: varchar("street", { length: 255 }).notNull(),
+    houseNumber: varchar("house_number", { length: 10 }).notNull(),
+    box: varchar("box", { length: 10 }),
+    municipality: varchar("municipality", { length: 255 }).notNull(),
+    postalCode: varchar("postal_code", { length: 10 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }),
+  },
+  (t) => ({
+    unique: [
+      {
+        columns: [t.street, t.houseNumber, t.box, t.municipality, t.postalCode],
+      },
+    ],
+  }),
+);
 
 export const auditLogs = createTable("audit_logs", {
   id: serial("id").primaryKey(),
