@@ -158,8 +158,8 @@ dependencies:
 
 devDependencies:
   '@types/eslint':
-    specifier: ^9.6.0
-    version: 9.6.0
+    specifier: ^8.10.0
+    version: 8.56.12
   '@types/node':
     specifier: ^22.0.2
     version: 22.0.2
@@ -2445,8 +2445,8 @@ packages:
       zod: 3.23.8
     dev: false
 
-  /@types/eslint@9.6.0:
-    resolution: {integrity: sha512-gi6WQJ7cHRgZxtkQEoyHMppPjq9Kxo5Tjn2prSKDSmZrCz8TZ3jSRCeTJm+WoM+oB0WG37bRqLzaaU3q7JypGg==}
+  /@types/eslint@8.56.12:
+    resolution: {integrity: sha512-03ruubjWyOHlmljCVoxSuNDdmfZDzsrrz0P2LeJsOXr+ZwFQ+0yQIwNCwt/GYhV7Z31fgtXJTAEs+FYlEL851g==}
     dependencies:
       '@types/estree': 1.0.5
       '@types/json-schema': 7.0.15

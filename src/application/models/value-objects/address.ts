@@ -5,5 +5,5 @@ export const addressSchema = z.object({
   houseNumber: z.string(),
   box: z.string().optional(),
   municipality: z.string(),
-  postalCode: z.string(),
+  postalCode: z.number().int().positive(),
 });
