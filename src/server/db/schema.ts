@@ -8,17 +8,18 @@ import {
   varchar,
   boolean,
   text,
-  numeric,
   jsonb,
   date,
   pgEnum,
   smallint,
+  doublePrecision,
+  unique,
 } from "drizzle-orm/pg-core";
-import { auditActionEnumValues } from "~/application/models/enums/audit-action";
-import { eventTypeEnumValues } from "~/application/models/enums/event-type";
-import { genderEnumValues } from "~/application/models/enums/gender";
-import { parentRelationshipEnumValues } from "~/application/models/enums/parent-relationship";
-import { paymentMethodEnumValues } from "~/application/models/enums/payment-method";
+import { auditActionEnumValues } from "~/domain/enums/audit-action";
+import { eventTypeEnumValues } from "~/domain/enums/event-type";
+import { genderEnumValues } from "~/domain/enums/gender";
+import { parentRelationshipEnumValues } from "~/domain/enums/parent-relationship";
+import { paymentMethodEnumValues } from "~/domain/enums/payment-method";
 
 /**
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
@@ -116,11 +117,13 @@ export const addresses = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    unique: [
-      {
-        columns: [t.street, t.houseNumber, t.box, t.municipality, t.postalCode],
-      },
-    ],
+    uniqueAddress: unique("unique_address").on(
+      t.street,
+      t.houseNumber,
+      t.box,
+      t.municipality,
+      t.postalCode,
+    ),
   }),
 );
 
@@ -133,27 +136,24 @@ export const addressesRelations = relations(addresses, ({ many }) => ({
 /**
  * Werkjaren waarvoor leden kunnen inschrijven.
  */
-export const workYears = createTable(
+export const workyears = createTable(
   tableNames.workYears,
   {
     id: serial("id").primaryKey(),
-    startDate: date("start_date").notNull(),
-    endDate: date("end_date").notNull(),
-    membershipFee: numeric("membership_fee", {
-      precision: 5,
-      scale: 2,
-    }).notNull(),
+    startDate: date("start_date", { mode: "date" }).notNull(),
+    endDate: date("end_date", { mode: "date" }).notNull(),
+    membershipFee: doublePrecision("membership_fee").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    unique: [{ columns: [t.startDate, t.endDate] }],
+    uniqueWorkYear: unique("unique_work_year").on(t.startDate, t.endDate),
   }),
 );
 
-export const workYearsRelations = relations(workYears, ({ many }) => ({
+export const workYearsRelations = relations(workyears, ({ many }) => ({
   yearlyMemberships: many(yearlyMemberships),
   sponsorshipAgreements: many(sponsorshipAgreements),
 }));
@@ -162,14 +162,16 @@ export const workYearsRelations = relations(workYears, ({ many }) => ({
  * Chirogroepen, bijvoorbeeld "Ribbels", "Speelclub", etc.
  */
 export const groups = createTable(tableNames.groups, {
-  name: varchar("name", { length: 50 }).primaryKey(),
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 50 }).unique().notNull(),
   color: varchar("color", { length: 20 }),
   description: text("description"),
-  minBirthDate: date("min_birth_date").notNull(),
-  maxBirthDate: date("max_birth_date").notNull(),
+  minimumAgeInDays: integer("minimum_age_in_days").notNull(),
+  maximumAgeInDays: integer("maximum_age_in_days"),
   gender: genderEnum("gender"),
   mascotImageUrl: varchar("mascot_image_url", { length: 255 }),
   coverImageUrl: varchar("cover_image_url", { length: 255 }),
+  active: boolean("active").default(true).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -191,12 +193,9 @@ export const members = createTable(
     firstName: varchar("first_name", { length: 100 }).notNull(),
     lastName: varchar("last_name", { length: 100 }).notNull(),
     gender: genderEnum("gender").notNull(),
-    dateOfBirth: date("date_of_birth").notNull(),
+    dateOfBirth: date("date_of_birth", { mode: "date" }).notNull(),
     emailAddress: varchar("email_address", { length: 255 }).unique(),
     phoneNumber: varchar("phone_number", { length: 20 }),
-    addressId: integer("address_id")
-      .notNull()
-      .references(() => addresses.id),
     // GDPR: toestemming om foto's te publiceren van het lid
     gdprPermissionToPublishPhotos: boolean("gdpr_permission_to_publish_photos")
       .default(false)
@@ -207,8 +206,11 @@ export const members = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    indexes: [{ columns: [t.lastName] }, { columns: [t.dateOfBirth] }],
-    unique: [{ columns: [t.firstName, t.lastName, t.dateOfBirth] }],
+    uniqueMember: unique("unique_member").on(
+      t.firstName,
+      t.lastName,
+      t.dateOfBirth,
+    ),
   }),
 );
 
@@ -217,21 +219,17 @@ export const membersRelations = relations(members, ({ many, one }) => ({
   membersParents: many(membersParents),
   emergencyContacts: many(emergencyContacts),
   medicalInformation: one(medicalInformation),
-  address: one(addresses, {
-    fields: [members.addressId],
-    references: [addresses.id],
-  }),
+  emergencyContact: one(emergencyContacts),
   eventRegistrations: many(eventRegistrations),
 }));
 
 /**
- * Noodcontacten van leden. Bijvoorbeeld grootouders, vrienden etc.
+ * Noodcontact van leden. Bijvoorbeeld grootouders, vrienden etc.
  */
 export const emergencyContacts = createTable(tableNames.emergencyContacts, {
-  id: serial("id").primaryKey(),
   memberId: integer("member_id")
-    .notNull()
-    .references(() => members.id),
+    .references(() => members.id)
+    .primaryKey(),
   firstName: varchar("first_name", { length: 100 }).notNull(),
   lastName: varchar("last_name", { length: 100 }).notNull(),
   phoneNumber: varchar("phone_number", { length: 20 }).notNull(),
@@ -257,7 +255,6 @@ export const emergencyContactsRelations = relations(
  */
 export const medicalInformation = createTable(tableNames.medicalInformation, {
   memberId: integer("member_id")
-    .notNull()
     .references(() => members.id)
     .primaryKey(),
   pastMedicalHistory: text("past_medical_history"),
@@ -317,28 +314,21 @@ export const medicalInformationRelations = relations(
 /**
  * Ouders/verzorgers van leden.
  */
-export const parents = createTable(
-  tableNames.parents,
-  {
-    emailAddress: varchar("email_address", { length: 255 })
-      .notNull()
-      .primaryKey(),
-    relationship: parentRelationshipEnum("relationship").notNull(),
-    firstName: varchar("first_name", { length: 100 }).notNull(),
-    lastName: varchar("last_name", { length: 100 }).notNull(),
-    phoneNumber: varchar("phone_number", { length: 20 }).notNull(),
-    addressId: integer("address_id")
-      .notNull()
-      .references(() => addresses.id),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }),
-  },
-  (t) => ({
-    indexes: [{ columns: [t.lastName] }, { columns: [t.emailAddress] }],
-  }),
-);
+export const parents = createTable(tableNames.parents, {
+  id: serial("id").primaryKey(),
+  emailAddress: varchar("email_address", { length: 255 }).unique().notNull(),
+  relationship: parentRelationshipEnum("relationship").notNull(),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }).notNull(),
+  phoneNumber: varchar("phone_number", { length: 20 }).notNull(),
+  addressId: integer("address_id")
+    .notNull()
+    .references(() => addresses.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
 
 export const parentsRelations = relations(parents, ({ many, one }) => ({
   membersParents: many(membersParents),
@@ -357,13 +347,16 @@ export const membersParents = createTable(
     memberId: integer("member_id")
       .notNull()
       .references(() => members.id),
-    parentEmailAddress: varchar("parent_email_address", { length: 255 })
+    parentId: integer("parent_id")
       .notNull()
-      .references(() => parents.emailAddress),
+      .references(() => parents.id),
     isPrimary: boolean("is_primary").default(false).notNull(),
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.memberId, t.parentEmailAddress] }),
+    pk: primaryKey({
+      name: "pk_members_parents",
+      columns: [t.memberId, t.parentId],
+    }),
   }),
 );
 
@@ -373,8 +366,8 @@ export const membersParentsRelations = relations(membersParents, ({ one }) => ({
     references: [members.id],
   }),
   parent: one(parents, {
-    fields: [membersParents.parentEmailAddress],
-    references: [parents.emailAddress],
+    fields: [membersParents.parentId],
+    references: [parents.id],
   }),
 }));
 
@@ -387,12 +380,12 @@ export const yearlyMemberships = createTable(
     memberId: integer("member_id")
       .notNull()
       .references(() => members.id),
-    groupName: varchar("group_name", { length: 255 })
-      .notNull()
-      .references(() => groups.name),
     workYearId: integer("work_year_id")
       .notNull()
-      .references(() => workYears.id),
+      .references(() => workyears.id),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => groups.id),
     paymentReceived: boolean("payment_received").default(false).notNull(),
     paymentMethod: paymentMethodEnum("payment_method"),
     paymentDate: timestamp("payment_date", { withTimezone: true }),
@@ -402,8 +395,10 @@ export const yearlyMemberships = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.memberId, t.groupName, t.workYearId] }),
-    indexes: [{ columns: [t.memberId] }],
+    pk: primaryKey({
+      name: "pk_yearly_memberships",
+      columns: [t.memberId, t.workYearId],
+    }),
   }),
 );
 
@@ -415,12 +410,12 @@ export const yearlyMembershipsRelations = relations(
       references: [members.id],
     }),
     group: one(groups, {
-      fields: [yearlyMemberships.groupName],
-      references: [groups.name],
+      fields: [yearlyMemberships.groupId],
+      references: [groups.id],
     }),
-    workYear: one(workYears, {
+    workYear: one(workyears, {
       fields: [yearlyMemberships.workYearId],
-      references: [workYears.id],
+      references: [workyears.id],
     }),
   }),
 );
@@ -428,31 +423,25 @@ export const yearlyMembershipsRelations = relations(
 /**
  * Evenementen die door de Chiro georganiseerd worden.
  */
-export const events = createTable(
-  tableNames.events,
-  {
-    id: serial("id").primaryKey(),
-    title: varchar("title", { length: 100 }).notNull(),
-    description: text("description"),
-    startDate: timestamp("start_date", { withTimezone: true }).notNull(),
-    endDate: timestamp("end_date", { withTimezone: true }).notNull(),
-    location: varchar("location", { length: 255 }),
-    facebookEventUrl: varchar("facebook_event_url", { length: 255 }).unique(),
-    eventType: eventTypeEnum("event_type").notNull(),
-    price: numeric("price", { precision: 5, scale: 2 }),
-    canSignUp: boolean("can_sign_up").default(false).notNull(),
-    signUpDeadline: timestamp("sign_up_deadline", { withTimezone: true }),
-    flyerUrl: varchar("flyer_url", { length: 255 }),
-    coverImageUrl: varchar("cover_image_url", { length: 255 }),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }),
-  },
-  (t) => ({
-    indexes: [{ columns: [t.startDate] }, { columns: [t.title] }],
-  }),
-);
+export const events = createTable(tableNames.events, {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 100 }).notNull(),
+  description: text("description"),
+  startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+  endDate: timestamp("end_date", { withTimezone: true }).notNull(),
+  location: varchar("location", { length: 255 }),
+  facebookEventUrl: varchar("facebook_event_url", { length: 255 }).unique(),
+  eventType: eventTypeEnum("event_type").notNull(),
+  price: doublePrecision("price"),
+  canSignUp: boolean("can_sign_up").default(false).notNull(),
+  signUpDeadline: timestamp("sign_up_deadline", { withTimezone: true }),
+  flyerUrl: varchar("flyer_url", { length: 255 }),
+  coverImageUrl: varchar("cover_image_url", { length: 255 }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
 
 export const eventsRelations = relations(events, ({ many }) => ({
   eventGroups: many(eventGroups),
@@ -468,13 +457,15 @@ export const eventGroups = createTable(
     eventId: integer("event_id")
       .notNull()
       .references(() => events.id),
-    groupName: varchar("group_name", { length: 255 })
+    groupId: integer("group_id")
       .notNull()
-      .references(() => groups.name),
+      .references(() => groups.id),
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.eventId, t.groupName] }),
-    indexes: [{ columns: [t.eventId] }],
+    pk: primaryKey({
+      name: "pk_event_groups",
+      columns: [t.eventId, t.groupId],
+    }),
   }),
 );
 
@@ -484,8 +475,8 @@ export const eventGroupsRelations = relations(eventGroups, ({ one }) => ({
     references: [events.id],
   }),
   group: one(groups, {
-    fields: [eventGroups.groupName],
-    references: [groups.name],
+    fields: [eventGroups.groupId],
+    references: [groups.id],
   }),
 }));
 
@@ -510,8 +501,10 @@ export const eventRegistrations = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.eventId, t.memberId] }),
-    indexes: [{ columns: [t.eventId] }],
+    pk: primaryKey({
+      name: "pk_event_registrations",
+      columns: [t.eventId, t.memberId],
+    }),
   }),
 );
 
@@ -532,28 +525,23 @@ export const eventRegistrationsRelations = relations(
 /**
  * Sponsors van de Chiro.
  */
-export const sponsors = createTable(
-  tableNames.sponsors,
-  {
-    companyName: varchar("company_name", { length: 256 }).primaryKey(),
-    companyOwnerFirstName: varchar("company_owner_first_name", {
-      length: 100,
-    }),
-    companyOwnerLastName: varchar("company_owner_last_name", { length: 100 }),
-    addressId: integer("address_id").references(() => addresses.id),
-    phoneNumber: varchar("phone_number", { length: 20 }),
-    emailAddress: varchar("email_address", { length: 255 }),
-    websiteUrl: varchar("website_url", { length: 255 }),
-    logoUrl: varchar("logo_url", { length: 255 }),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }),
-  },
-  (t) => ({
-    indexes: [{ columns: [t.companyName] }],
+export const sponsors = createTable(tableNames.sponsors, {
+  id: serial("id").primaryKey(),
+  companyName: varchar("company_name", { length: 256 }).unique().notNull(),
+  companyOwnerFirstName: varchar("company_owner_first_name", {
+    length: 100,
   }),
-);
+  companyOwnerLastName: varchar("company_owner_last_name", { length: 100 }),
+  addressId: integer("address_id").references(() => addresses.id),
+  phoneNumber: varchar("phone_number", { length: 20 }),
+  emailAddress: varchar("email_address", { length: 255 }),
+  websiteUrl: varchar("website_url", { length: 255 }),
+  logoUrl: varchar("logo_url", { length: 255 }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
 
 export const sponsorsRelations = relations(sponsors, ({ many, one }) => ({
   address: one(addresses, {
@@ -569,14 +557,13 @@ export const sponsorsRelations = relations(sponsors, ({ many, one }) => ({
 export const sponsorshipAgreements = createTable(
   tableNames.sponsorshipAgreements,
   {
-    id: serial("id").primaryKey(),
-    sponsorCompanyName: varchar("sponsor_company_name", { length: 255 })
+    sponsorId: integer("sponsor_id")
       .notNull()
-      .references(() => sponsors.companyName),
+      .references(() => sponsors.id),
     workYearId: integer("work_year_id")
       .notNull()
-      .references(() => workYears.id),
-    amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
+      .references(() => workyears.id),
+    amount: doublePrecision("amount").notNull(),
     paymentReceived: boolean("payment_received").default(false).notNull(),
     paymentMethod: paymentMethodEnum("payment_method"),
     paymentDate: timestamp("payment_date", { withTimezone: true }),
@@ -586,7 +573,10 @@ export const sponsorshipAgreements = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    indexes: [{ columns: [t.sponsorCompanyName] }, { columns: [t.workYearId] }],
+    pk: primaryKey({
+      name: "pk_sponsorship_agreements",
+      columns: [t.sponsorId, t.workYearId],
+    }),
   }),
 );
 
@@ -594,12 +584,12 @@ export const sponsorshipAgreementsRelations = relations(
   sponsorshipAgreements,
   ({ one }) => ({
     sponsor: one(sponsors, {
-      fields: [sponsorshipAgreements.sponsorCompanyName],
-      references: [sponsors.companyName],
+      fields: [sponsorshipAgreements.sponsorId],
+      references: [sponsors.id],
     }),
-    workYear: one(workYears, {
+    workYear: one(workyears, {
       fields: [sponsorshipAgreements.workYearId],
-      references: [workYears.id],
+      references: [workyears.id],
     }),
   }),
 );

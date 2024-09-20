@@ -9,9 +9,3 @@ export class AuthorizationError extends Error {
     super("You are not authorized to perform this action");
   }
 }
-
-export class NotFoundError extends Error {
-  constructor(resource: string) {
-    super(`${resource} not found`);
-  }
-}
