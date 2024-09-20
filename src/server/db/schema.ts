@@ -21,6 +21,27 @@ import { genderEnumValues } from "~/domain/enums/gender";
 import { parentRelationshipEnumValues } from "~/domain/enums/parent-relationship";
 import { paymentMethodEnumValues } from "~/domain/enums/payment-method";
 
+export const MAX_STRING_LENGTH = 255;
+export const MAX_NAME_LENGTH = 100;
+export const MAX_EMAIL_ADDRESS_LENGTH = MAX_STRING_LENGTH;
+export const MAX_URL_LENGTH = MAX_STRING_LENGTH;
+export const MAX_PHONE_NUMBER_LENGTH = 20;
+
+export const MAX_STREET_LENGTH = 100;
+export const MAX_HOUSE_NUMBER_LENGTH = 10;
+export const MAX_ADDRESS_BOX_LENGTH = 10;
+export const MAX_MUNICIPALITY_LENGTH = 50;
+
+export const MAX_GROUP_NAME_LENGTH = 50;
+export const MAX_GROUP_COLOR_LENGTH = 20;
+
+export const MAX_EMERGENCY_CONTACT_RELATIONSHIP_LENGTH = 50;
+
+export const MAX_EVENT_TITLE_LENGTH = 100;
+export const MAX_EVENT_LOCATION_LENGTH = MAX_STRING_LENGTH;
+
+export const MAX_COMPANY_NAME_LENGTH = 100;
+
 /**
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
@@ -106,10 +127,14 @@ export const addresses = createTable(
   tableNames.addresses,
   {
     id: serial("id").primaryKey(),
-    street: varchar("street", { length: 100 }).notNull(),
-    houseNumber: varchar("house_number", { length: 10 }).notNull(),
-    box: varchar("box", { length: 10 }),
-    municipality: varchar("municipality", { length: 50 }).notNull(),
+    street: varchar("street", { length: MAX_STREET_LENGTH }).notNull(),
+    houseNumber: varchar("house_number", {
+      length: MAX_HOUSE_NUMBER_LENGTH,
+    }).notNull(),
+    box: varchar("box", { length: MAX_ADDRESS_BOX_LENGTH }),
+    municipality: varchar("municipality", {
+      length: MAX_MUNICIPALITY_LENGTH,
+    }).notNull(),
     postalCode: smallint("postal_code").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -163,14 +188,14 @@ export const workYearsRelations = relations(workyears, ({ many }) => ({
  */
 export const groups = createTable(tableNames.groups, {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 50 }).unique().notNull(),
-  color: varchar("color", { length: 20 }),
+  name: varchar("name", { length: MAX_GROUP_NAME_LENGTH }).unique().notNull(),
+  color: varchar("color", { length: MAX_GROUP_COLOR_LENGTH }),
   description: text("description"),
   minimumAgeInDays: integer("minimum_age_in_days").notNull(),
   maximumAgeInDays: integer("maximum_age_in_days"),
   gender: genderEnum("gender"),
-  mascotImageUrl: varchar("mascot_image_url", { length: 255 }),
-  coverImageUrl: varchar("cover_image_url", { length: 255 }),
+  mascotImageUrl: varchar("mascot_image_url", { length: MAX_URL_LENGTH }),
+  coverImageUrl: varchar("cover_image_url", { length: MAX_URL_LENGTH }),
   active: boolean("active").default(true).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
@@ -190,12 +215,14 @@ export const members = createTable(
   tableNames.members,
   {
     id: serial("id").primaryKey(),
-    firstName: varchar("first_name", { length: 100 }).notNull(),
-    lastName: varchar("last_name", { length: 100 }).notNull(),
+    firstName: varchar("first_name", { length: MAX_NAME_LENGTH }).notNull(),
+    lastName: varchar("last_name", { length: MAX_NAME_LENGTH }).notNull(),
     gender: genderEnum("gender").notNull(),
     dateOfBirth: date("date_of_birth", { mode: "date" }).notNull(),
-    emailAddress: varchar("email_address", { length: 255 }).unique(),
-    phoneNumber: varchar("phone_number", { length: 20 }),
+    emailAddress: varchar("email_address", {
+      length: MAX_EMAIL_ADDRESS_LENGTH,
+    }).unique(),
+    phoneNumber: varchar("phone_number", { length: MAX_PHONE_NUMBER_LENGTH }),
     // GDPR: toestemming om foto's te publiceren van het lid
     gdprPermissionToPublishPhotos: boolean("gdpr_permission_to_publish_photos")
       .default(false)
@@ -230,10 +257,14 @@ export const emergencyContacts = createTable(tableNames.emergencyContacts, {
   memberId: integer("member_id")
     .references(() => members.id)
     .primaryKey(),
-  firstName: varchar("first_name", { length: 100 }).notNull(),
-  lastName: varchar("last_name", { length: 100 }).notNull(),
-  phoneNumber: varchar("phone_number", { length: 20 }).notNull(),
-  relationship: varchar("relationship", { length: 50 }),
+  firstName: varchar("first_name", { length: MAX_NAME_LENGTH }).notNull(),
+  lastName: varchar("last_name", { length: MAX_NAME_LENGTH }).notNull(),
+  phoneNumber: varchar("phone_number", {
+    length: MAX_PHONE_NUMBER_LENGTH,
+  }).notNull(),
+  relationship: varchar("relationship", {
+    length: MAX_EMERGENCY_CONTACT_RELATIONSHIP_LENGTH,
+  }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -292,9 +323,15 @@ export const medicalInformation = createTable(tableNames.medicalInformation, {
   permissionMedication: boolean("permission_medication")
     .default(false)
     .notNull(),
-  doctorFirstName: varchar("doctor_first_name", { length: 100 }).notNull(),
-  doctorLastName: varchar("doctor_last_name", { length: 100 }).notNull(),
-  doctorPhoneNumber: varchar("doctor_phone_number", { length: 20 }).notNull(),
+  doctorFirstName: varchar("doctor_first_name", {
+    length: MAX_NAME_LENGTH,
+  }).notNull(),
+  doctorLastName: varchar("doctor_last_name", {
+    length: MAX_NAME_LENGTH,
+  }).notNull(),
+  doctorPhoneNumber: varchar("doctor_phone_number", {
+    length: MAX_PHONE_NUMBER_LENGTH,
+  }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -316,11 +353,15 @@ export const medicalInformationRelations = relations(
  */
 export const parents = createTable(tableNames.parents, {
   id: serial("id").primaryKey(),
-  emailAddress: varchar("email_address", { length: 255 }).unique().notNull(),
+  emailAddress: varchar("email_address", { length: MAX_EMAIL_ADDRESS_LENGTH })
+    .unique()
+    .notNull(),
   relationship: parentRelationshipEnum("relationship").notNull(),
-  firstName: varchar("first_name", { length: 100 }).notNull(),
-  lastName: varchar("last_name", { length: 100 }).notNull(),
-  phoneNumber: varchar("phone_number", { length: 20 }).notNull(),
+  firstName: varchar("first_name", { length: MAX_NAME_LENGTH }).notNull(),
+  lastName: varchar("last_name", { length: MAX_NAME_LENGTH }).notNull(),
+  phoneNumber: varchar("phone_number", {
+    length: MAX_PHONE_NUMBER_LENGTH,
+  }).notNull(),
   addressId: integer("address_id")
     .notNull()
     .references(() => addresses.id),
@@ -425,18 +466,20 @@ export const yearlyMembershipsRelations = relations(
  */
 export const events = createTable(tableNames.events, {
   id: serial("id").primaryKey(),
-  title: varchar("title", { length: 100 }).notNull(),
+  title: varchar("title", { length: MAX_EVENT_TITLE_LENGTH }).notNull(),
   description: text("description"),
   startDate: timestamp("start_date", { withTimezone: true }).notNull(),
   endDate: timestamp("end_date", { withTimezone: true }).notNull(),
-  location: varchar("location", { length: 255 }),
-  facebookEventUrl: varchar("facebook_event_url", { length: 255 }).unique(),
+  location: varchar("location", { length: MAX_EVENT_LOCATION_LENGTH }),
+  facebookEventUrl: varchar("facebook_event_url", {
+    length: MAX_URL_LENGTH,
+  }).unique(),
   eventType: eventTypeEnum("event_type").notNull(),
   price: doublePrecision("price"),
   canSignUp: boolean("can_sign_up").default(false).notNull(),
   signUpDeadline: timestamp("sign_up_deadline", { withTimezone: true }),
-  flyerUrl: varchar("flyer_url", { length: 255 }),
-  coverImageUrl: varchar("cover_image_url", { length: 255 }),
+  flyerUrl: varchar("flyer_url", { length: MAX_URL_LENGTH }),
+  coverImageUrl: varchar("cover_image_url", { length: MAX_URL_LENGTH }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -527,16 +570,20 @@ export const eventRegistrationsRelations = relations(
  */
 export const sponsors = createTable(tableNames.sponsors, {
   id: serial("id").primaryKey(),
-  companyName: varchar("company_name", { length: 256 }).unique().notNull(),
+  companyName: varchar("company_name", { length: MAX_COMPANY_NAME_LENGTH })
+    .unique()
+    .notNull(),
   companyOwnerFirstName: varchar("company_owner_first_name", {
-    length: 100,
+    length: MAX_NAME_LENGTH,
   }),
-  companyOwnerLastName: varchar("company_owner_last_name", { length: 100 }),
+  companyOwnerLastName: varchar("company_owner_last_name", {
+    length: MAX_NAME_LENGTH,
+  }),
   addressId: integer("address_id").references(() => addresses.id),
-  phoneNumber: varchar("phone_number", { length: 20 }),
-  emailAddress: varchar("email_address", { length: 255 }),
-  websiteUrl: varchar("website_url", { length: 255 }),
-  logoUrl: varchar("logo_url", { length: 255 }),
+  phoneNumber: varchar("phone_number", { length: MAX_PHONE_NUMBER_LENGTH }),
+  emailAddress: varchar("email_address", { length: MAX_EMAIL_ADDRESS_LENGTH }),
+  websiteUrl: varchar("website_url", { length: MAX_URL_LENGTH }),
+  logoUrl: varchar("logo_url", { length: MAX_URL_LENGTH }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -601,7 +648,7 @@ export const auditLogs = createTable("audit_logs", {
   action: auditActionEnum("action").notNull(),
   oldValues: jsonb("old_values"),
   newValues: jsonb("new_values"),
-  userId: varchar("user_id", { length: 255 }).notNull(),
+  userId: varchar("user_id", { length: MAX_STRING_LENGTH }).notNull(),
   timestamp: timestamp("timestamp", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),

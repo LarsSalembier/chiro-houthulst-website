@@ -4,7 +4,7 @@ export const workyearSchema = z.object({
   id: z.number().int().positive(),
   startDate: z.date(),
   endDate: z.date(),
-  membershipFee: z.number(),
+  membershipFee: z.number().positive(),
 });
 
 export type Workyear = z.infer<typeof workyearSchema>;

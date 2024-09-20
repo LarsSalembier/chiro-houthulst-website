@@ -5,9 +5,14 @@ import { type RecursivePartial } from "~/types/recursive-partial";
 
 export const medicalInformationSchema = z.object({
   memberId: z.number().int().positive(),
-  pastMedicalHistory: z.string().nullable(),
+  pastMedicalHistory: z.string().trim().min(3).nullable(),
   tetanusVaccination: z.boolean(),
-  tetanusVaccinationYear: z.number().int().nullable(),
+  tetanusVaccinationYear: z
+    .number()
+    .int()
+    .min(1900)
+    .max(new Date().getFullYear())
+    .nullable(),
   asthma: conditionSchema,
   bedwetting: conditionSchema,
   epilepsy: conditionSchema,
@@ -17,15 +22,15 @@ export const medicalInformationSchema = z.object({
   rheumatism: conditionSchema,
   sleepwalking: conditionSchema,
   diabetes: conditionSchema,
-  otherMedicalConditions: z.string().nullable(),
-  foodAllergies: z.string().nullable(),
-  substanceAllergies: z.string().nullable(),
-  medicationAllergies: z.string().nullable(),
-  medication: z.string().nullable(),
+  otherMedicalConditions: z.string().trim().min(3).nullable(),
+  foodAllergies: z.string().trim().min(3).nullable(),
+  substanceAllergies: z.string().trim().min(3).nullable(),
+  medicationAllergies: z.string().trim().min(3).nullable(),
+  medication: z.string().trim().min(3).nullable(),
   getsTiredQuickly: z.boolean(),
   canParticipateSports: z.boolean(),
   canSwim: z.boolean(),
-  otherRemarks: z.string().nullable(),
+  otherRemarks: z.string().trim().min(3).nullable(),
   permissionMedication: z.boolean(),
   doctor: doctorInformationSchema,
 });

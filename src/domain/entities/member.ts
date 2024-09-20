@@ -3,13 +3,21 @@ import { nameSchema } from "../value-objects/name";
 import { phoneNumberSchema } from "../value-objects/phone-number";
 import { genderEnumSchema } from "../enums/gender";
 import { type RecursivePartial } from "~/types/recursive-partial";
+import { MAX_EMAIL_ADDRESS_LENGTH } from "~/server/db/schema";
 
 export const selectMemberSchema = z.object({
   id: z.number().int().positive(),
   name: nameSchema,
   gender: genderEnumSchema,
   dateOfBirth: z.date(),
-  emailAddress: z.string().email().nullable(),
+  emailAddress: z
+    .string()
+    .email()
+    .trim()
+    .toLowerCase()
+    .min(3)
+    .max(MAX_EMAIL_ADDRESS_LENGTH)
+    .nullable(),
   phoneNumber: phoneNumberSchema.nullable(),
   gdprPermissionToPublishPhotos: z.boolean(),
 });
