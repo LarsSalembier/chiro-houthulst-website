@@ -5,8 +5,8 @@ import {
   type UpdateSponsorData,
 } from "../schemas/sponsor-schemas";
 import { AuthenticationError, AuthorizationError } from "~/lib/errors";
-import { db } from "../db";
-import { auditLogs, sponsors } from "../db/schema";
+import { db } from "../../../drizzle";
+import { auditLogs, sponsors } from "../../../drizzle/schema";
 import { and, eq, gt, isNotNull, lt } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 

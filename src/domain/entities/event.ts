@@ -4,7 +4,7 @@ import {
   MAX_EVENT_LOCATION_LENGTH,
   MAX_EVENT_TITLE_LENGTH,
   MAX_URL_LENGTH,
-} from "~/server/db/schema";
+} from "drizzle/schema";
 
 export const eventSchema = z.object({
   id: z.number().int().positive(),

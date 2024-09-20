@@ -3,7 +3,7 @@ import { nameSchema } from "../value-objects/name";
 import { phoneNumberSchema } from "../value-objects/phone-number";
 import { genderEnumSchema } from "../enums/gender";
 import { type RecursivePartial } from "~/types/recursive-partial";
-import { MAX_EMAIL_ADDRESS_LENGTH } from "~/server/db/schema";
+import { MAX_EMAIL_ADDRESS_LENGTH } from "drizzle/schema";
 
 export const selectMemberSchema = z.object({
   id: z.number().int().positive(),

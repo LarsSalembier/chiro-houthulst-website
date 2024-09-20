@@ -4,7 +4,7 @@ import {
   MAX_HOUSE_NUMBER_LENGTH,
   MAX_MUNICIPALITY_LENGTH,
   MAX_STREET_LENGTH,
-} from "~/server/db/schema";
+} from "drizzle/schema";
 
 export const addressSchema = z.object({
   id: z.number().int().positive(),

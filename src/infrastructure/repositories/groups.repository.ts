@@ -15,8 +15,8 @@ import {
 import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
 import { GroupNotFoundError } from "~/domain/errors/groups";
 import { isDatabaseError } from "~/domain/errors/database-error";
-import { db } from "~/server/db";
-import { groups, yearlyMemberships } from "~/server/db/schema";
+import { db } from "drizzle";
+import { groups, yearlyMemberships } from "drizzle/schema";
 import { differenceInDays } from "date-fns";
 import { type Gender } from "~/domain/enums/gender";
 

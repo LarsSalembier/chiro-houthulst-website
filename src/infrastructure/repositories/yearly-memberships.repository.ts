@@ -14,8 +14,8 @@ import {
 import { MemberNotFoundError } from "~/domain/errors/members";
 import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
 import { isDatabaseError } from "~/domain/errors/database-error";
-import { db } from "~/server/db";
-import { yearlyMemberships } from "~/server/db/schema";
+import { db } from "drizzle";
+import { yearlyMemberships } from "drizzle/schema";
 import { type PaymentMethod } from "~/domain/enums/payment-method";
 import { WorkyearNotFoundError } from "~/domain/errors/workyears";
 import { GroupNotFoundError } from "~/domain/errors/groups";

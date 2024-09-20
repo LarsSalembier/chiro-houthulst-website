@@ -15,13 +15,13 @@ import {
   GroupNotLinkedToEventError,
 } from "~/domain/errors/events";
 import { isDatabaseError } from "~/domain/errors/database-error";
-import { db } from "~/server/db";
+import { db } from "drizzle";
 import {
   eventGroups,
   eventRegistrations,
   events,
   members,
-} from "~/server/db/schema";
+} from "drizzle/schema";
 import { type Group } from "~/domain/entities/group";
 import { type PaymentMethod } from "~/domain/enums/payment-method";
 import {

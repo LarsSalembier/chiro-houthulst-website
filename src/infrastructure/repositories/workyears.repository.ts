@@ -2,9 +2,13 @@ import { captureException, startSpan } from "@sentry/nextjs";
 import { and, eq, gte, lte } from "drizzle-orm";
 import { injectable } from "inversify";
 import { type IWorkyearsRepository } from "~/application/repositories/workyears.repository.interface";
-import { type WorkyearUpdate, type Workyear, type WorkyearInsert } from "~/domain/entities/workyear";
-import { db } from "~/server/db";
-import { workyears as workyearsTable } from "~/server/db/schema";
+import {
+  type WorkyearUpdate,
+  type Workyear,
+  type WorkyearInsert,
+} from "~/domain/entities/workyear";
+import { db } from "drizzle";
+import { workyears as workyearsTable } from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {
@@ -195,10 +199,7 @@ export class WorkyearsRepository implements IWorkyearsRepository {
    * @throws {WorkyearAlreadyExistsError} If the updated dates overlap with an existing work year.
    * @throws {DatabaseOperationError} If the operation fails.
    */
-  async updateWorkyear(
-    id: number,
-    input: WorkyearUpdate,
-  ): Promise<Workyear> {
+  async updateWorkyear(id: number, input: WorkyearUpdate): Promise<Workyear> {
     return await startSpan(
       { name: "WorkyearsRepository > updateWorkyear" },
       async () => {

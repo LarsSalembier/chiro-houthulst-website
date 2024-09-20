@@ -7,8 +7,8 @@ import {
   type EmergencyContact,
   type EmergencyContactInsert,
 } from "~/domain/entities/emergency-contact";
-import { db } from "~/server/db";
-import { emergencyContacts } from "~/server/db/schema";
+import { db } from "drizzle";
+import { emergencyContacts } from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {

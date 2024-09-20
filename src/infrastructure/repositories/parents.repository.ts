@@ -7,8 +7,8 @@ import {
   type Parent,
   type ParentInsert,
 } from "~/domain/entities/parent";
-import { db } from "~/server/db";
-import { parents as parentsTable, membersParents } from "~/server/db/schema";
+import { db } from "drizzle";
+import { parents as parentsTable, membersParents } from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {

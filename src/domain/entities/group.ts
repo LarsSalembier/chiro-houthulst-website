@@ -4,7 +4,7 @@ import {
   MAX_GROUP_COLOR_LENGTH,
   MAX_GROUP_NAME_LENGTH,
   MAX_URL_LENGTH,
-} from "~/server/db/schema";
+} from "drizzle/schema";
 
 export const selectGroupSchema = z.object({
   id: z.number().int().positive(),

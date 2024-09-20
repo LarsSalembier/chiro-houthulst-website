@@ -6,7 +6,7 @@ import {
   isSameDay,
   startOfDay,
 } from "date-fns";
-import { type Event } from "~/server/db/schema";
+import { type Event } from "drizzle/schema";
 
 export function getEventDotColor(eventType: string) {
   switch (eventType) {

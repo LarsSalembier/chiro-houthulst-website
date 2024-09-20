@@ -7,8 +7,8 @@ import {
   type SponsorshipAgreement,
   type SponsorshipAgreementInsert,
 } from "~/domain/entities/sponsorship-agreement";
-import { db } from "~/server/db";
-import { sponsorshipAgreements as sponsorshipAgreementsTable } from "~/server/db/schema";
+import { db } from "drizzle";
+import { sponsorshipAgreements as sponsorshipAgreementsTable } from "drizzle/schema";
 import {
   SponsorshipAgreementAlreadyExistsError,
   SponsorshipAgreementNotFoundError,

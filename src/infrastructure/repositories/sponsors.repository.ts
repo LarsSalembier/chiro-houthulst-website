@@ -2,8 +2,8 @@ import { captureException, startSpan } from "@sentry/nextjs";
 import { eq } from "drizzle-orm";
 import { injectable } from "inversify";
 import { type ISponsorsRepository } from "~/application/repositories/sponsors.repository.interface";
-import { db } from "~/server/db";
-import { sponsors as sponsorsTable } from "~/server/db/schema";
+import { db } from "drizzle";
+import { sponsors as sponsorsTable } from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {

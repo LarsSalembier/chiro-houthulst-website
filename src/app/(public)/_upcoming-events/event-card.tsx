@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { type Event } from "~/server/db/schema";
+import { type Event } from "drizzle/schema";
 import { isLeiding } from "~/lib/auth";
 import UpdateEventDialog from "../../../components/dialogs/update-event-dialog";
 import DeleteEventDialog from "../../../components/dialogs/delete-event-dialog";

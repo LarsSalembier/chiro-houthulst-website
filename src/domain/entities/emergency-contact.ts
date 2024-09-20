@@ -2,7 +2,7 @@ import { z } from "zod";
 import { nameSchema } from "../value-objects/name";
 import { phoneNumberSchema } from "../value-objects/phone-number";
 import { type RecursivePartial } from "~/types/recursive-partial";
-import { MAX_EMERGENCY_CONTACT_RELATIONSHIP_LENGTH } from "~/server/db/schema";
+import { MAX_EMERGENCY_CONTACT_RELATIONSHIP_LENGTH } from "drizzle/schema";
 
 export const emergencyContactSchema = z.object({
   memberId: z.number().int().positive(),

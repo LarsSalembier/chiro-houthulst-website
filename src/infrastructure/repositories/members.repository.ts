@@ -7,12 +7,12 @@ import {
   type Member,
   type MemberInsert,
 } from "~/domain/entities/member";
-import { db } from "~/server/db";
+import { db } from "drizzle";
 import {
   members as membersTable,
   membersParents,
   yearlyMemberships,
-} from "~/server/db/schema";
+} from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {

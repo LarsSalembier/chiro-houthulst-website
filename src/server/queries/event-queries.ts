@@ -6,8 +6,8 @@ import {
   updateEventSchema,
 } from "../schemas/event-schemas";
 import { AuthenticationError, AuthorizationError } from "~/lib/errors";
-import { db } from "../db";
-import { auditLogs, events } from "../db/schema";
+import { db } from "../../../drizzle";
+import { auditLogs, events } from "../../../drizzle/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, gte } from "drizzle-orm";
 

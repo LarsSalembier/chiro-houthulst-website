@@ -11,7 +11,7 @@ import DayEventDots from "./day-event-dots";
 import DayEventsList from "./day-events-list";
 import AddEventDialog from "~/components/dialogs/add-event-dialog";
 import React from "react";
-import { type Event } from "~/server/db/schema";
+import { type Event } from "drizzle/schema";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { Header4 } from "~/components/typography/headers";

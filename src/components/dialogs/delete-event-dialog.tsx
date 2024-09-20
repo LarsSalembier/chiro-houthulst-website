@@ -14,7 +14,7 @@ import { TrashIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { nlBE } from "date-fns/locale";
-import { type Event } from "~/server/db/schema";
+import { type Event } from "drizzle/schema";
 import { deleteEventAndRevalidate } from "./actions";
 import { toast } from "sonner";
 import { AuthenticationError, AuthorizationError } from "~/lib/errors";

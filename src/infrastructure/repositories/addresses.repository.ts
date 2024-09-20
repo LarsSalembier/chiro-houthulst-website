@@ -11,8 +11,8 @@ import {
 } from "~/domain/errors/addresses";
 import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
 import { isDatabaseError } from "~/domain/errors/database-error";
-import { db } from "~/server/db";
-import { addresses } from "~/server/db/schema";
+import { db } from "drizzle";
+import { addresses } from "drizzle/schema";
 
 @injectable()
 export class AddressesRepository implements IAddressesRepository {

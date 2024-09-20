@@ -6,7 +6,7 @@ import {
   MAX_COMPANY_NAME_LENGTH,
   MAX_EMAIL_ADDRESS_LENGTH,
   MAX_URL_LENGTH,
-} from "~/server/db/schema";
+} from "drizzle/schema";
 
 export const sponsorSchema = z.object({
   id: z.number().int().positive(),

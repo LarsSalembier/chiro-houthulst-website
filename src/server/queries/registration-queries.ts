@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { type RegistrationFormValues } from "~/app/(public)/ledenportaal/nieuw-lid-inschrijven/schemas";
 import { isLoggedIn } from "~/lib/auth";
 import { AuthenticationError } from "~/lib/errors";
-import { db } from "../db";
+import { db } from "../../../drizzle";
 import {
   addresses,
   auditLogs,
@@ -13,7 +13,7 @@ import {
   membersParents,
   parentAddresses,
   parents,
-} from "../db/schema";
+} from "../../../drizzle/schema";
 import { eq } from "drizzle-orm";
 
 export async function getMembersForLoggedInUser() {

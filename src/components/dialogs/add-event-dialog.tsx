@@ -40,7 +40,7 @@ import {
 } from "~/components/ui/select";
 import { useState } from "react";
 import { nlBE } from "date-fns/locale";
-import { type Event } from "~/server/db/schema";
+import { type Event } from "drizzle/schema";
 import { createEventAndRevalidate } from "./actions";
 import {
   createEventSchema,

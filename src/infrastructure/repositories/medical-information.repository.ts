@@ -7,8 +7,8 @@ import {
   type MedicalInformation,
   type MedicalInformationInsert,
 } from "~/domain/entities/medical-information";
-import { db } from "~/server/db";
-import { medicalInformation as medicalInformationTable } from "~/server/db/schema";
+import { db } from "drizzle";
+import { medicalInformation as medicalInformationTable } from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {

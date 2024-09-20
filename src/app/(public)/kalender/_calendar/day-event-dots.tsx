@@ -1,5 +1,5 @@
 import { cn } from "~/lib/utils";
-import { type Event } from "~/server/db/schema";
+import { type Event } from "drizzle/schema";
 import { getEventDotColor } from "./calendar-utils";
 
 interface DayEventDotsProps {
