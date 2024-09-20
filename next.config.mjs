@@ -52,24 +52,21 @@ const nextConfig = {
   // Redirects for dumb routes
   async redirects() {
     return [
-      {
-        source: "/admin",
-        destination: "/admin/accounts",
-        permanent: true,
-      },
-      {
-        source: "/leiding",
-        destination: "/leiding/afdelingen",
-        permanent: true,
-      },
+      // {
+      //   source: "/admin",
+      //   destination: "/admin/accounts",
+      //   permanent: true,
+      // },
+      // {
+      //   source: "/leiding",
+      //   destination: "/leiding/afdelingen",
+      //   permanent: true,
+      // },
     ];
   },
 };
 
-export default nextConfig;
-
-// Configure Sentry with Next.js
-export const sentryConfig = withSentryConfig(nextConfig, {
+export default withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://github.com/getsentry/sentry-webpack-plugin#options
 

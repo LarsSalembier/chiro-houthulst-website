@@ -1,9 +1,18 @@
 import { z } from "zod";
 import { calculateAge } from "./calculate-age";
+import {
+  MAX_ADDRESS_BOX_LENGTH,
+  MAX_EMERGENCY_CONTACT_RELATIONSHIP_LENGTH,
+  MAX_HOUSE_NUMBER_LENGTH,
+  MAX_NAME_LENGTH,
+  MAX_PHONE_NUMBER_LENGTH,
+  MAX_STREET_LENGTH,
+  MAX_STRING_LENGTH,
+} from "drizzle/schema";
 
 const phoneRegex = /^\d{3,4} \d{2} \d{2} \d{2}$/;
 
-const createStringSchema = (fieldName: string, maxLength = 255) =>
+const createStringSchema = (fieldName: string, maxLength = MAX_STRING_LENGTH) =>
   z
     .string({
       required_error: `${fieldName} ontbreekt!`,
@@ -12,7 +21,7 @@ const createStringSchema = (fieldName: string, maxLength = 255) =>
     .min(1, `${fieldName} ontbreekt!`)
     .max(maxLength, `${fieldName} is te lang.`);
 
-const createOptionalStringSchema = (maxLength = 255) =>
+const createOptionalStringSchema = (maxLength = MAX_STRING_LENGTH) =>
   z.preprocess(
     (val) => (val === "" ? undefined : val),
     z.string().trim().max(maxLength, "Informatie is te lang.").optional(),
@@ -27,7 +36,8 @@ const createPhoneSchema = () =>
     .regex(
       phoneRegex,
       "Geef een geldig GSM-nummer in in het formaat 0495 12 34 56 of 051 12 34 56",
-    );
+    )
+    .max(MAX_PHONE_NUMBER_LENGTH, "GSM-nummer is te lang.");
 
 const createBooleanSchema = () => z.boolean().default(false);
 
@@ -43,14 +53,18 @@ export const parentSchema = z.object({
       required_error: "E-mailadres ontbreekt!",
     })
     .email("Geef een geldig e-mailadres in."),
-  street: createStringSchema("Straatnaam"),
-  houseNumber: createStringSchema("Huisnummer", 10),
-  bus: createOptionalStringSchema(10),
+  street: createStringSchema("Straatnaam", MAX_STREET_LENGTH),
+  houseNumber: createStringSchema("Huisnummer", MAX_HOUSE_NUMBER_LENGTH),
+  bus: createOptionalStringSchema(MAX_ADDRESS_BOX_LENGTH),
   postalCode: z
-    .string({
+    .number({
       required_error: "Postcode ontbreekt!",
     })
-    .regex(/^\d{4}$/, "Geef een geldige postcode in."),
+    .int({
+      message: "Postcode moet een getal zijn.",
+    })
+    .min(1000, "Postcode is ongeldig.")
+    .max(9999, "Postcode is ongeldig."),
   municipality: createStringSchema("Gemeente"),
 });
 
@@ -71,13 +85,16 @@ export const memberSchema = z.object({
     (val) => (val === "" ? undefined : val),
     createPhoneSchema().optional(),
   ),
+  memberGroupId: z.number().int().positive(),
 });
 
 export const extraContactPersonSchema = z.object({
-  extraContactPersonFirstName: createStringSchema("Voornaam"),
-  extraContactPersonLastName: createStringSchema("Achternaam"),
+  extraContactPersonFirstName: createStringSchema("Voornaam", MAX_NAME_LENGTH),
+  extraContactPersonLastName: createStringSchema("Achternaam", MAX_NAME_LENGTH),
   extraContactPersonPhoneNumber: createPhoneSchema(),
-  extraContactPersonRelationship: createOptionalStringSchema(),
+  extraContactPersonRelationship: createOptionalStringSchema(
+    MAX_EMERGENCY_CONTACT_RELATIONSHIP_LENGTH,
+  ),
 });
 
 export const permissionsSchema = z.object({
@@ -148,8 +165,8 @@ export const sportsAndActivitiesSchema = z.object({
 });
 
 export const doctorSchema = z.object({
-  doctorFirstName: createStringSchema("Voornaam"),
-  doctorLastName: createStringSchema("Achternaam"),
+  doctorFirstName: createStringSchema("Voornaam", MAX_NAME_LENGTH),
+  doctorLastName: createStringSchema("Achternaam", MAX_NAME_LENGTH),
   doctorPhoneNumber: createPhoneSchema(),
 });
 

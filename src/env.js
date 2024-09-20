@@ -22,6 +22,8 @@ export const env = createEnv({
     UPLOADTHING_SECRET: z.string(),
     UPLOADTHING_APP_ID: z.string(),
     RESEND_API_KEY: z.string(),
+    SENTRY_AUTH_TOKEN: z.string(),
+    SENTRY_DSN: z.string().url(),
   },
 
   /**
@@ -57,6 +59,8 @@ export const env = createEnv({
     UPLOADTHING_SECRET: process.env.UPLOADTHING_SECRET,
     UPLOADTHING_APP_ID: process.env.UPLOADTHING_APP_ID,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
+    SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
+    SENTRY_DSN: process.env.SENTRY_DSN,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
