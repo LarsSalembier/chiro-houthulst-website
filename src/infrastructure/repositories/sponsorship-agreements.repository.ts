@@ -16,18 +16,17 @@ import {
 import { WorkyearNotFoundError } from "~/domain/errors/workyears";
 import { SponsorNotFoundError } from "~/domain/errors/sponsors";
 import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
-import { type ISponsorsRepository } from "~/application/repositories/sponsors.repository.interface";
-import { type IWorkyearsRepository } from "~/application/repositories/workyears.repository.interface";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
+import { getInjection } from "di/container";
 
 @injectable()
 export class SponsorshipAgreementsRepository
   implements ISponsorshipAgreementsRepository
 {
   constructor(
-    private readonly sponsorsRepository: ISponsorsRepository,
-    private readonly workyearsRepository: IWorkyearsRepository,
+    private readonly sponsorsRepository = getInjection("ISponsorsRepository"),
+    private readonly workyearsRepository = getInjection("IWorkyearsRepository"),
   ) {}
 
   /**

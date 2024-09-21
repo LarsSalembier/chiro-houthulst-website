@@ -24,15 +24,16 @@ import { MemberAlreadyPaidError } from "~/domain/errors/members";
 import { type IGroupsRepository } from "~/application/repositories/groups.repository.interface";
 import { type IMembersRepository } from "~/application/repositories/members.repository.interface";
 import { type IWorkyearsRepository } from "~/application/repositories/workyears.repository.interface";
+import { getInjection } from "di/container";
 
 @injectable()
 export class YearlyMembershipsRepository
   implements IYearlyMembershipsRepository
 {
   constructor(
-    private readonly membersRepository: IMembersRepository,
-    private readonly workyearsRepository: IWorkyearsRepository,
-    private readonly groupsRepository: IGroupsRepository,
+    private readonly membersRepository = getInjection("IMembersRepository"),
+    private readonly workyearsRepository = getInjection("IWorkyearsRepository"),
+    private readonly groupsRepository = getInjection("IGroupsRepository"),
   ) {}
 
   /**

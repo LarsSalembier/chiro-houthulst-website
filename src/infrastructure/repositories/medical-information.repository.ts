@@ -15,16 +15,12 @@ import {
   MedicalInformationNotFoundError,
   MemberAlreadyHasMedicalInformationError,
 } from "~/domain/errors/medical-information";
-import { MemberNotFoundError } from "~/domain/errors/members";
 import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
-import { type IMembersRepository } from "~/application/repositories/members.repository.interface";
 
 @injectable()
 export class MedicalInformationRepository
   implements IMedicalInformationRepository
 {
-  constructor(private readonly membersRepository: IMembersRepository) {}
-
   private mapToEntity(
     dbMedicalInfo: typeof medicalInformationTable.$inferSelect,
   ): MedicalInformation {
@@ -129,15 +125,6 @@ export class MedicalInformationRepository
       { name: "MedicalInformationRepository > createMedicalInformation" },
       async () => {
         try {
-          // Check if the member exists
-          const memberExists = await this.membersRepository.getMember(
-            medicalInformation.memberId,
-          );
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const dbMedicalInformation = this.mapToDbFields(medicalInformation);
 
           const query = db
@@ -203,12 +190,6 @@ export class MedicalInformationRepository
       { name: "MedicalInformationRepository > getMedicalInformation" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const query = db.query.medicalInformation.findFirst({
             where: eq(medicalInformationTable.memberId, memberId),
           });
@@ -262,12 +243,6 @@ export class MedicalInformationRepository
       { name: "MedicalInformationRepository > updateMedicalInformation" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const dbMedicalInformationUpdate =
             this.mapToDbFieldsPartial(medicalInformation);
 
@@ -325,12 +300,6 @@ export class MedicalInformationRepository
       { name: "MedicalInformationRepository > deleteMedicalInformation" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const query = db
             .delete(medicalInformationTable)
             .where(eq(medicalInformationTable.memberId, memberId))

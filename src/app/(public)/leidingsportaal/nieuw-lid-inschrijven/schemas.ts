@@ -56,7 +56,7 @@ export const parentSchema = z.object({
   street: createStringSchema("Straatnaam", MAX_STREET_LENGTH),
   houseNumber: createStringSchema("Huisnummer", MAX_HOUSE_NUMBER_LENGTH),
   bus: createOptionalStringSchema(MAX_ADDRESS_BOX_LENGTH),
-  postalCode: z
+  postalCode: z.coerce
     .number({
       required_error: "Postcode ontbreekt!",
     })
@@ -85,7 +85,7 @@ export const memberSchema = z.object({
     (val) => (val === "" ? undefined : val),
     createPhoneSchema().optional(),
   ),
-  memberGroupId: z.number().int().positive(),
+  memberGroupId: z.number().int().positive("Selecteer een groep."),
 });
 
 export const extraContactPersonSchema = z.object({
@@ -174,96 +174,95 @@ export const remarksSchema = z.object({
   otherRemarks: createOptionalStringSchema(),
 });
 
-export const registrationFormSchema = z
-  .object({
-    ...memberSchema.shape,
-    parents: z
-      .array(parentSchema, {
-        required_error: "Voeg minstens één ouder toe.",
-      })
-      .min(1, "Voeg minstens één ouder toe."),
-    ...extraContactPersonSchema.shape,
-    ...permissionsSchema.shape,
-    ...allergiesSchema.shape,
-    ...medicalConditionsSchema.shape,
-    ...medicalHistorySchema.shape,
-    ...sportsAndActivitiesSchema.shape,
-    ...doctorSchema.shape,
-    ...remarksSchema.shape,
-  })
-  .refine(
-    (data) => {
-      const age = calculateAge(data.memberDateOfBirth);
-      if (age >= 15) {
-        return data.memberPhoneNumber;
-      }
-      return true;
-    },
-    {
-      message: "GSM-nummer is verplicht voor leden van 15 jaar en ouder.",
-      path: ["memberPhoneNumber"],
-    },
-  )
-  .refine(
-    (data) => {
-      const age = calculateAge(data.memberDateOfBirth);
-      if (age >= 15) {
-        return data.memberEmailAddress;
-      }
-      return true;
-    },
-    {
-      message: "E-mailadres is verplicht voor leden van 15 jaar en ouder.",
-      path: ["memberEmailAddress"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.substanceAllergies && !data.substanceAllergiesInfo) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Welke stofallergieën heeft uw kind?",
-      path: ["substanceAllergiesInfo"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.medicationAllergies && !data.medicationAllergiesInfo) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Welke medicatieallergieën heeft uw kind?",
-      path: ["medicationAllergiesInfo"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.foodAllergies && !data.foodAllergiesInfo) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Welke voedselallergieën heeft uw kind?",
-      path: ["foodAllergiesInfo"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.hasToTakeMedication && !data.medication) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Welke medicatie moet uw kind nemen?",
-      path: ["medication"],
-    },
-  );
+export const registrationFormSchema = z.object({
+  ...memberSchema.shape,
+  parents: z
+    .array(parentSchema, {
+      required_error: "Voeg minstens één ouder toe.",
+    })
+    .min(1, "Voeg minstens één ouder toe."),
+  ...extraContactPersonSchema.shape,
+  ...permissionsSchema.shape,
+  ...allergiesSchema.shape,
+  ...medicalConditionsSchema.shape,
+  ...medicalHistorySchema.shape,
+  ...sportsAndActivitiesSchema.shape,
+  ...doctorSchema.shape,
+  ...remarksSchema.shape,
+});
+// .refine(
+//   (data) => {
+//     const age = calculateAge(data.memberDateOfBirth);
+//     if (age >= 15) {
+//       return data.memberPhoneNumber;
+//     }
+//     return true;
+//   },
+//   {
+//     message: "GSM-nummer is verplicht voor leden van 15 jaar en ouder.",
+//     path: ["memberPhoneNumber"],
+//   },
+// )
+// .refine(
+//   (data) => {
+//     const age = calculateAge(data.memberDateOfBirth);
+//     if (age >= 15) {
+//       return data.memberEmailAddress;
+//     }
+//     return true;
+//   },
+//   {
+//     message: "E-mailadres is verplicht voor leden van 15 jaar en ouder.",
+//     path: ["memberEmailAddress"],
+//   },
+// )
+// .refine(
+//   (data) => {
+//     if (data.substanceAllergies && !data.substanceAllergiesInfo) {
+//       return false;
+//     }
+//     return true;
+//   },
+//   {
+//     message: "Welke stofallergieën heeft uw kind?",
+//     path: ["substanceAllergiesInfo"],
+//   },
+// )
+// .refine(
+//   (data) => {
+//     if (data.medicationAllergies && !data.medicationAllergiesInfo) {
+//       return false;
+//     }
+//     return true;
+//   },
+//   {
+//     message: "Welke medicatieallergieën heeft uw kind?",
+//     path: ["medicationAllergiesInfo"],
+//   },
+// )
+// .refine(
+//   (data) => {
+//     if (data.foodAllergies && !data.foodAllergiesInfo) {
+//       return false;
+//     }
+//     return true;
+//   },
+//   {
+//     message: "Welke voedselallergieën heeft uw kind?",
+//     path: ["foodAllergiesInfo"],
+//   },
+// )
+// .refine(
+//   (data) => {
+//     if (data.hasToTakeMedication && !data.medication) {
+//       return false;
+//     }
+//     return true;
+//   },
+//   {
+//     message: "Welke medicatie moet uw kind nemen?",
+//     path: ["medication"],
+//   },
+// );
 
 export type RegistrationFormData = z.infer<typeof registrationFormSchema>;

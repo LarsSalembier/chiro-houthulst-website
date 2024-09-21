@@ -1,8 +1,8 @@
 "use server";
 
+import { deleteUser, setRole } from "legacy/user-queries";
 import { revalidatePath } from "next/cache";
 import { type Role } from "types/globals";
-import { deleteUser, setRole } from "~/server/queries/user-queries";
 
 /**
  * Deletes a user, and revalidates the admin accounts page.

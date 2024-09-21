@@ -32,22 +32,21 @@ import {
   MemberNotInGroupError,
   MemberNotRegisteredError,
 } from "~/domain/errors/members";
-import { type IGroupsRepository } from "~/application/repositories/groups.repository.interface";
-import { type IMembersRepository } from "~/application/repositories/members.repository.interface";
-import { type IYearlyMembershipsRepository } from "~/application/repositories/yearly-memberships.repository.interface";
 import { GroupAlreadyLinkedToEventError } from "~/domain/errors/events";
-import { type IWorkyearsRepository } from "~/application/repositories/workyears.repository.interface";
 import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
 import { GroupNotFoundError } from "~/domain/errors/groups";
 import { WorkyearNotFoundError } from "~/domain/errors/workyears";
+import { getInjection } from "di/container";
 
 @injectable()
 export class EventsRepository implements IEventsRepository {
   constructor(
-    private readonly groupsRepository: IGroupsRepository,
-    private readonly membersRepository: IMembersRepository,
-    private readonly workyearsRepository: IWorkyearsRepository,
-    private readonly yearlyMembershipsRepository: IYearlyMembershipsRepository,
+    private readonly groupsRepository = getInjection("IGroupsRepository"),
+    private readonly membersRepository = getInjection("IMembersRepository"),
+    private readonly workyearsRepository = getInjection("IWorkyearsRepository"),
+    private readonly yearlyMembershipsRepository = getInjection(
+      "IYearlyMembershipsRepository",
+    ),
   ) {}
 
   /**

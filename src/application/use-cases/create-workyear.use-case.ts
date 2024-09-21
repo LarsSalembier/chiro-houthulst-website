@@ -24,6 +24,8 @@ export function createWorkyearUseCase(input: { workYearData: WorkyearInsert }) {
           };
         }
 
+        console.log("Test");
+
         // Create the workyear
         let workyear;
         try {

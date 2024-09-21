@@ -9,6 +9,7 @@ import { FormDescription } from "~/components/ui/form";
 import FormFieldComponent from "../form-field";
 import DatePicker from "~/components/forms/date-picker";
 import RadioGroupField from "~/components/forms/radio-group-field";
+import GroupSelection from "./group-selection-form";
 
 interface MemberDetailsFormProps {
   form: UseFormReturn<RegistrationFormData>;
@@ -16,6 +17,7 @@ interface MemberDetailsFormProps {
 
 export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
   const memberDateOfBirth = form.watch("memberDateOfBirth");
+  const memberGender = form.watch("memberGender");
   const age = memberDateOfBirth ? calculateAge(memberDateOfBirth) : null;
 
   const genderOptions = [
@@ -65,6 +67,7 @@ export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
             options={genderOptions}
           />
         </div>
+        {memberDateOfBirth && memberGender && <GroupSelection form={form} />}
         {age !== null && age >= 11 && (
           <>
             <FormFieldComponent

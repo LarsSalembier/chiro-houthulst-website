@@ -7,8 +7,8 @@ import {
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "~/components/ui/button";
 import { Section } from "~/components/section";
-import AddWorkyearForm from "./add-workyear-form";
-import AddGroupForm from "./add-group-form";
+import LeidingsportaalContent from "./content";
+import { isLeiding } from "~/lib/auth";
 
 export const metadata: Metadata = {
   title: "Ledenportaal",
@@ -45,8 +45,11 @@ export default async function SignUpPage() {
       <SignedIn>
         <div className="pb-8 md:pb-12 lg:pb-12">
           <Section>
-            <AddWorkyearForm />
-            <AddGroupForm />
+            {isLeiding() ? (
+              <LeidingsportaalContent />
+            ) : (
+              "Je hebt geen toegang tot deze pagina."
+            )}
           </Section>
         </div>
       </SignedIn>

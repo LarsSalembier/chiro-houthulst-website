@@ -1,7 +1,7 @@
 import { captureException, startSpan } from "@sentry/nextjs";
 
 import { getInjection } from "di/container";
-import { type RegistrationFormData } from "~/app/(public)/ledenportaal/nieuw-lid-inschrijven/schemas";
+import { type RegistrationFormData } from "~/app/(public)/leidingsportaal/nieuw-lid-inschrijven/schemas";
 import { type Address } from "~/domain/entities/address";
 import { AddressAlreadyExistsError } from "~/domain/errors/addresses";
 import { MemberAlreadyHasEmergencyContactError } from "~/domain/errors/emergency-contacts";
@@ -62,15 +62,15 @@ export function signUpMemberUseCase(input: { formData: RegistrationFormData }) {
         } catch (error) {
           if (error instanceof MemberAlreadyExistsError) {
             // Update existing member
-            const member =
+            const existingMember =
               await membersRepository.getMemberByNameAndDateOfBirth(
                 input.formData.memberFirstName,
                 input.formData.memberLastName,
                 input.formData.memberDateOfBirth,
               );
 
-            if (member) {
-              await membersRepository.updateMember(member.id, {
+            if (existingMember) {
+              member = await membersRepository.updateMember(existingMember.id, {
                 name: {
                   firstName: input.formData.memberFirstName,
                   lastName: input.formData.memberLastName,
@@ -83,10 +83,12 @@ export function signUpMemberUseCase(input: { formData: RegistrationFormData }) {
               });
             }
 
-            return;
+            if (!member) {
+              throw error;
+            }
+          } else {
+            throw error;
           }
-
-          throw error;
         }
 
         // Aanmaken van ouders
@@ -172,15 +174,13 @@ export function signUpMemberUseCase(input: { formData: RegistrationFormData }) {
                   }
                 }
               }
-
-              return;
             }
 
             if (error instanceof ParentAlreadyLinkedToMemberError) {
-              return;
+              // Do nothing
+            } else {
+              throw error;
             }
-
-            throw error;
           }
         }
 
@@ -210,11 +210,9 @@ export function signUpMemberUseCase(input: { formData: RegistrationFormData }) {
                   input.formData.extraContactPersonRelationship ?? null,
               },
             );
-
-            return;
+          } else {
+            throw error;
           }
-
-          throw error;
         }
 
         // Aanmaken van medische informatie
@@ -383,11 +381,9 @@ export function signUpMemberUseCase(input: { formData: RegistrationFormData }) {
             paymentDate: null,
           });
         } catch (error) {
-          if (error instanceof MemberAlreadyHasYearlyMembershipError) {
-            return;
+          if (!(error instanceof MemberAlreadyHasYearlyMembershipError)) {
+            throw error;
           }
-
-          throw error;
         }
 
         return member;

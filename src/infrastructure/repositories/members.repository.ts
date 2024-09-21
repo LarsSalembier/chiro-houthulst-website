@@ -22,24 +22,16 @@ import {
 } from "~/domain/errors/members";
 import { GroupNotFoundError } from "~/domain/errors/groups";
 import { WorkyearNotFoundError } from "~/domain/errors/workyears";
-import { type IParentsRepository } from "~/application/repositories/parents.repository.interface";
-import { type IGroupsRepository } from "~/application/repositories/groups.repository.interface";
-import { type IWorkyearsRepository } from "~/application/repositories/workyears.repository.interface";
 import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
 import {
   ParentAlreadyLinkedToMemberError,
   ParentNotFoundError,
   ParentNotLinkedToMemberError,
 } from "~/domain/errors/parents";
+import { getInjection } from "di/container";
 
 @injectable()
 export class MembersRepository implements IMembersRepository {
-  constructor(
-    private readonly parentsRepository: IParentsRepository,
-    private readonly groupsRepository: IGroupsRepository,
-    private readonly workyearsRepository: IWorkyearsRepository,
-  ) {}
-
   private mapToEntity(member: typeof membersTable.$inferSelect): Member {
     return {
       ...member,
@@ -301,12 +293,6 @@ export class MembersRepository implements IMembersRepository {
       { name: "MembersRepository > getMembersForParent" },
       async () => {
         try {
-          const parentExists = await this.parentsRepository.getParent(parentId);
-
-          if (!parentExists) {
-            throw new ParentNotFoundError("Parent not found");
-          }
-
           const query = db.query.membersParents.findMany({
             where: eq(membersParents.parentId, parentId),
             with: {
@@ -356,19 +342,6 @@ export class MembersRepository implements IMembersRepository {
       { name: "MembersRepository > getMembersByGroup" },
       async () => {
         try {
-          const groupExists = await this.groupsRepository.getGroup(groupId);
-
-          if (!groupExists) {
-            throw new GroupNotFoundError("Group not found");
-          }
-
-          const workYearExists =
-            await this.workyearsRepository.getWorkyear(workYearId);
-
-          if (!workYearExists) {
-            throw new WorkyearNotFoundError("Work year not found");
-          }
-
           const query = db.query.yearlyMemberships.findMany({
             where: and(
               eq(yearlyMemberships.groupId, groupId),
@@ -416,13 +389,6 @@ export class MembersRepository implements IMembersRepository {
       { name: "MembersRepository > getMembersForWorkYear" },
       async () => {
         try {
-          const workYearExists =
-            await this.workyearsRepository.getWorkyear(workYearId);
-
-          if (!workYearExists) {
-            throw new WorkyearNotFoundError("Work year not found");
-          }
-
           const query = db.query.yearlyMemberships.findMany({
             where: eq(yearlyMemberships.workYearId, workYearId),
             with: {
@@ -596,12 +562,6 @@ export class MembersRepository implements IMembersRepository {
             throw new MemberNotFoundError("Member not found");
           }
 
-          const parentExists = await this.parentsRepository.getParent(parentId);
-
-          if (!parentExists) {
-            throw new ParentNotFoundError("Parent not found");
-          }
-
           const query = db.insert(membersParents).values({
             memberId,
             parentId,
@@ -660,12 +620,6 @@ export class MembersRepository implements IMembersRepository {
 
           if (!memberExists) {
             throw new MemberNotFoundError("Member not found");
-          }
-
-          const parentExists = await this.parentsRepository.getParent(parentId);
-
-          if (!parentExists) {
-            throw new ParentNotFoundError("Parent not found");
           }
 
           const query = db

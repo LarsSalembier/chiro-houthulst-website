@@ -227,7 +227,9 @@ export class GroupsRepository implements IGroupsRepository {
       { name: "GroupsRepository > getGroupsForBirthDate" },
       async () => {
         try {
-          const ageInDays = differenceInDays(birthDate, new Date());
+          const ageInDays = differenceInDays(new Date(), birthDate);
+
+          console.log("ageInDays", ageInDays);
 
           const genderQueryPart =
             gender === "X"

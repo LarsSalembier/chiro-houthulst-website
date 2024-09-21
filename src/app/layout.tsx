@@ -9,6 +9,7 @@ import { type Metadata, type Viewport } from "next";
 import { siteConfig } from "~/config/site";
 import { fontSans } from "~/lib/fonts";
 import { cn } from "~/lib/utils";
+import "reflect-metadata";
 
 export const metadata: Metadata = {
   title: {

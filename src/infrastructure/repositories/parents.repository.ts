@@ -21,15 +21,10 @@ import {
 import { MemberNotFoundError } from "~/domain/errors/members";
 import { AddressNotFoundError } from "~/domain/errors/addresses";
 import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
-import { type IAddressesRepository } from "~/application/repositories/addresses.repository.interface";
-import { type IMembersRepository } from "~/application/repositories/members.repository.interface";
+import { getInjection } from "di/container";
 
 @injectable()
 export class ParentsRepository implements IParentsRepository {
-  constructor(
-    private readonly addressesRepository: IAddressesRepository,
-    private readonly membersRepository: IMembersRepository,
-  ) {}
   private mapToEntity(dbParent: typeof parentsTable.$inferSelect): Parent {
     return {
       ...dbParent,
@@ -72,15 +67,6 @@ export class ParentsRepository implements IParentsRepository {
       { name: "ParentsRepository > createParent" },
       async () => {
         try {
-          // Ensure the address exists
-          const addressExists = await this.addressesRepository.getAddressById(
-            parent.addressId,
-          );
-
-          if (!addressExists) {
-            throw new AddressNotFoundError("Address not found");
-          }
-
           const query = db
             .insert(parentsTable)
             .values(this.mapToDbFields(parent))
@@ -344,12 +330,6 @@ export class ParentsRepository implements IParentsRepository {
             throw new ParentNotFoundError("Parent not found");
           }
 
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const query = db.insert(membersParents).values({
             parentId,
             memberId,
@@ -411,12 +391,6 @@ export class ParentsRepository implements IParentsRepository {
             throw new ParentNotFoundError("Parent not found");
           }
 
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const query = db
             .delete(membersParents)
             .where(
@@ -474,12 +448,6 @@ export class ParentsRepository implements IParentsRepository {
       { name: "ParentsRepository > getParentsForMember" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const query = db.query.membersParents.findMany({
             where: eq(membersParents.memberId, memberId),
             with: {
@@ -526,12 +494,6 @@ export class ParentsRepository implements IParentsRepository {
       { name: "ParentsRepository > getPrimaryParentForMember" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const query = db.query.membersParents.findFirst({
             where: and(
               eq(membersParents.memberId, memberId),

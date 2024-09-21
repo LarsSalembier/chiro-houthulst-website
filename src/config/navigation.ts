@@ -55,21 +55,6 @@ export const navigationConfig: NavigationConfig = {
       ],
     },
     {
-      title: "Inschrijven",
-      items: [
-        {
-          title: "Nieuw lid inschrijven",
-          href: "/ledenportaal",
-          icon: "UserPlus",
-        },
-        {
-          title: "Inschrijving beheren",
-          href: "/ledenportaal",
-          icon: "UserCheck",
-        },
-      ],
-    },
-    {
       title: "Activiteiten",
       items: [
         {
@@ -149,7 +134,7 @@ export const navigationConfig: NavigationConfig = {
       items: [
         {
           title: "Leidingsportaal",
-          href: "/leiding",
+          href: "/leidingsportaal",
           icon: "FolderLock",
         },
         {

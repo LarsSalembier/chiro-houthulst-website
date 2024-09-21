@@ -17,12 +17,14 @@ import {
   type Sponsor,
   type SponsorInsert,
 } from "~/domain/entities/sponsor";
-import { type IAddressesRepository } from "~/application/repositories/addresses.repository.interface";
 import { AddressNotFoundError } from "~/domain/errors/addresses";
+import { getInjection } from "di/container";
 
 @injectable()
 export class SponsorsRepository implements ISponsorsRepository {
-  constructor(private readonly addressRepository: IAddressesRepository) {}
+  constructor(
+    private readonly addressRepository = getInjection("IAddressesRepository"),
+  ) {}
 
   private mapToEntity(dbSponsor: typeof sponsorsTable.$inferSelect): Sponsor {
     return {

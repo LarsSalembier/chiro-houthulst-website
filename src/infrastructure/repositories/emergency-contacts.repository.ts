@@ -15,16 +15,12 @@ import {
   EmergencyContactNotFoundError,
   MemberAlreadyHasEmergencyContactError,
 } from "~/domain/errors/emergency-contacts";
-import { MemberNotFoundError } from "~/domain/errors/members";
 import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
-import { type IMembersRepository } from "~/application/repositories/members.repository.interface";
 
 @injectable()
 export class EmergencyContactsRepository
   implements IEmergencyContactsRepository
 {
-  constructor(private readonly membersRepository: IMembersRepository) {}
-
   private mapSponsorsToEntity(
     emergencyContact: typeof emergencyContacts.$inferSelect,
   ): EmergencyContact {
@@ -71,14 +67,6 @@ export class EmergencyContactsRepository
       { name: "EmergencyContactsRepository > createEmergencyContact" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(
-            emergencyContact.memberId,
-          );
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const query = db
             .insert(emergencyContacts)
             .values(this.mapToDbFields(emergencyContact))
@@ -138,12 +126,6 @@ export class EmergencyContactsRepository
       { name: "EmergencyContactsRepository > getEmergencyContact" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const query = db.query.emergencyContacts.findFirst({
             where: eq(emergencyContacts.memberId, memberId),
           });
@@ -190,12 +172,6 @@ export class EmergencyContactsRepository
       { name: "EmergencyContactsRepository > updateEmergencyContact" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const query = db
             .update(emergencyContacts)
             .set(this.mapToDbFieldsPartial(emergencyContact))
@@ -248,12 +224,6 @@ export class EmergencyContactsRepository
       { name: "EmergencyContactsRepository > deleteEmergencyContact" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
           const query = db
             .delete(emergencyContacts)
             .where(eq(emergencyContacts.memberId, memberId))

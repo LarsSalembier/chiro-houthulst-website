@@ -49,6 +49,8 @@ export default function RegistrationForm() {
   });
 
   const onSubmit = async (data: RegistrationFormData) => {
+    console.log(data);
+
     try {
       await signUpMember(data);
       console.log(data);

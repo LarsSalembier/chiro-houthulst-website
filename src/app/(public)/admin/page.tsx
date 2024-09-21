@@ -1,5 +1,5 @@
-import { UserSearchbar } from "./user-searchbar";
-import UserCard from "./user-card";
+import { UserSearchbar } from "./accounts/user-searchbar";
+import UserCard from "./accounts/user-card";
 import {
   PageHeader,
   PageHeaderDescription,
@@ -9,7 +9,9 @@ import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/nextjs";
 import { type Metadata } from "next";
 import { isAdmin } from "~/lib/auth";
 import { type Role } from "types/globals";
-import { getUsersByQuery } from "~/server/queries/user-queries";
+import { getUsersByQuery } from "legacy/user-queries";
+import Link from "next/link";
+import { Button } from "~/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Adminportaal",
@@ -54,6 +56,18 @@ export default async function AdminDashboard(params: {
                     />
                   );
                 })}
+              </div>
+              <div className="flex space-x-4">
+                <Button asChild>
+                  <Link href="leidingsportaal/nieuw-werkjaar-toevoegen">
+                    Voeg nieuw werkjaar toe
+                  </Link>
+                </Button>
+                <Button asChild>
+                  <Link href="leidingsportaal/nieuwe-groep-toevoegen">
+                    Voeg nieuwe groep toe
+                  </Link>
+                </Button>
               </div>
             </>
           )}
