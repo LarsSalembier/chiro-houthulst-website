@@ -17,3 +17,8 @@ export const yearlyMembershipInsertSchema = yearlyMembershipSchema;
 export type YearlyMembershipInsert = z.infer<
   typeof yearlyMembershipInsertSchema
 >;
+
+export type YearlyMembershipUpdate = Omit<
+  Partial<YearlyMembershipInsert>,
+  "memberId" | "workYearId"
+>;

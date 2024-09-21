@@ -1,11 +1,11 @@
 import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import CardWrapper from "~/components/card-wrapper";
-import { type RegistrationFormValues } from "../schemas";
+import { type RegistrationFormData } from "../schemas";
 import RadioGroupField from "~/components/forms/radio-group-field";
 
 interface SportsAndActivitiesFormProps {
-  form: UseFormReturn<RegistrationFormValues>;
+  form: UseFormReturn<RegistrationFormData>;
 }
 
 export default function SportsAndActivitiesForm({

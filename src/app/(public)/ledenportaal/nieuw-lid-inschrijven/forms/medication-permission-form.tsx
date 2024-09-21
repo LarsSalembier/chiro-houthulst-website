@@ -1,7 +1,7 @@
 import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import CardWrapper from "~/components/card-wrapper";
-import { type RegistrationFormValues } from "../schemas";
+import { type RegistrationFormData } from "../schemas";
 import {
   FormControl,
   FormField,
@@ -12,7 +12,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 
 interface MedicationPermissionFormProps {
-  form: UseFormReturn<RegistrationFormValues>;
+  form: UseFormReturn<RegistrationFormData>;
 }
 
 export default function MedicationPermissionForm({

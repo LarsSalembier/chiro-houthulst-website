@@ -266,4 +266,4 @@ export const registrationFormSchema = z
     },
   );
 
-export type RegistrationFormValues = z.infer<typeof registrationFormSchema>;
+export type RegistrationFormData = z.infer<typeof registrationFormSchema>;

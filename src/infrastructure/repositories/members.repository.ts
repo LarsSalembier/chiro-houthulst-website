@@ -201,6 +201,61 @@ export class MembersRepository implements IMembersRepository {
   }
 
   /**
+   * Gets a member by their first name, last name and date of birth.
+   *
+   * @param firstName The first name of the member to retrieve.
+   * @param lastName The last name of the member to retrieve.
+   * @param dateOfBirth The date of birth of the member to retrieve.
+   * @returns The member if found, undefined otherwise.
+   * @throws {DatabaseOperationError} If the operation fails.
+   */
+  getMemberByNameAndDateOfBirth(
+    firstName: string,
+    lastName: string,
+    dateOfBirth: Date,
+  ): Promise<Member | undefined> {
+    return startSpan(
+      { name: "MembersRepository > getMemberByNameAndDateOfBirth" },
+      async () => {
+        try {
+          const query = db.query.members.findFirst({
+            where: and(
+              eq(membersTable.firstName, firstName),
+              eq(membersTable.lastName, lastName),
+              eq(membersTable.dateOfBirth, dateOfBirth),
+            ),
+          });
+
+          const dbMember = await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+
+          if (!dbMember) {
+            return undefined;
+          }
+
+          return this.mapToEntity(dbMember);
+        } catch (error) {
+          captureException(error, {
+            data: { firstName, lastName, dateOfBirth },
+          });
+          throw new DatabaseOperationError(
+            "Failed to get member by name and date of birth",
+            {
+              cause: error,
+            },
+          );
+        }
+      },
+    );
+  }
+
+  /**
    * Gets all members.
    *
    * @returns An array of all members.

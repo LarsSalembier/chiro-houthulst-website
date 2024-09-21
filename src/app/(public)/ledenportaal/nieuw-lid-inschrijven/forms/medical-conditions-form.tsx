@@ -4,10 +4,10 @@ import CardWrapper from "~/components/card-wrapper";
 import CheckboxField from "~/components/forms/checkbox-field";
 import ConditionalField from "~/components/forms/conditional-field";
 import FormFieldComponent from "../form-field";
-import { type RegistrationFormValues } from "../schemas";
+import { type RegistrationFormData } from "../schemas";
 
 interface MedicalConditionsFormProps {
-  form: UseFormReturn<RegistrationFormValues>;
+  form: UseFormReturn<RegistrationFormData>;
 }
 
 export default function MedicalConditionsForm({

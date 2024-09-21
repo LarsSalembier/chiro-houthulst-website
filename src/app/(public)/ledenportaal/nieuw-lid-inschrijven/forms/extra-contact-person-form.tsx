@@ -1,11 +1,11 @@
 import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import FormFieldComponent from "../form-field";
-import { type RegistrationFormValues } from "../schemas";
+import { type RegistrationFormData } from "../schemas";
 import CardWrapper from "~/components/card-wrapper";
 
 interface ExtraContactPersonFormProps {
-  form: UseFormReturn<RegistrationFormValues>;
+  form: UseFormReturn<RegistrationFormData>;
 }
 
 export default function ExtraContactPersonForm({

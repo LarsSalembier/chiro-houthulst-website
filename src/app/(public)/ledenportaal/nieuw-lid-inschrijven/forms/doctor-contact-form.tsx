@@ -2,10 +2,10 @@ import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import CardWrapper from "~/components/card-wrapper";
 import FormFieldComponent from "../form-field";
-import { type RegistrationFormValues } from "../schemas";
+import { type RegistrationFormData } from "../schemas";
 
 interface DoctorContactFormProps {
-  form: UseFormReturn<RegistrationFormValues>;
+  form: UseFormReturn<RegistrationFormData>;
 }
 
 export default function DoctorContactForm({ form }: DoctorContactFormProps) {

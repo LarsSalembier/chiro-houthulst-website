@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { injectable } from "inversify";
 import { type IYearlyMembershipsRepository } from "~/application/repositories/yearly-memberships.repository.interface";
 import {
+  type YearlyMembershipUpdate,
   type YearlyMembership,
   type YearlyMembershipInsert,
 } from "~/domain/entities/yearly-membership";
@@ -169,7 +170,7 @@ export class YearlyMembershipsRepository
   async updateYearlyMembership(
     memberId: number,
     workYearId: number,
-    yearlyMembership: Partial<YearlyMembershipInsert>,
+    yearlyMembership: YearlyMembershipUpdate,
   ): Promise<YearlyMembership> {
     return await startSpan(
       { name: "YearlyMembershipsRepository > updateYearlyMembership" },

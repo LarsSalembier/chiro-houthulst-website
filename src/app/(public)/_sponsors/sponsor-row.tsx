@@ -1,7 +1,7 @@
 import { InfiniteMovingCards } from "~/components/ui/infinite-moving-cards";
 import Image from "next/image";
 import Link from "next/link";
-import { getSponsors } from "~/server/queries/sponsor-queries";
+import { type Sponsor } from "~/domain/entities/sponsor";
 
 interface SponsorRowProps {
   direction: "left" | "right";
@@ -14,7 +14,7 @@ export default async function SponsorRow({
   minAmount,
   maxAmount,
 }: SponsorRowProps) {
-  const sponsors = await getSponsors(minAmount, maxAmount);
+  const sponsors: Sponsor[] = [];
 
   // Determine card speed based on number of sponsors
   const speed = sponsors.length > 10 ? "slow" : "normal";
@@ -32,7 +32,7 @@ export default async function SponsorRow({
     >
       <Image
         loading="eager"
-        src={sponsor.logoUrl}
+        src={sponsor.logoUrl!}
         alt={sponsor.companyName}
         width={imageDimensions}
         height={imageDimensions}

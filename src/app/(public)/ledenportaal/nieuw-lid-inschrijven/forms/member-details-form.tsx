@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { type UseFormReturn } from "react-hook-form";
-import { type RegistrationFormValues } from "../schemas";
+import { type RegistrationFormData } from "../schemas";
 import { calculateAge } from "../calculate-age";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { FormDescription } from "~/components/ui/form";
@@ -11,7 +11,7 @@ import DatePicker from "~/components/forms/date-picker";
 import RadioGroupField from "~/components/forms/radio-group-field";
 
 interface MemberDetailsFormProps {
-  form: UseFormReturn<RegistrationFormValues>;
+  form: UseFormReturn<RegistrationFormData>;
 }
 
 export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {

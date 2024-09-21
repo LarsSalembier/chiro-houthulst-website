@@ -3,7 +3,7 @@ import { type UseFormReturn } from "react-hook-form";
 import CardWrapper from "~/components/card-wrapper";
 import FormFieldComponent from "../form-field";
 import ConditionalField from "~/components/forms/conditional-field";
-import { type RegistrationFormValues } from "../schemas";
+import { type RegistrationFormData } from "../schemas";
 import {
   FormControl,
   FormField,
@@ -15,7 +15,7 @@ import { Input } from "~/components/ui/input";
 import RadioGroupField from "~/components/forms/radio-group-field";
 
 interface MedicalInformationFormProps {
-  form: UseFormReturn<RegistrationFormValues>;
+  form: UseFormReturn<RegistrationFormData>;
 }
 
 export function MedicalInformationForm({ form }: MedicalInformationFormProps) {

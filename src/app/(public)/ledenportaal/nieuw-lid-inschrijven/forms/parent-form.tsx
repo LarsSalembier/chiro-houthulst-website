@@ -5,10 +5,10 @@ import { TrashIcon } from "lucide-react";
 import CardWrapper from "~/components/card-wrapper";
 import FormFieldComponent from "../form-field";
 import RadioGroupField from "~/components/forms/radio-group-field";
-import { type RegistrationFormValues } from "../schemas";
+import { type RegistrationFormData } from "../schemas";
 
 interface ParentFormProps {
-  form: UseFormReturn<RegistrationFormValues>;
+  form: UseFormReturn<RegistrationFormData>;
   index: number;
   onRemove: () => void;
   isRemovable: boolean;

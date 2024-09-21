@@ -123,10 +123,10 @@ export class SponsorsRepository implements ISponsorsRepository {
   }
 
   /**
-   * Gets a sponsor by ID.
+   * Returns a sponsor by id, or undefined if not found.
    *
-   * @param id The ID of the sponsor.
-   * @returns The sponsor if found, undefined otherwise.
+   * @param id The sponsor id.
+   * @returns The sponsor, or undefined if not found.
    * @throws {DatabaseOperationError} If the operation fails.
    */
   async getSponsor(id: number): Promise<Sponsor | undefined> {
@@ -163,10 +163,10 @@ export class SponsorsRepository implements ISponsorsRepository {
   }
 
   /**
-   * Gets a sponsor by company name.
+   * Returns a sponsor by company name, or undefined if not found.
    *
-   * @param companyName The company name of the sponsor.
-   * @returns The sponsor if found, undefined otherwise.
+   * @param companyName The sponsor company name.
+   * @returns The sponsor, or undefined if not found.
    * @throws {DatabaseOperationError} If the operation fails.
    */
   async getSponsorByCompanyName(

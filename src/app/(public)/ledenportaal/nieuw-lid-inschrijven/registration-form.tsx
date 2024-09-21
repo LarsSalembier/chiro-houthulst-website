@@ -11,7 +11,7 @@ import { type Metadata } from "next";
 import {
   type parentSchema,
   registrationFormSchema,
-  type RegistrationFormValues,
+  type RegistrationFormData,
 } from "./schemas";
 import MemberDetailsForm from "./forms/member-details-form";
 import { ParentForm } from "./forms/parent-form";
@@ -25,7 +25,7 @@ import SportsAndActivitiesForm from "./forms/sports-and-activities-form";
 import FormFieldComponent from "./form-field";
 import CardWrapper from "../../../../components/card-wrapper";
 import { type z } from "zod";
-import { createMemberRegistrationAndRevalidate } from "./actions";
+import { signUpMember } from "./actions";
 import MedicationPermissionForm from "./forms/medication-permission-form";
 import { Section, SectionContent, SectionTitle } from "~/components/section";
 
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 };
 
 export default function RegistrationForm() {
-  const form = useForm<RegistrationFormValues>({
+  const form = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationFormSchema),
     defaultValues: {
       parents: [{}],
@@ -48,9 +48,9 @@ export default function RegistrationForm() {
     name: "parents",
   });
 
-  const onSubmit = async (data: RegistrationFormValues) => {
+  const onSubmit = async (data: RegistrationFormData) => {
     try {
-      await createMemberRegistrationAndRevalidate(data);
+      await signUpMember(data);
       console.log(data);
       toast.success(`${data.memberFirstName} is ingeschreven!`);
     } catch (error) {

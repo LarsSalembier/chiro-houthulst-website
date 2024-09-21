@@ -71,6 +71,19 @@ export class MockMembersRepository implements IMembersRepository {
     return this._members.find((member) => member.emailAddress === emailAddress);
   }
 
+  async getMemberByNameAndDateOfBirth(
+    firstName: string,
+    lastName: string,
+    dateOfBirth: Date,
+  ): Promise<Member | undefined> {
+    return this._members.find(
+      (member) =>
+        member.name.firstName === firstName &&
+        member.name.lastName === lastName &&
+        member.dateOfBirth.getTime() === dateOfBirth.getTime(),
+    );
+  }
+
   async getMembers(): Promise<Member[]> {
     return this._members;
   }

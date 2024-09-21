@@ -28,10 +28,10 @@ import SponsorRow from "./_sponsors/sponsor-row";
 import Link from "next/link";
 import NewsCard from "./news-card";
 import AgeGroupCard from "./age-group-card";
-import AddSponsorButton from "./_sponsors/add-sponsor-button";
+// import AddSponsorButton from "./_sponsors/add-sponsor-button";
 import { Paragraph } from "~/components/typography/text";
 import { isLeiding } from "~/lib/auth";
-import UpcomingEvents from "./_upcoming-events/upcoming-events";
+// import UpcomingEvents from "./_upcoming-events/upcoming-events";
 import LoadingUpcomingEvents from "./_upcoming-events/loading-upcoming-events";
 
 const recentNews = [
@@ -139,9 +139,9 @@ export default function HomePage() {
           ervaringen opdoen, samenleven en een kijk op zichzelf en de wereld
           ontwikkelen.
         </HeroSectionDescription>
-        <Button asChild variant="secondary" size="lg">
+        {/* <Button asChild variant="secondary" size="lg">
           <Link href="/ledenportaal">Schrijf je in!</Link>
-        </Button>
+        </Button> */}
       </HeroSection>
 
       <Section id="praktisch">
@@ -174,7 +174,7 @@ export default function HomePage() {
               <SubsectionTitle>Inschrijven</SubsectionTitle>
               <SubsectionContent>
                 <Paragraph>
-                  Inschrijven in de Chiro kost €30 en kan elke zondag bij de
+                  Inschrijven in de Chiro kost €40 en kan elke zondag bij de
                   leiding. Zo zijn jullie ook verzekerd. Je kan altijd eens de
                   Chiro komen uittesten, inschrijven is niet verplicht vanaf de
                   eerste zondag! Via het ledenportaal kan je jezelf of je kind
@@ -182,9 +182,9 @@ export default function HomePage() {
                 </Paragraph>
               </SubsectionContent>
               <SubsectionFooter>
-                <Button asChild className="w-fit">
+                {/* <Button asChild className="w-fit">
                   <Link href="/ledenportaal">Ga naar het ledenportaal</Link>
-                </Button>
+                </Button> */}
               </SubsectionFooter>
             </Subsection>
             <Subsection id="uniform">
@@ -224,9 +224,9 @@ export default function HomePage() {
         </SectionContent>
       </Section>
 
-      <Suspense fallback={<LoadingUpcomingEvents />}>
+      {/* <Suspense fallback={<LoadingUpcomingEvents />}>
         <UpcomingEvents />
-      </Suspense>
+      </Suspense> */}
 
       <Section id="nieuws-updates">
         <SectionTitle>Nieuws en Updates</SectionTitle>
@@ -259,9 +259,9 @@ export default function HomePage() {
             onvergetelijke tijd bezorgen. Zelf sponsor worden? Neem gerust
             contact op met onze hoofdleiding.
           </Paragraph>
-          <Suspense fallback={null}>
+          {/* <Suspense fallback={null}>
             <SignedIn>{isLeiding() && <AddSponsorButton />}</SignedIn>
-          </Suspense>
+          </Suspense> */}
 
           <Suspense fallback={<div>Sponsors laden...</div>}>
             <div className="flex flex-col">

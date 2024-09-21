@@ -3,10 +3,10 @@ import { type UseFormReturn } from "react-hook-form";
 import CardWrapper from "~/components/card-wrapper";
 import CheckboxField from "~/components/forms/checkbox-field";
 import ConditionalField from "~/components/forms/conditional-field";
-import { type RegistrationFormValues } from "../schemas";
+import { type RegistrationFormData } from "../schemas";
 
 interface AllergiesFormProps {
-  form: UseFormReturn<RegistrationFormValues>;
+  form: UseFormReturn<RegistrationFormData>;
 }
 
 export function AllergiesForm({ form }: AllergiesFormProps) {

@@ -6,7 +6,9 @@ import {
 } from "~/components/page-header";
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "~/components/ui/button";
-import SubscriptionDisplay from "./subscription-display";
+import { Section } from "~/components/section";
+import AddWorkyearForm from "./add-workyear-form";
+import AddGroupForm from "./add-group-form";
 
 export const metadata: Metadata = {
   title: "Ledenportaal",
@@ -17,15 +19,14 @@ export default async function SignUpPage() {
   return (
     <div className="container relative flex flex-col gap-6">
       <PageHeader>
-        <PageHeaderHeading>Ledenportaal</PageHeaderHeading>
+        <PageHeaderHeading>Leidingsportaal</PageHeaderHeading>
         <PageHeaderDescription>
           <SignedOut>
-            Log in om jouw gegevens te wijzigen, documenten te raadplegen of in
-            te schrijven.
+            Log in om leden in te schrijven en inschrijvingen te beheren.
           </SignedOut>
           <SignedIn>
-            Welkom op het ledenportaal! Hier kan je jouw gegevens raadplegen en
-            wijzigen, documenten downloaden en inschrijven voor activiteiten.
+            Welkom op het leidingsportaal! Hier kan je leden inschrijven, hun
+            gegevens raadplegen en inschrijvingen beheren.
           </SignedIn>
         </PageHeaderDescription>
         <SignedOut>
@@ -43,7 +44,10 @@ export default async function SignUpPage() {
       </PageHeader>
       <SignedIn>
         <div className="pb-8 md:pb-12 lg:pb-12">
-          <SubscriptionDisplay />
+          <Section>
+            <AddWorkyearForm />
+            <AddGroupForm />
+          </Section>
         </div>
       </SignedIn>
     </div>
