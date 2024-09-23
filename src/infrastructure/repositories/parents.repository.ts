@@ -19,9 +19,7 @@ import {
   ParentStillReferencedError,
 } from "~/domain/errors/parents";
 import { MemberNotFoundError } from "~/domain/errors/members";
-import { AddressNotFoundError } from "~/domain/errors/addresses";
 import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
-import { getInjection } from "di/container";
 
 @injectable()
 export class ParentsRepository implements IParentsRepository {
@@ -324,12 +322,6 @@ export class ParentsRepository implements IParentsRepository {
       { name: "ParentsRepository > addMemberToParent" },
       async () => {
         try {
-          const parentExists = await this.getParent(parentId);
-
-          if (!parentExists) {
-            throw new ParentNotFoundError("Parent not found");
-          }
-
           const query = db.insert(membersParents).values({
             parentId,
             memberId,
