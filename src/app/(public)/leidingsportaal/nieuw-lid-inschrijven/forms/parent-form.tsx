@@ -5,10 +5,10 @@ import { TrashIcon } from "lucide-react";
 import CardWrapper from "~/components/card-wrapper";
 import FormFieldComponent from "../form-field";
 import RadioGroupField from "~/components/forms/radio-group-field";
-import { type RegistrationFormData } from "../schemas";
+import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
 
 interface ParentFormProps {
-  form: UseFormReturn<RegistrationFormData>;
+  form: UseFormReturn<RegisterMemberInput>;
   index: number;
   onRemove: () => void;
   isRemovable: boolean;
@@ -40,60 +40,61 @@ export function ParentForm({
       <div className="space-y-4">
         <RadioGroupField
           form={form}
-          name={`parents.${index}.type`}
+          name={`parentsWithAddresses.${index}.parent.relationship`}
           options={parentTypeOptions}
         />
         <div className="grid grid-cols-2 gap-4">
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.firstName`}
+            name={`parentsWithAddresses.${index}.parent.name.firstName`}
             label="Voornaam"
           />
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.lastName`}
+            name={`parentsWithAddresses.${index}.parent.name.lastName`}
             label="Achternaam"
           />
         </div>
         <FormFieldComponent
           form={form}
-          name={`parents.${index}.phoneNumber`}
+          name={`parentsWithAddresses.${index}.parent.phoneNumber`}
           label="GSM-nummer"
           placeholder="Mobiel nummer van ouder"
         />
         <FormFieldComponent
           form={form}
-          name={`parents.${index}.emailAddress`}
+          name={`parentsWithAddresses.${index}.parent.emailAddress`}
           label="E-mailadres"
           type="email"
           placeholder="Voor belangrijke mededelingen"
         />
         <FormFieldComponent
           form={form}
-          name={`parents.${index}.street`}
+          name={`parentsWithAddresses.${index}.address.street`}
           label="Straat"
         />
         <div className="grid grid-cols-2 gap-4">
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.houseNumber`}
+            name={`parentsWithAddresses.${index}.address.houseNumber`}
             label="Huisnummer"
           />
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.bus`}
+            name={`parentsWithAddresses.${index}.address.box`}
             label="Bus (optioneel)"
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.postalCode`}
+            name={`parentsWithAddresses.${index}.address.postalCode`}
             label="Postcode"
+            type="number"
           />
           <FormFieldComponent
             form={form}
-            name={`parents.${index}.municipality`}
+            name={`parentsWithAddresses.${index}.address.municipality`}
             label="Gemeente"
           />
         </div>

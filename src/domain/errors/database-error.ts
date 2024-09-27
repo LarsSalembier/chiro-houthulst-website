@@ -6,6 +6,7 @@ export interface DatabaseError {
   detail: string;
   table: string;
   column?: string;
+  constraint: string;
 }
 
 export function isDatabaseError(error: unknown): error is DatabaseError {

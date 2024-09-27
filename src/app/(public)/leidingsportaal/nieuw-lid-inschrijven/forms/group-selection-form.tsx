@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { type UseFormReturn } from "react-hook-form";
-import { type RegistrationFormData } from "../schemas";
 import { getGroupsForBirthDateAndGender } from "../actions";
 import {
   Select,
@@ -19,44 +18,40 @@ import {
 } from "~/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { type Group } from "~/domain/entities/group";
+import { toast } from "sonner";
+import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
 
 interface GroupSelectionProps {
-  form: UseFormReturn<RegistrationFormData>;
+  form: UseFormReturn<RegisterMemberInput>;
 }
 
 export default function GroupSelection({ form }: GroupSelectionProps) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const birthDate = form.watch("memberDateOfBirth");
-  const gender = form.watch("memberGender");
+  const birthDate = form.watch("memberData.dateOfBirth");
+  const gender = form.watch("memberData.gender");
 
   useEffect(() => {
     async function fetchGroups() {
       if (birthDate && gender) {
         setIsLoading(true);
         setError(null);
-        try {
-          const result = await getGroupsForBirthDateAndGender(
-            birthDate,
-            gender,
-          );
-          if ("error" in result) {
-            return <div>{result.error}</div>;
-          }
+        const result = await getGroupsForBirthDateAndGender(birthDate, gender);
 
-          setGroups(result);
-          if (result.length === 1) {
-            form.setValue("memberGroupId", result[0]!.id);
-          }
-        } catch (err) {
-          console.error("Error fetching groups:", err);
-          setError(
-            "Er is een fout opgetreden bij het ophalen van de groepen. Probeer het later opnieuw.",
-          );
-        } finally {
-          setIsLoading(false);
+        if ("error" in result) {
+          toast.error(result.error);
+          return <div className="text-red-500">{result.error}</div>;
         }
+
+        const groups = result.success;
+
+        setGroups(groups);
+        if (groups.length === 1) {
+          form.setValue("groupId", groups[0]!.id);
+        }
+
+        setIsLoading(false);
       }
     }
 
@@ -96,7 +91,7 @@ export default function GroupSelection({ form }: GroupSelectionProps) {
   return (
     <FormField
       control={form.control}
-      name="memberGroupId"
+      name="groupId"
       render={({ field }) => (
         <FormItem>
           <FormLabel>Selecteer een groep</FormLabel>

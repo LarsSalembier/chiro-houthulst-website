@@ -1,5 +1,5 @@
 import { captureException, startSpan } from "@sentry/nextjs";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { injectable } from "inversify";
 import { type IMembersRepository } from "~/application/repositories/members.repository.interface";
 import {
@@ -9,35 +9,26 @@ import {
 } from "~/domain/entities/member";
 import { db } from "drizzle";
 import {
+  UNIQUE_NAME_AND_DATE_OF_BIRTH_FOR_MEMBER_CONSTRAINT,
+  UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT,
   members as membersTable,
-  membersParents,
-  yearlyMemberships,
+  membersParents as membersParentsTable,
 } from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {
-  MemberAlreadyExistsError,
   MemberNotFoundError,
   MemberStillReferencedError,
+  MemberWithThatEmailAddressAlreadyExistsError,
+  MemberWithThatNameAndBirthDateAlreadyExistsError,
+  ParentIsAlreadyLinkedToMemberError,
+  ParentIsNotLinkedToMemberError,
 } from "~/domain/errors/members";
-import { GroupNotFoundError } from "~/domain/errors/groups";
-import { WorkyearNotFoundError } from "~/domain/errors/workyears";
-import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
-import {
-  ParentAlreadyLinkedToMemberError,
-  ParentNotFoundError,
-  ParentNotLinkedToMemberError,
-} from "~/domain/errors/parents";
-import { getInjection } from "di/container";
+import { DatabaseOperationError } from "~/domain/errors/common";
+import { ParentNotFoundError } from "~/domain/errors/parents";
 
 @injectable()
 export class MembersRepository implements IMembersRepository {
-  constructor(
-    private readonly parentsRepository = getInjection("IParentsRepository"),
-    private readonly groupsRepository = getInjection("IGroupsRepository"),
-    private readonly workyearsRepository = getInjection("IWorkyearsRepository"),
-  ) {}
-
   private mapToEntity(member: typeof membersTable.$inferSelect): Member {
     return {
       ...member,
@@ -66,14 +57,6 @@ export class MembersRepository implements IMembersRepository {
     ) as typeof membersTable.$inferInsert;
   }
 
-  /**
-   * Creates a new member.
-   *
-   * @param member The member data to insert.
-   * @returns The created member.
-   * @throws {MemberAlreadyExistsError} If a member with the same details already exists.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async createMember(member: MemberInsert): Promise<Member> {
     return await startSpan(
       { name: "MembersRepository > createMember" },
@@ -99,14 +82,32 @@ export class MembersRepository implements IMembersRepository {
 
           return this.mapToEntity(createdMember);
         } catch (error) {
+          if (error instanceof DatabaseOperationError) {
+            throw error;
+          }
+
           if (
             isDatabaseError(error) &&
             error.code === PostgresErrorCode.UniqueViolation
           ) {
-            throw new MemberAlreadyExistsError(
-              "Member with the same details already exists",
-              { cause: error },
-            );
+            if (
+              error.constraint ===
+              UNIQUE_NAME_AND_DATE_OF_BIRTH_FOR_MEMBER_CONSTRAINT
+            ) {
+              throw new MemberWithThatNameAndBirthDateAlreadyExistsError(
+                "A member with the same name and date of birth already exists",
+                { cause: error },
+              );
+            }
+
+            if (
+              error.constraint === UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT
+            ) {
+              throw new MemberWithThatEmailAddressAlreadyExistsError(
+                "A member with the same email address already exists",
+                { cause: error },
+              );
+            }
           }
 
           captureException(error, { data: member });
@@ -118,23 +119,16 @@ export class MembersRepository implements IMembersRepository {
     );
   }
 
-  /**
-   * Gets a member by their ID.
-   *
-   * @param id The ID of the member to retrieve.
-   * @returns The member if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getMember(id: number): Promise<Member | undefined> {
+  async getMemberById(id: number): Promise<Member | undefined> {
     return await startSpan(
-      { name: "MembersRepository > getMember" },
+      { name: "MembersRepository > getMemberById" },
       async () => {
         try {
           const query = db.query.members.findFirst({
             where: eq(membersTable.id, id),
           });
 
-          const dbMember = await startSpan(
+          const member = await startSpan(
             {
               name: query.toSQL().sql,
               op: "db.query",
@@ -143,11 +137,7 @@ export class MembersRepository implements IMembersRepository {
             () => query.execute(),
           );
 
-          if (!dbMember) {
-            return undefined;
-          }
-
-          return this.mapToEntity(dbMember);
+          return member ? this.mapToEntity(member) : undefined;
         } catch (error) {
           captureException(error, { data: { memberId: id } });
           throw new DatabaseOperationError("Failed to get member", {
@@ -158,61 +148,12 @@ export class MembersRepository implements IMembersRepository {
     );
   }
 
-  /**
-   * Gets a member by their email address.
-   *
-   * @param emailAddress The email address of the member to retrieve.
-   * @returns The member if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getMemberByEmail(emailAddress: string): Promise<Member | undefined> {
-    return await startSpan(
-      { name: "MembersRepository > getMemberByEmail" },
-      async () => {
-        try {
-          const query = db.query.members.findFirst({
-            where: eq(membersTable.emailAddress, emailAddress),
-          });
-
-          const dbMember = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          if (!dbMember) {
-            return undefined;
-          }
-
-          return this.mapToEntity(dbMember);
-        } catch (error) {
-          captureException(error, { data: { email: emailAddress } });
-          throw new DatabaseOperationError("Failed to get member by email", {
-            cause: error,
-          });
-        }
-      },
-    );
-  }
-
-  /**
-   * Gets a member by their first name, last name and date of birth.
-   *
-   * @param firstName The first name of the member to retrieve.
-   * @param lastName The last name of the member to retrieve.
-   * @param dateOfBirth The date of birth of the member to retrieve.
-   * @returns The member if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getMemberByNameAndDateOfBirth(
+  async getMemberByNameAndDateOfBirth(
     firstName: string,
     lastName: string,
     dateOfBirth: Date,
   ): Promise<Member | undefined> {
-    return startSpan(
+    return await startSpan(
       { name: "MembersRepository > getMemberByNameAndDateOfBirth" },
       async () => {
         try {
@@ -224,7 +165,7 @@ export class MembersRepository implements IMembersRepository {
             ),
           });
 
-          const dbMember = await startSpan(
+          const member = await startSpan(
             {
               name: query.toSQL().sql,
               op: "db.query",
@@ -233,52 +174,12 @@ export class MembersRepository implements IMembersRepository {
             () => query.execute(),
           );
 
-          if (!dbMember) {
-            return undefined;
-          }
-
-          return this.mapToEntity(dbMember);
+          return member ? this.mapToEntity(member) : undefined;
         } catch (error) {
           captureException(error, {
             data: { firstName, lastName, dateOfBirth },
           });
-          throw new DatabaseOperationError(
-            "Failed to get member by name and date of birth",
-            {
-              cause: error,
-            },
-          );
-        }
-      },
-    );
-  }
-
-  /**
-   * Gets all members.
-   *
-   * @returns An array of all members.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getMembers(): Promise<Member[]> {
-    return await startSpan(
-      { name: "MembersRepository > getMembers" },
-      async () => {
-        try {
-          const query = db.query.members.findMany();
-
-          const dbMembers = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          return dbMembers.map((dbMember) => this.mapToEntity(dbMember));
-        } catch (error) {
-          captureException(error);
-          throw new DatabaseOperationError("Failed to get members", {
+          throw new DatabaseOperationError("Failed to get member", {
             cause: error,
           });
         }
@@ -286,33 +187,18 @@ export class MembersRepository implements IMembersRepository {
     );
   }
 
-  /**
-   * Gets members associated with a parent.
-   *
-   * @param parentId The ID of the parent.
-   * @returns An array of members associated with the parent.
-   * @throws {ParentNotFoundError} If the parent is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getMembersForParent(parentId: number): Promise<Member[]> {
+  async getMemberByEmailAddress(
+    emailAddress: string,
+  ): Promise<Member | undefined> {
     return await startSpan(
-      { name: "MembersRepository > getMembersForParent" },
+      { name: "MembersRepository > getMemberByEmailAddress" },
       async () => {
         try {
-          const parentExists = await this.parentsRepository.getParent(parentId);
-
-          if (!parentExists) {
-            throw new ParentNotFoundError("Parent not found");
-          }
-
-          const query = db.query.membersParents.findMany({
-            where: eq(membersParents.parentId, parentId),
-            with: {
-              member: true,
-            },
+          const query = db.query.members.findFirst({
+            where: eq(membersTable.emailAddress, emailAddress),
           });
 
-          const memberParentLinks = await startSpan(
+          const member = await startSpan(
             {
               name: query.toSQL().sql,
               op: "db.query",
@@ -321,12 +207,70 @@ export class MembersRepository implements IMembersRepository {
             () => query.execute(),
           );
 
-          return memberParentLinks.map((link) => this.mapToEntity(link.member));
+          return member ? this.mapToEntity(member) : undefined;
         } catch (error) {
-          if (error instanceof NotFoundError) {
-            throw error;
-          }
+          captureException(error, { data: { emailAddress } });
+          throw new DatabaseOperationError("Failed to get member", {
+            cause: error,
+          });
+        }
+      },
+    );
+  }
 
+  async getAllMembers(): Promise<Member[]> {
+    return await startSpan(
+      { name: "MembersRepository > getAllMembers" },
+      async () => {
+        try {
+          const query = db.query.members.findMany();
+
+          const allMembers = await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+
+          return allMembers.map((member) => this.mapToEntity(member));
+        } catch (error) {
+          captureException(error);
+          throw new DatabaseOperationError("Failed to get all members", {
+            cause: error,
+          });
+        }
+      },
+    );
+  }
+
+  async getMembersForParent(parentId: number): Promise<Member[]> {
+    return await startSpan(
+      { name: "MembersRepository > getMembersForParent" },
+      async () => {
+        try {
+          const query = db.query.members.findMany({
+            where: inArray(
+              membersTable.id,
+              db
+                .select()
+                .from(membersParentsTable)
+                .where(eq(membersParentsTable.parentId, parentId)),
+            ),
+          });
+
+          const members = await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+
+          return members.map((member) => this.mapToEntity(member));
+        } catch (error) {
           captureException(error, { data: { parentId } });
           throw new DatabaseOperationError("Failed to get members for parent", {
             cause: error,
@@ -336,135 +280,6 @@ export class MembersRepository implements IMembersRepository {
     );
   }
 
-  /**
-   * Gets members by group and work year.
-   *
-   * @param groupId The ID of the group.
-   * @param workYearId The ID of the work year.
-   * @returns An array of members in the specified group and work year.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {WorkyearNotFoundError} If the work year is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getMembersByGroup(
-    groupId: number,
-    workYearId: number,
-  ): Promise<Member[]> {
-    return await startSpan(
-      { name: "MembersRepository > getMembersByGroup" },
-      async () => {
-        try {
-          const groupExists = await this.groupsRepository.getGroup(groupId);
-
-          if (!groupExists) {
-            throw new GroupNotFoundError("Group not found");
-          }
-
-          const workYearExists =
-            await this.workyearsRepository.getWorkyear(workYearId);
-
-          if (!workYearExists) {
-            throw new WorkyearNotFoundError("Work year not found");
-          }
-
-          const query = db.query.yearlyMemberships.findMany({
-            where: and(
-              eq(yearlyMemberships.groupId, groupId),
-              eq(yearlyMemberships.workYearId, workYearId),
-            ),
-            with: {
-              member: true,
-            },
-          });
-
-          const yearlyMemberships_ = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          return yearlyMemberships_.map((ym) => this.mapToEntity(ym.member));
-        } catch (error) {
-          if (error instanceof NotFoundError) {
-            throw error;
-          }
-
-          captureException(error, { data: { groupId, workYearId } });
-          throw new DatabaseOperationError("Failed to get members by group", {
-            cause: error,
-          });
-        }
-      },
-    );
-  }
-
-  /**
-   * Gets members for a specific work year.
-   *
-   * @param workYearId The ID of the work year.
-   * @returns An array of members for the specified work year.
-   * @throws {WorkyearNotFoundError} If the work year is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getMembersForWorkYear(workYearId: number): Promise<Member[]> {
-    return await startSpan(
-      { name: "MembersRepository > getMembersForWorkYear" },
-      async () => {
-        try {
-          const workYearExists =
-            await this.workyearsRepository.getWorkyear(workYearId);
-
-          if (!workYearExists) {
-            throw new WorkyearNotFoundError("Work year not found");
-          }
-
-          const query = db.query.yearlyMemberships.findMany({
-            where: eq(yearlyMemberships.workYearId, workYearId),
-            with: {
-              member: true,
-            },
-          });
-
-          const yearlyMemberships_ = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          return yearlyMemberships_.map((ym) => this.mapToEntity(ym.member));
-        } catch (error) {
-          if (error instanceof WorkyearNotFoundError) {
-            throw error;
-          }
-
-          captureException(error, { data: { workYearId } });
-          throw new DatabaseOperationError(
-            "Failed to get members for work year",
-            {
-              cause: error,
-            },
-          );
-        }
-      },
-    );
-  }
-
-  /**
-   * Updates a member.
-   *
-   * @param id The ID of the member to update.
-   * @param member The member data to update.
-   * @returns The updated member.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MemberAlreadyExistsError} If a member with the same email already exists.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async updateMember(id: number, member: MemberUpdate): Promise<Member> {
     return await startSpan(
       { name: "MembersRepository > updateMember" },
@@ -491,7 +306,7 @@ export class MembersRepository implements IMembersRepository {
 
           return this.mapToEntity(updatedMember);
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof MemberNotFoundError) {
             throw error;
           }
 
@@ -499,10 +314,24 @@ export class MembersRepository implements IMembersRepository {
             isDatabaseError(error) &&
             error.code === PostgresErrorCode.UniqueViolation
           ) {
-            throw new MemberAlreadyExistsError(
-              "Member with the same email already exists",
-              { cause: error },
-            );
+            if (
+              error.constraint ===
+              UNIQUE_NAME_AND_DATE_OF_BIRTH_FOR_MEMBER_CONSTRAINT
+            ) {
+              throw new MemberWithThatNameAndBirthDateAlreadyExistsError(
+                "A member with the same name and date of birth already exists",
+                { cause: error },
+              );
+            }
+
+            if (
+              error.constraint === UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT
+            ) {
+              throw new MemberWithThatEmailAddressAlreadyExistsError(
+                "A member with the same email address already exists",
+                { cause: error },
+              );
+            }
           }
 
           captureException(error, { data: { memberId: id, member } });
@@ -514,14 +343,6 @@ export class MembersRepository implements IMembersRepository {
     );
   }
 
-  /**
-   * Deletes a member.
-   *
-   * @param id The ID of the member to delete.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MemberStillReferencedError} If the member is still referenced by other entities.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async deleteMember(id: number): Promise<void> {
     return await startSpan(
       { name: "MembersRepository > deleteMember" },
@@ -545,7 +366,7 @@ export class MembersRepository implements IMembersRepository {
             throw new MemberNotFoundError("Member not found");
           }
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof MemberNotFoundError) {
             throw error;
           }
 
@@ -553,10 +374,9 @@ export class MembersRepository implements IMembersRepository {
             isDatabaseError(error) &&
             error.code === PostgresErrorCode.ForeignKeyViolation
           ) {
-            throw new MemberStillReferencedError(
-              "Failed to delete member due to foreign key constraint",
-              { cause: error },
-            );
+            throw new MemberStillReferencedError("Member still referenced", {
+              cause: error,
+            });
           }
 
           captureException(error, { data: { memberId: id } });
@@ -568,43 +388,13 @@ export class MembersRepository implements IMembersRepository {
     );
   }
 
-  /**
-   * Adds a parent to a member.
-   *
-   * @param memberId The ID of the member.
-   * @param parentId The ID of the parent.
-   * @param isPrimary Whether the parent is the primary parent.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {ParentNotFoundError} If the parent is not found.
-   * @throws {ParentAlreadyLinkedToMemberError} If the parent is already linked to the member.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async addParentToMember(
-    memberId: number,
-    parentId: number,
-    isPrimary: boolean,
-  ): Promise<void> {
+  async deleteAllMembers(): Promise<void> {
     return await startSpan(
-      { name: "MembersRepository > addParentToMember" },
+      { name: "MembersRepository > deleteAllMembers" },
       async () => {
         try {
-          const memberExists = await this.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
-          const parentExists = await this.parentsRepository.getParent(parentId);
-
-          if (!parentExists) {
-            throw new ParentNotFoundError("Parent not found");
-          }
-
-          const query = db.insert(membersParents).values({
-            memberId,
-            parentId,
-            isPrimary,
-          });
+          // eslint-disable-next-line drizzle/enforce-delete-with-where
+          const query = db.delete(membersTable).returning();
 
           await startSpan(
             {
@@ -615,20 +405,79 @@ export class MembersRepository implements IMembersRepository {
             () => query.execute(),
           );
         } catch (error) {
-          if (error instanceof NotFoundError) {
-            throw error;
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.ForeignKeyViolation
+          ) {
+            throw new MemberStillReferencedError("Member still referenced", {
+              cause: error,
+            });
+          }
+
+          captureException(error);
+          throw new DatabaseOperationError("Failed to delete all members", {
+            cause: error,
+          });
+        }
+      },
+    );
+  }
+
+  async addParentToMember(
+    memberId: number,
+    parentId: number,
+    isPrimary = false,
+  ): Promise<void> {
+    return await startSpan(
+      { name: "MembersRepository > addParentToMember" },
+      async () => {
+        try {
+          const query = db
+            .insert(membersParentsTable)
+            .values({
+              memberId,
+              parentId,
+              isPrimary,
+            })
+            .returning();
+
+          await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+        } catch (error) {
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.ForeignKeyViolation
+          ) {
+            if (error.column === "member_id") {
+              throw new MemberNotFoundError("Member not found", {
+                cause: error,
+              });
+            }
+
+            if (error.column === "parent_id") {
+              throw new ParentNotFoundError("Parent not found", {
+                cause: error,
+              });
+            }
           }
 
           if (
             isDatabaseError(error) &&
             error.code === PostgresErrorCode.UniqueViolation
           ) {
-            throw new ParentAlreadyLinkedToMemberError(
-              "Parent is already linked to the member",
+            throw new ParentIsAlreadyLinkedToMemberError(
+              "Parent is already linked to member",
+              { cause: error },
             );
           }
 
-          captureException(error, { data: { memberId, parentId } });
+          captureException(error, { data: { memberId, parentId, isPrimary } });
           throw new DatabaseOperationError("Failed to add parent to member", {
             cause: error,
           });
@@ -637,15 +486,6 @@ export class MembersRepository implements IMembersRepository {
     );
   }
 
-  /**
-   * Removes a parent from a member.
-   *
-   * @param memberId The ID of the member.
-   * @param parentId The ID of the parent.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {ParentNotFoundError} If the parent is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async removeParentFromMember(
     memberId: number,
     parentId: number,
@@ -654,29 +494,17 @@ export class MembersRepository implements IMembersRepository {
       { name: "MembersRepository > removeParentFromMember" },
       async () => {
         try {
-          const memberExists = await this.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
-          const parentExists = await this.parentsRepository.getParent(parentId);
-
-          if (!parentExists) {
-            throw new ParentNotFoundError("Parent not found");
-          }
-
           const query = db
-            .delete(membersParents)
+            .delete(membersParentsTable)
             .where(
               and(
-                eq(membersParents.memberId, memberId),
-                eq(membersParents.parentId, parentId),
+                eq(membersParentsTable.memberId, memberId),
+                eq(membersParentsTable.parentId, parentId),
               ),
             )
             .returning();
 
-          const [deletedLink] = await startSpan(
+          const [result] = await startSpan(
             {
               name: query.toSQL().sql,
               op: "db.query",
@@ -685,22 +513,79 @@ export class MembersRepository implements IMembersRepository {
             () => query.execute(),
           );
 
-          if (!deletedLink) {
-            throw new ParentNotLinkedToMemberError(
-              "Parent is not linked to the member",
+          if (!result) {
+            throw new ParentIsNotLinkedToMemberError(
+              "Parent is not linked to member",
             );
           }
         } catch (error) {
-          if (
-            error instanceof NotFoundError ||
-            error instanceof ParentNotLinkedToMemberError
-          ) {
+          if (error instanceof ParentIsNotLinkedToMemberError) {
             throw error;
           }
 
           captureException(error, { data: { memberId, parentId } });
           throw new DatabaseOperationError(
             "Failed to remove parent from member",
+            {
+              cause: error,
+            },
+          );
+        }
+      },
+    );
+  }
+
+  async removeAllParentsFromMember(memberId: number): Promise<void> {
+    return await startSpan(
+      { name: "MembersRepository > removeAllParentsFromMember" },
+      async () => {
+        try {
+          const query = db
+            .delete(membersParentsTable)
+            .where(eq(membersParentsTable.memberId, memberId))
+            .returning();
+
+          await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+        } catch (error) {
+          captureException(error, { data: { memberId } });
+          throw new DatabaseOperationError(
+            "Failed to remove all parents from member",
+            {
+              cause: error,
+            },
+          );
+        }
+      },
+    );
+  }
+
+  async removeAllParentsFromAllMembers(): Promise<void> {
+    return await startSpan(
+      { name: "MembersRepository > removeAllParentsFromAllMembers" },
+      async () => {
+        try {
+          // eslint-disable-next-line drizzle/enforce-delete-with-where
+          const query = db.delete(membersParentsTable).returning();
+
+          await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+        } catch (error) {
+          captureException(error);
+          throw new DatabaseOperationError(
+            "Failed to remove all parents from all members",
             {
               cause: error,
             },

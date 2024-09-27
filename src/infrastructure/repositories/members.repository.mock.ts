@@ -1,74 +1,100 @@
+import { startSpan } from "@sentry/nextjs";
 import { injectable } from "inversify";
-import { type IMembersRepository } from "~/application/repositories/members.repository.interface";
+import { IMembersRepository } from "~/application/repositories/members.repository.interface";
+import { Member, MemberInsert, MemberUpdate } from "~/domain/entities/member";
 import {
-  type MemberUpdate,
-  type Member,
-  type MemberInsert,
-} from "~/domain/entities/member";
-import {
-  MemberAlreadyExistsError,
   MemberNotFoundError,
   MemberStillReferencedError,
+  MemberWithThatEmailAddressAlreadyExistsError,
+  MemberWithThatNameAndBirthDateAlreadyExistsError,
+  ParentIsAlreadyLinkedToMemberError,
+  ParentIsNotLinkedToMemberError,
 } from "~/domain/errors/members";
-import {
-  ParentAlreadyLinkedToMemberError,
-  ParentNotLinkedToMemberError,
-  ParentNotFoundError,
-} from "~/domain/errors/parents";
+import { ParentNotFoundError } from "~/domain/errors/parents";
+import { mockData } from "~/infrastructure/mock-data";
 
 @injectable()
 export class MockMembersRepository implements IMembersRepository {
-  private _members: Member[] = [];
-  private _nextId = 1;
-  private _memberParentLinks: {
+  private members: Member[] = mockData.members;
+  private membersParents: {
     memberId: number;
     parentId: number;
     isPrimary: boolean;
-  }[] = [];
-  private _memberGroupLinks: {
-    memberId: number;
-    groupId: number;
-    workYearId: number;
-  }[] = [];
+  }[] = mockData.parentMembers;
+  private autoIncrementId: number =
+    this.members.reduce((maxId, member) => {
+      return member.id > maxId ? member.id : maxId;
+    }, 0) + 1;
+
+  private isMemberReferenced(memberId: number): boolean {
+    const emergencyContactWithMemberExists = mockData.emergencyContacts.some(
+      (ec) => ec.memberId === memberId,
+    );
+
+    const eventRegistrationWithMemberExists = mockData.eventRegistrations.some(
+      (er) => er.memberId === memberId,
+    );
+
+    const medicalInformationWithMemberExists = mockData.medicalInformation.some(
+      (mi) => mi.memberId === memberId,
+    );
+
+    const yearlyMembershipWithMemberExists = mockData.yearlyMemberships.some(
+      (ym) => ym.memberId === memberId,
+    );
+
+    const memberParentWithMemberExists = this.membersParents.some(
+      (mp) => mp.memberId === memberId,
+    );
+
+    return (
+      emergencyContactWithMemberExists ||
+      eventRegistrationWithMemberExists ||
+      medicalInformationWithMemberExists ||
+      yearlyMembershipWithMemberExists ||
+      memberParentWithMemberExists
+    );
+  }
 
   async createMember(member: MemberInsert): Promise<Member> {
-    // Check if member already exists
-    const existingMember = this._members.find(
-      (m) =>
-        m.name.firstName === member.name.firstName &&
-        m.name.lastName === member.name.lastName &&
-        m.dateOfBirth.getTime() === member.dateOfBirth.getTime(),
-    );
-    if (existingMember) {
-      throw new MemberAlreadyExistsError(
-        "Member with the same details already exists",
+    return startSpan({ name: "MockMembersRepository > createMember" }, () => {
+      const existingMemberWithBirthDateAndName = this.members.find(
+        (m) =>
+          m.name.firstName.toLowerCase() ===
+            member.name.firstName.toLowerCase() &&
+          m.name.lastName.toLowerCase() ===
+            member.name.lastName.toLowerCase() &&
+          m.dateOfBirth.getTime() === member.dateOfBirth.getTime(),
       );
-    }
+      if (existingMemberWithBirthDateAndName) {
+        throw new MemberWithThatNameAndBirthDateAlreadyExistsError(
+          "A member with the same name and date of birth already exists",
+        );
+      }
 
-    // Check if email address is unique
-    if (
-      member.emailAddress &&
-      this._members.some((m) => m.emailAddress === member.emailAddress)
-    ) {
-      throw new MemberAlreadyExistsError(
-        "Member with the same email address already exists",
+      const existingMemberWithEmailAddress = this.members.find(
+        (m) =>
+          m.emailAddress?.toLowerCase() === member.emailAddress?.toLowerCase(),
       );
-    }
+      if (existingMemberWithEmailAddress) {
+        throw new MemberWithThatEmailAddressAlreadyExistsError(
+          "A member with the same email address already exists",
+        );
+      }
 
-    const newMember: Member = {
-      ...member,
-      id: this._nextId++,
-    };
-    this._members.push(newMember);
-    return newMember;
+      const newMember: Member = {
+        id: this.autoIncrementId++,
+        ...member,
+      };
+      this.members.push(newMember);
+      return newMember;
+    });
   }
 
-  async getMember(id: number): Promise<Member | undefined> {
-    return this._members.find((member) => member.id === id);
-  }
-
-  async getMemberByEmail(emailAddress: string): Promise<Member | undefined> {
-    return this._members.find((member) => member.emailAddress === emailAddress);
+  async getMemberById(id: number): Promise<Member | undefined> {
+    return startSpan({ name: "MockMembersRepository > getMemberById" }, () => {
+      return this.members.find((m) => m.id === id);
+    });
   }
 
   async getMemberByNameAndDateOfBirth(
@@ -76,172 +102,198 @@ export class MockMembersRepository implements IMembersRepository {
     lastName: string,
     dateOfBirth: Date,
   ): Promise<Member | undefined> {
-    return this._members.find(
-      (member) =>
-        member.name.firstName === firstName &&
-        member.name.lastName === lastName &&
-        member.dateOfBirth.getTime() === dateOfBirth.getTime(),
+    return startSpan(
+      { name: "MockMembersRepository > getMemberByNameAndDateOfBirth" },
+      () => {
+        return this.members.find(
+          (m) =>
+            m.name.firstName.toLowerCase() === firstName.toLowerCase() &&
+            m.name.lastName.toLowerCase() === lastName.toLowerCase() &&
+            m.dateOfBirth.getTime() === dateOfBirth.getTime(),
+        );
+      },
     );
   }
 
-  async getMembers(): Promise<Member[]> {
-    return this._members;
+  async getMemberByEmailAddress(
+    emailAddress: string,
+  ): Promise<Member | undefined> {
+    return startSpan(
+      { name: "MockMembersRepository > getMemberByEmailAddress" },
+      () => {
+        return this.members.find(
+          (m) => m.emailAddress?.toLowerCase() === emailAddress.toLowerCase(),
+        );
+      },
+    );
+  }
+
+  async getAllMembers(): Promise<Member[]> {
+    return startSpan({ name: "MockMembersRepository > getAllMembers" }, () => {
+      return this.members;
+    });
   }
 
   async getMembersForParent(parentId: number): Promise<Member[]> {
-    const memberIds = this._memberParentLinks
-      .filter((link) => link.parentId === parentId)
-      .map((link) => link.memberId);
-    return this._members.filter((member) => memberIds.includes(member.id));
-  }
+    return startSpan(
+      { name: "MockMembersRepository > getMembersForParent" },
+      () => {
+        const memberIds = this.membersParents
+          .filter((mp) => mp.parentId === parentId)
+          .map((mp) => mp.memberId);
 
-  async getMembersByGroup(
-    groupId: number,
-    workYearId: number,
-  ): Promise<Member[]> {
-    const memberIds = this._memberGroupLinks
-      .filter(
-        (link) => link.groupId === groupId && link.workYearId === workYearId,
-      )
-      .map((link) => link.memberId);
-    return this._members.filter((member) => memberIds.includes(member.id));
-  }
-
-  async getMembersForWorkYear(workYearId: number): Promise<Member[]> {
-    const memberIds = this._memberGroupLinks
-      .filter((link) => link.workYearId === workYearId)
-      .map((link) => link.memberId);
-    return this._members.filter((member) => memberIds.includes(member.id));
+        return this.members.filter((m) => memberIds.includes(m.id));
+      },
+    );
   }
 
   async updateMember(id: number, member: MemberUpdate): Promise<Member> {
-    const index = this._members.findIndex((m) => m.id === id);
-    if (index === -1) {
-      throw new MemberNotFoundError("Member not found");
-    }
+    return startSpan({ name: "MockMembersRepository > updateMember" }, () => {
+      const existingMemberIndex = this.members.findIndex((m) => m.id === id);
+      if (existingMemberIndex === -1) {
+        throw new MemberNotFoundError("Member not found");
+      }
 
-    // Check if member already exists
-    const uniqueCombination = {
-      firstName: member.name?.firstName ?? this._members[index]!.name.firstName,
-      lastName: member.name?.lastName ?? this._members[index]!.name.lastName,
-      dateOfBirth:
-        member.dateOfBirth ?? this._members[index]!.dateOfBirth.getTime(),
-    };
-
-    const existingMember = this._members.find(
-      (m) =>
-        m.id !== id &&
-        m.name.firstName === uniqueCombination.firstName &&
-        m.name.lastName === uniqueCombination.lastName &&
-        m.dateOfBirth.getTime() === uniqueCombination.dateOfBirth,
-    );
-
-    if (existingMember) {
-      throw new MemberAlreadyExistsError(
-        "Member with the same details already exists",
+      const existingMemberWithBirthDateAndName = this.members.find(
+        (m) =>
+          m.name.firstName.toLowerCase() ===
+            member.name?.firstName?.toLowerCase() &&
+          m.name.lastName.toLowerCase() ===
+            member.name?.lastName?.toLowerCase() &&
+          m.dateOfBirth.getTime() === member.dateOfBirth?.getTime() &&
+          m.id !== id,
       );
-    }
+      if (existingMemberWithBirthDateAndName) {
+        throw new MemberWithThatNameAndBirthDateAlreadyExistsError(
+          "A member with the same name and date of birth already exists",
+        );
+      }
 
-    if (
-      member.emailAddress &&
-      this._members.some(
-        (m) => m.id !== id && m.emailAddress === member.emailAddress,
-      )
-    ) {
-      throw new MemberAlreadyExistsError(
-        "Member with the same email address already exists",
+      const existingMemberWithEmailAddress = this.members.find(
+        (m) =>
+          m.emailAddress?.toLowerCase() ===
+            member.emailAddress?.toLowerCase() && m.id !== id,
       );
-    }
+      if (existingMemberWithEmailAddress) {
+        throw new MemberWithThatEmailAddressAlreadyExistsError(
+          "A member with the same email address already exists",
+        );
+      }
 
-    this._members[index] = {
-      ...this._members[index]!,
-      ...member,
-      name: {
-        ...this._members[index]!.name,
-        ...member.name,
-      },
-    };
+      this.members[existingMemberIndex] = {
+        ...this.members[existingMemberIndex]!,
+        ...member,
+        name: {
+          firstName:
+            member.name?.firstName ??
+            this.members[existingMemberIndex]!.name.firstName,
+          lastName:
+            member.name?.lastName ??
+            this.members[existingMemberIndex]!.name.lastName,
+        },
+      };
 
-    return this._members[index];
+      return this.members[existingMemberIndex];
+    });
   }
 
   async deleteMember(id: number): Promise<void> {
-    const index = this._members.findIndex((member) => member.id === id);
-    if (index === -1) {
-      throw new MemberNotFoundError("Member not found");
-    }
+    return startSpan({ name: "MockMembersRepository > deleteMember" }, () => {
+      if (this.isMemberReferenced(id)) {
+        throw new MemberStillReferencedError("Member still referenced");
+      }
 
-    // Check if member is still referenced
-    if (
-      this._memberParentLinks.some((link) => link.memberId === id) ||
-      this._memberGroupLinks.some((link) => link.memberId === id)
-    ) {
-      throw new MemberStillReferencedError(
-        "Failed to delete member due to foreign key constraint",
-      );
-    }
+      const memberIndex = this.members.findIndex((m) => m.id === id);
+      if (memberIndex === -1) {
+        throw new MemberNotFoundError("Member not found");
+      }
+      this.members.splice(memberIndex, 1);
+    });
+  }
 
-    this._members.splice(index, 1);
+  async deleteAllMembers(): Promise<void> {
+    return startSpan(
+      { name: "MockMembersRepository > deleteAllMembers" },
+      () => {
+        if (this.members.some((member) => this.isMemberReferenced(member.id))) {
+          throw new MemberStillReferencedError("Member still referenced");
+        }
+
+        this.members = [];
+      },
+    );
   }
 
   async addParentToMember(
     memberId: number,
     parentId: number,
-    isPrimary: boolean,
+    isPrimary = false,
   ): Promise<void> {
-    const memberExists = this._members.some((m) => m.id === memberId);
-    if (!memberExists) {
-      throw new MemberNotFoundError("Member not found");
-    }
+    return startSpan(
+      { name: "MockMembersRepository > addParentToMember" },
+      () => {
+        const existingMember = this.members.find((m) => m.id === memberId);
+        if (!existingMember) {
+          throw new MemberNotFoundError("Member not found");
+        }
 
-    const parentExists = this._memberParentLinks.some(
-      (link) => link.parentId === parentId,
+        const existingParent = mockData.parents.find((p) => p.id === parentId);
+        if (!existingParent) {
+          throw new ParentNotFoundError("Parent not found");
+        }
+
+        const existingParentLink = this.membersParents.find(
+          (mp) => mp.memberId === memberId && mp.parentId === parentId,
+        );
+        if (existingParentLink) {
+          throw new ParentIsAlreadyLinkedToMemberError(
+            "Parent is already linked to member",
+          );
+        }
+
+        this.membersParents.push({ memberId, parentId, isPrimary });
+      },
     );
-    if (!parentExists) {
-      throw new ParentNotFoundError("Parent not found");
-    }
-
-    const linkExists = this._memberParentLinks.some(
-      (link) => link.memberId === memberId && link.parentId === parentId,
-    );
-    if (linkExists) {
-      throw new ParentAlreadyLinkedToMemberError(
-        "Parent is already linked to the member",
-      );
-    }
-
-    this._memberParentLinks.push({
-      memberId,
-      parentId,
-      isPrimary,
-    });
   }
 
   async removeParentFromMember(
     memberId: number,
     parentId: number,
   ): Promise<void> {
-    const memberExists = this._members.some((m) => m.id === memberId);
-    if (!memberExists) {
-      throw new MemberNotFoundError("Member not found");
-    }
+    return startSpan(
+      { name: "MockMembersRepository > removeParentFromMember" },
+      () => {
+        const existingParentLinkIndex = this.membersParents.findIndex(
+          (mp) => mp.memberId === memberId && mp.parentId === parentId,
+        );
+        if (existingParentLinkIndex === -1) {
+          throw new ParentIsNotLinkedToMemberError(
+            "Parent is not linked to member",
+          );
+        }
 
-    const parentExists = this._memberParentLinks.some(
-      (link) => link.parentId === parentId,
+        this.membersParents.splice(existingParentLinkIndex, 1);
+      },
     );
-    if (!parentExists) {
-      throw new ParentNotFoundError("Parent not found");
-    }
+  }
 
-    const index = this._memberParentLinks.findIndex(
-      (link) => link.memberId === memberId && link.parentId === parentId,
+  async removeAllParentsFromMember(memberId: number): Promise<void> {
+    return startSpan(
+      { name: "MockMembersRepository > removeAllParentsFromMember" },
+      () => {
+        this.membersParents = this.membersParents.filter(
+          (mp) => mp.memberId !== memberId,
+        );
+      },
     );
-    if (index === -1) {
-      throw new ParentNotLinkedToMemberError(
-        "Parent is not linked to the member",
-      );
-    }
+  }
 
-    this._memberParentLinks.splice(index, 1);
+  async removeAllParentsFromAllMembers(): Promise<void> {
+    return startSpan(
+      { name: "MockMembersRepository > removeAllParentsFromAllMembers" },
+      () => {
+        this.membersParents = [];
+      },
+    );
   }
 }

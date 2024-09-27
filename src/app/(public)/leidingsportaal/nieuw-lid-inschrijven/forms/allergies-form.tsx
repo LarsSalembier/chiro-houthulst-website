@@ -1,91 +1,97 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import CardWrapper from "~/components/card-wrapper";
 import CheckboxField from "~/components/forms/checkbox-field";
 import ConditionalField from "~/components/forms/conditional-field";
-import { type RegistrationFormData } from "../schemas";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import { Textarea } from "~/components/ui/textarea";
+import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
 
 interface AllergiesFormProps {
-  form: UseFormReturn<RegistrationFormData>;
+  form: UseFormReturn<RegisterMemberInput>;
 }
 
 export function AllergiesForm({ form }: AllergiesFormProps) {
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === "foodAllergies" && value.foodAllergies === false) {
-        form.setValue("foodAllergiesInfo", "");
-      }
-
-      if (name === "substanceAllergies" && value.substanceAllergies === false) {
-        form.setValue("substanceAllergiesInfo", "");
-      }
-
-      if (
-        name === "medicationAllergies" &&
-        value.medicationAllergies === false
-      ) {
-        form.setValue("medicationAllergiesInfo", "");
-      }
-
-      if (name === "hayFever" && value.hayFever === false) {
-        form.setValue("hayFeverInfo", "");
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
-
   return (
     <CardWrapper title="Allergieën">
       <div className="space-y-6">
         <div className="space-y-3">
-          <CheckboxField
-            form={form}
-            name="foodAllergies"
-            label="Allergisch voor bepaalde voeding"
+          <FormField
+            control={form.control}
+            name="medicalInformation.foodAllergies"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Allergisch aan bepaalde voeding</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    value={field.value ?? ""}
+                    placeholder="Som hier op welke zaken (bv. noten, melk, gluten, ...). Hoe ernstig is de allergie? Wat zijn de symptomen? Wat moet er gebeuren bij een allergische reactie?"
+                    rows={4}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          <ConditionalField
-            form={form}
-            name="foodAllergiesInfo"
-            placeholder="Som hier op welke zaken (bv. noten, lactose, ...). Hoe ernstig is de allergie? Wat zijn de symptomen? Wat moet er gebeuren bij een allergische reactie?"
-            condition={form.watch("foodAllergies")}
-            numberOfLines={4}
+        </div>
+        <div className="space-y-3">
+          <FormField
+            control={form.control}
+            name="medicalInformation.substanceAllergies"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Allergisch aan bepaalde stoffen</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    value={field.value ?? ""}
+                    placeholder="Som hier op welke zaken (bv. verf, zonnecrème, insectenbeten, ...). Hoe ernstig is de allergie? Wat zijn de symptomen? Wat moet er gebeuren bij een allergische reactie?"
+                    rows={4}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="space-y-3">
+          <FormField
+            control={form.control}
+            name="medicalInformation.medicationAllergies"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Allergisch aan bepaalde medicatie</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    value={field.value ?? ""}
+                    placeholder="Som hier op welke zaken (bv. antibiotica, pijnstillers, ...). Hoe ernstig is de allergie? Wat zijn de symptomen? Wat moet er gebeuren bij een allergische reactie?"
+                    rows={4}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
         <div className="space-y-3">
           <CheckboxField
             form={form}
-            name="medicationAllergies"
-            label="Allergisch voor bepaalde medicatie"
+            name="medicalInformation.hayFever.hasCondition"
+            label="Hooikoorts"
           />
           <ConditionalField
             form={form}
-            name="medicationAllergiesInfo"
-            placeholder="Som hier op welke zaken (bv. bepaalde antibiotica, ontsmettingsmiddelen, pijnstillers, ...). Hoe ernstig is de allergie? Wat zijn de symptomen? Wat moet er gebeuren bij een allergische reactie?"
-            condition={form.watch("medicationAllergies")}
-            numberOfLines={4}
-          />
-        </div>
-        <div className="space-y-3">
-          <CheckboxField
-            form={form}
-            name="substanceAllergies"
-            label="Allergisch voor bepaalde zaken"
-          />
-          <ConditionalField
-            form={form}
-            name="substanceAllergiesInfo"
-            placeholder="Som hier op welke zaken (bv. verf, zonnecrème, insectenbeten, ...). Hoe ernstig is de allergie? Wat zijn de symptomen? Wat moet er gebeuren bij een allergische reactie?"
-            condition={form.watch("substanceAllergies")}
-            numberOfLines={4}
-          />
-        </div>
-        <div className="space-y-3">
-          <CheckboxField form={form} name="hayFever" label="Hooikoorts" />
-          <ConditionalField
-            form={form}
-            name="hayFeverInfo"
+            name="medicalInformation.hayFever.info"
             placeholder="(optioneel) extra nuttige informatie"
-            condition={form.watch("hayFever")}
+            condition={form.watch("medicalInformation.hayFever.hasCondition")}
           />
         </div>
       </div>

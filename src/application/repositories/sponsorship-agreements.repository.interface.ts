@@ -1,92 +1,76 @@
 import {
-  type SponsorshipAgreementUpdate,
   type SponsorshipAgreement,
   type SponsorshipAgreementInsert,
+  type SponsorshipAgreementUpdate,
 } from "~/domain/entities/sponsorship-agreement";
 
+/**
+ * Repository interface for accessing and managing sponsorship agreements.
+ */
 export interface ISponsorshipAgreementsRepository {
   /**
    * Creates a new sponsorship agreement.
    *
-   * @param sponsorshipAgreement The sponsorship agreement data to insert.
+   * @param sponsorshipAgreement - The sponsorship agreement data to insert.
    * @returns The created sponsorship agreement.
-   * @throws {SponsorshipAgreementAlreadyExistsError} If the agreement already exists.
-   * @throws {SponsorNotFoundError} If the sponsor does not exist.
-   * @throws {WorkyearNotFoundError} If the work year does not exist.
-   * @throws {DatabaseOperationError} If the operation fails.
+   *
+   * @throws {SponsorAlreadyHasSponsorshipAgreementForWorkYearError} If the sponsor already has a sponsorship agreement for this work year.
+   * @throws {SponsorNotFoundError} If the sponsor associated with the sponsorship agreement is not found.
+   * @throws {WorkYearNotFoundError} If the work year associated with the sponsorship agreement is not found.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   createSponsorshipAgreement(
     sponsorshipAgreement: SponsorshipAgreementInsert,
   ): Promise<SponsorshipAgreement>;
 
   /**
-   * Gets a sponsorship agreement by sponsor ID and work year ID.
+   * Retrieves a sponsorship agreement by the sponsor's ID and the work year's ID.
    *
-   * @param sponsorId The ID of the sponsor.
-   * @param workYearId The ID of the work year.
-   * @returns The sponsorship agreement if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param sponsorId - The ID of the sponsor.
+   * @param workYearId - The ID of the work year.
+   * @returns The sponsorship agreement, or `undefined` if not found.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getSponsorshipAgreement(
+  getSponsorshipAgreementByIds(
     sponsorId: number,
     workYearId: number,
   ): Promise<SponsorshipAgreement | undefined>;
 
   /**
-   * Gets all sponsorship agreements.
+   * Retrieves all sponsorship agreements.
    *
-   * @returns An array of sponsorship agreements.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @returns A list of all sponsorship agreements.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getSponsorshipAgreements(): Promise<SponsorshipAgreement[]>;
+  getAllSponsorshipAgreements(): Promise<SponsorshipAgreement[]>;
 
   /**
-   * Gets sponsorship agreements for a specific work year.
+   * Updates an existing sponsorship agreement.
    *
-   * @param workYearId The ID of the work year.
-   * @returns An array of sponsorship agreements.
-   * @throws {WorkyearNotFoundError} If the work year is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getSponsorshipAgreementsForWorkYear(
-    workYearId: number,
-  ): Promise<SponsorshipAgreement[]>;
-
-  /**
-   * Gets sponsorship agreements for a specific sponsor.
-   *
-   * @param sponsorId The ID of the sponsor.
-   * @returns An array of sponsorship agreements.
-   * @throws {SponsorNotFoundError} If the sponsor is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getSponsorshipAgreementsForSponsor(
-    sponsorId: number,
-  ): Promise<SponsorshipAgreement[]>;
-
-  /**
-   * Updates a sponsorship agreement.
-   *
-   * @param sponsorId The ID of the sponsor.
-   * @param workYearId The ID of the work year.
-   * @param input The data to update.
+   * @param sponsorId - The ID of the sponsor.
+   * @param workYearId - The ID of the work year.
+   * @param sponsorshipAgreement - The sponsorship agreement data to apply as updates.
    * @returns The updated sponsorship agreement.
-   * @throws {SponsorshipAgreementNotFoundError} If the agreement is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   *
+   * @throws {SponsorshipAgreementNotFoundError} If the sponsorship agreement is not found.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   updateSponsorshipAgreement(
     sponsorId: number,
     workYearId: number,
-    input: SponsorshipAgreementUpdate,
+    sponsorshipAgreement: SponsorshipAgreementUpdate,
   ): Promise<SponsorshipAgreement>;
 
   /**
    * Deletes a sponsorship agreement.
    *
-   * @param sponsorId The ID of the sponsor.
-   * @param workYearId The ID of the work year.
-   * @throws {SponsorshipAgreementNotFoundError} If the agreement is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param sponsorId - The ID of the sponsor.
+   * @param workYearId - The ID of the work year.
+   *
+   * @throws {SponsorshipAgreementNotFoundError} If the sponsorship agreement is not found.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   deleteSponsorshipAgreement(
     sponsorId: number,
@@ -94,17 +78,9 @@ export interface ISponsorshipAgreementsRepository {
   ): Promise<void>;
 
   /**
-   * Gets unpaid sponsorship agreements for a specific work year.
+   * Deletes all sponsorship agreements.
    *
-   * @param workYearId The ID of the work year.
-   * @returns An array of unpaid sponsorship agreements.
-   * @throws {WorkyearNotFoundError} If the work year is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getUnpaidSponsorshipAgreementsForWorkYear(
-    workYearId: number,
-  ): Promise<SponsorshipAgreement[]>;
-  getPaidSponsorshipAgreementsForWorkYear(
-    workYearId: number,
-  ): Promise<SponsorshipAgreement[]>;
+  deleteAllSponsorshipAgreements(): Promise<void>;
 }

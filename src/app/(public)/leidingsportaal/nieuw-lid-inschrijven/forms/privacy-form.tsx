@@ -2,10 +2,10 @@ import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import CardWrapper from "~/components/card-wrapper";
 import CheckboxField from "~/components/forms/checkbox-field";
-import { type RegistrationFormData } from "../schemas";
+import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
 
 interface PrivacyFormProps {
-  form: UseFormReturn<RegistrationFormData>;
+  form: UseFormReturn<RegisterMemberInput>;
 }
 
 export default function PrivacyForm({ form }: PrivacyFormProps) {
@@ -16,7 +16,7 @@ export default function PrivacyForm({ form }: PrivacyFormProps) {
     >
       <CheckboxField
         form={form}
-        name="permissionPhotos"
+        name="memberData.gdprPermissionToPublishPhotos"
         label="Ik geef hiervoor toestemming."
       />
     </CardWrapper>

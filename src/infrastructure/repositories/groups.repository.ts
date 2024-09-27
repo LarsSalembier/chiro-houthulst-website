@@ -1,41 +1,31 @@
 import { captureException, startSpan } from "@sentry/nextjs";
-import { eq, and, or, gte, lte, count, isNull } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { injectable } from "inversify";
-import { type IGroupsRepository } from "~/application/repositories/groups.repository.interface";
+import { IGroupsRepository } from "~/application/repositories/groups.repository.interface";
+import { Group, GroupInsert, GroupUpdate } from "~/domain/entities/group";
+import { DatabaseOperationError } from "~/domain/errors/common";
+import { db } from "drizzle";
 import {
-  type GroupUpdate,
-  type Group,
-  type GroupInsert,
-} from "~/domain/entities/group";
+  eventGroups as eventGroupsTable,
+  groups as groupsTable,
+  UNIQUE_NAME_FOR_GROUP_CONSTRAINT,
+} from "drizzle/schema";
+import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {
-  GroupIsStillReferencedError,
-  GroupNameAlreadyExistsError,
+  GroupNotFoundError,
+  GroupStillReferencedError,
+  GroupWithThatNameAlreadyExistsError,
 } from "~/domain/errors/groups";
-import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
-import { GroupNotFoundError } from "~/domain/errors/groups";
-import { isDatabaseError } from "~/domain/errors/database-error";
-import { db } from "drizzle";
-import { groups, yearlyMemberships } from "drizzle/schema";
-import { differenceInDays } from "date-fns";
-import { type Gender } from "~/domain/enums/gender";
 
 @injectable()
 export class GroupsRepository implements IGroupsRepository {
-  /**
-   * Creates a new group.
-   *
-   * @param group The group data to insert.
-   * @returns The created group.
-   * @throws {GroupNameAlreadyExistsError} If a group with the same name already exists.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async createGroup(group: GroupInsert): Promise<Group> {
     return await startSpan(
       { name: "GroupsRepository > createGroup" },
       async () => {
         try {
-          const query = db.insert(groups).values(group).returning();
+          const query = db.insert(groupsTable).values(group).returning();
 
           const [createdGroup] = await startSpan(
             {
@@ -52,13 +42,20 @@ export class GroupsRepository implements IGroupsRepository {
 
           return createdGroup;
         } catch (error) {
+          if (error instanceof DatabaseOperationError) {
+            throw error;
+          }
+
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation
+            error.code === PostgresErrorCode.UniqueViolation &&
+            error.constraint === UNIQUE_NAME_FOR_GROUP_CONSTRAINT
           ) {
-            throw new GroupNameAlreadyExistsError(
-              `Group with name ${group.name} already exists`,
-              { cause: error },
+            throw new GroupWithThatNameAlreadyExistsError(
+              "Group already exists",
+              {
+                cause: error,
+              },
             );
           }
 
@@ -71,20 +68,13 @@ export class GroupsRepository implements IGroupsRepository {
     );
   }
 
-  /**
-   * Returns a group by id, or undefined if not found.
-   *
-   * @param id The group id.
-   * @returns The group, or undefined if not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getGroup(id: number): Promise<Group | undefined> {
+  async getGroupById(id: number): Promise<Group | undefined> {
     return await startSpan(
-      { name: "GroupsRepository > getGroup" },
+      { name: "GroupsRepository > getGroupById" },
       async () => {
         try {
           const query = db.query.groups.findFirst({
-            where: eq(groups.id, id),
+            where: eq(groupsTable.id, id),
           });
 
           const group = await startSpan(
@@ -107,20 +97,13 @@ export class GroupsRepository implements IGroupsRepository {
     );
   }
 
-  /**
-   * Returns a group by name, or undefined if not found.
-   *
-   * @param groupName The group name.
-   * @returns The group, or undefined if not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getGroupByName(groupName: string): Promise<Group | undefined> {
+  async getGroupByName(name: string): Promise<Group | undefined> {
     return await startSpan(
       { name: "GroupsRepository > getGroupByName" },
       async () => {
         try {
           const query = db.query.groups.findFirst({
-            where: eq(groups.name, groupName),
+            where: eq(groupsTable.name, name),
           });
 
           const group = await startSpan(
@@ -134,8 +117,8 @@ export class GroupsRepository implements IGroupsRepository {
 
           return group;
         } catch (error) {
-          captureException(error, { data: { groupName } });
-          throw new DatabaseOperationError("Failed to get group by name", {
+          captureException(error, { data: { groupName: name } });
+          throw new DatabaseOperationError("Failed to get group", {
             cause: error,
           });
         }
@@ -143,18 +126,47 @@ export class GroupsRepository implements IGroupsRepository {
     );
   }
 
-  /**
-   * Returns all groups.
-   *
-   * @returns All groups.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getGroups(): Promise<Group[]> {
+  async getAllGroups(): Promise<Group[]> {
     return await startSpan(
-      { name: "GroupsRepository > getGroups" },
+      { name: "GroupsRepository > getAllGroups" },
       async () => {
         try {
           const query = db.query.groups.findMany();
+
+          const allGroups = await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+
+          return allGroups;
+        } catch (error) {
+          captureException(error);
+          throw new DatabaseOperationError("Failed to get all groups", {
+            cause: error,
+          });
+        }
+      },
+    );
+  }
+
+  async getGroupsByEventId(eventId: number): Promise<Group[]> {
+    return await startSpan(
+      { name: "GroupsRepository > getGroupsByEventId" },
+      async () => {
+        try {
+          const query = db.query.groups.findMany({
+            where: inArray(
+              groupsTable.id,
+              db
+                .select()
+                .from(eventGroupsTable)
+                .where(eq(eventGroupsTable.eventId, eventId)),
+            ),
+          });
 
           const groups = await startSpan(
             {
@@ -167,8 +179,8 @@ export class GroupsRepository implements IGroupsRepository {
 
           return groups;
         } catch (error) {
-          captureException(error);
-          throw new DatabaseOperationError("Failed to get groups", {
+          captureException(error, { data: { eventId } });
+          throw new DatabaseOperationError("Failed to get groups by event ID", {
             cause: error,
           });
         }
@@ -176,152 +188,46 @@ export class GroupsRepository implements IGroupsRepository {
     );
   }
 
-  /**
-   * Returns all active groups.
-   *
-   * @returns All active groups.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getActiveGroups(): Promise<Group[]> {
-    return await startSpan(
-      { name: "GroupsRepository > getActiveGroups" },
-      async () => {
-        try {
-          const query = db.query.groups.findMany({
-            where: eq(groups.active, true),
-          });
-
-          const activeGroups = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          return activeGroups;
-        } catch (error) {
-          captureException(error);
-          throw new DatabaseOperationError("Failed to get active groups", {
-            cause: error,
-          });
-        }
-      },
-    );
-  }
-
-  /**
-   * Returns all active groups a member can be registered in for the given birth date and gender.
-   *
-   * @param birthDate The member's birth date.
-   * @param gender The member's gender.
-   * @returns All groups for the given birth date.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getActiveGroupsForBirthDateAndGender(
-    birthDate: Date,
-    gender: Gender,
-  ): Promise<Group[]> {
-    return await startSpan(
-      { name: "GroupsRepository > getGroupsForBirthDate" },
-      async () => {
-        try {
-          const ageInDays = differenceInDays(new Date(), birthDate);
-
-          console.log("ageInDays", ageInDays);
-
-          const genderQueryPart =
-            gender === "X"
-              ? undefined
-              : or(isNull(groups.gender), eq(groups.gender, gender));
-
-          const query = db.query.groups.findMany({
-            where: and(
-              eq(groups.active, true),
-              genderQueryPart,
-              lte(groups.minimumAgeInDays, ageInDays),
-              or(
-                isNull(groups.maximumAgeInDays),
-                gte(groups.maximumAgeInDays, ageInDays),
-              ),
-            ),
-          });
-
-          const groups_ = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          return groups_;
-        } catch (error) {
-          captureException(error, { data: { birthDate } });
-          throw new DatabaseOperationError(
-            "Failed to get groups for birth date",
-            {
-              cause: error,
-            },
-          );
-        }
-      },
-    );
-  }
-
-  /**
-   * Updates a group by name.
-   *
-   * @param id The group id.
-   * @param group The group data to update.
-   * @returns The updated group.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {GroupNameAlreadyExistsError} If a group with the same name already exists.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async updateGroup(id: number, group: GroupUpdate): Promise<Group> {
     return await startSpan(
       { name: "GroupsRepository > updateGroup" },
       async () => {
         try {
-          const updatedGroup = await db.transaction(async (tx) => {
-            const query = tx
-              .update(groups)
-              .set(group)
-              .where(eq(groups.id, id))
-              .returning();
+          const query = db
+            .update(groupsTable)
+            .set(group)
+            .where(eq(groupsTable.id, id))
+            .returning();
 
-            const [updatedGroup_] = await startSpan(
-              {
-                name: query.toSQL().sql,
-                op: "db.query",
-                attributes: { "db.system": "postgresql" },
-              },
-              () => query.execute(),
-            );
+          const [updatedGroup] = await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
 
-            if (!updatedGroup_) {
-              throw new GroupNotFoundError(`Group with id ${id} not found`);
-            }
-
-            return updatedGroup_;
-          });
+          if (!updatedGroup) {
+            throw new GroupNotFoundError("Group not found");
+          }
 
           return updatedGroup;
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof GroupNotFoundError) {
             throw error;
           }
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation
+            error.code === PostgresErrorCode.UniqueViolation &&
+            error.constraint === UNIQUE_NAME_FOR_GROUP_CONSTRAINT
           ) {
-            throw new GroupNameAlreadyExistsError(
-              `Group with name ${group.name} already exists`,
-              { cause: error },
+            throw new GroupWithThatNameAlreadyExistsError(
+              "Group already exists",
+              {
+                cause: error,
+              },
             );
           }
 
@@ -334,20 +240,15 @@ export class GroupsRepository implements IGroupsRepository {
     );
   }
 
-  /**
-   * Deletes a group by name.
-   *
-   * @param id The group id.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {GroupIsStillReferencedError} If the group is still referenced.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async deleteGroup(id: number): Promise<void> {
     return await startSpan(
       { name: "GroupsRepository > deleteGroup" },
       async () => {
         try {
-          const query = db.delete(groups).where(eq(groups.id, id)).returning();
+          const query = db
+            .delete(groupsTable)
+            .where(eq(groupsTable.id, id))
+            .returning();
 
           const [deletedGroup] = await startSpan(
             {
@@ -359,10 +260,10 @@ export class GroupsRepository implements IGroupsRepository {
           );
 
           if (!deletedGroup) {
-            throw new GroupNotFoundError(`Group with id ${id} not found`);
+            throw new GroupNotFoundError("Group not found");
           }
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof GroupNotFoundError) {
             throw error;
           }
 
@@ -370,10 +271,9 @@ export class GroupsRepository implements IGroupsRepository {
             isDatabaseError(error) &&
             error.code === PostgresErrorCode.ForeignKeyViolation
           ) {
-            throw new GroupIsStillReferencedError(
-              "Failed to delete group. The group is still referenced",
-              { cause: error },
-            );
+            throw new GroupStillReferencedError("Group still referenced", {
+              cause: error,
+            });
           }
 
           captureException(error, { data: { groupId: id } });
@@ -385,74 +285,15 @@ export class GroupsRepository implements IGroupsRepository {
     );
   }
 
-  /**
-   * Checks if a group is active.
-   *
-   * @param id The group id.
-   * @returns True if the group is active, false otherwise.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async isGroupActive(id: number): Promise<boolean> {
+  async deleteAllGroups(): Promise<void> {
     return await startSpan(
-      { name: "GroupsRepository > isGroupActive" },
+      { name: "GroupsRepository > deleteAllGroups" },
       async () => {
         try {
-          const group = await this.getGroup(id);
+          // eslint-disable-next-line drizzle/enforce-delete-with-where
+          const query = db.delete(groupsTable).returning();
 
-          if (!group) {
-            throw new GroupNotFoundError(`Group with id ${id} not found`);
-          }
-
-          return group.active;
-        } catch (error) {
-          if (error instanceof NotFoundError) {
-            throw error;
-          }
-
-          captureException(error, { data: { groupId: id } });
-          throw new DatabaseOperationError(
-            "Failed to check if group is active",
-            {
-              cause: error,
-            },
-          );
-        }
-      },
-    );
-  }
-
-  /**
-   * Gets the amount of members in a group.
-   *
-   * @param groupId The group id.
-   * @param workYearId The workyear id.
-   * @returns The amount of members in the group.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getMembersCount(groupId: number, workYearId: number): Promise<number> {
-    return await startSpan(
-      { name: "GroupsRepository > getMembersCount" },
-      async () => {
-        try {
-          const groupExists = await this.getGroup(groupId);
-
-          if (!groupExists) {
-            throw new GroupNotFoundError(`Group with id ${groupId} not found`);
-          }
-
-          const query = db
-            .select({ count: count() })
-            .from(yearlyMemberships)
-            .where(
-              and(
-                eq(yearlyMemberships.groupId, groupId),
-                eq(yearlyMemberships.workYearId, workYearId),
-              ),
-            );
-
-          const result = await startSpan(
+          await startSpan(
             {
               name: query.toSQL().sql,
               op: "db.query",
@@ -460,22 +301,20 @@ export class GroupsRepository implements IGroupsRepository {
             },
             () => query.execute(),
           );
-
-          if (!result[0]) {
-            return 0;
-          }
-
-          return result[0].count;
         } catch (error) {
-          if (error instanceof NotFoundError) {
-            throw error;
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.ForeignKeyViolation
+          ) {
+            throw new GroupStillReferencedError("Group still referenced", {
+              cause: error,
+            });
           }
 
-          captureException(error, { data: { groupId, workYearId } });
-          throw new DatabaseOperationError(
-            "Failed to get member count for group",
-            { cause: error },
-          );
+          captureException(error);
+          throw new DatabaseOperationError("Failed to delete all groups", {
+            cause: error,
+          });
         }
       },
     );

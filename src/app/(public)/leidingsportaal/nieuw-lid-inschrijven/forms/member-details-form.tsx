@@ -2,7 +2,6 @@
 
 import React, { useEffect } from "react";
 import { type UseFormReturn } from "react-hook-form";
-import { type RegistrationFormData } from "../schemas";
 import { calculateAge } from "../calculate-age";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { FormDescription } from "~/components/ui/form";
@@ -10,14 +9,15 @@ import FormFieldComponent from "../form-field";
 import DatePicker from "~/components/forms/date-picker";
 import RadioGroupField from "~/components/forms/radio-group-field";
 import GroupSelection from "./group-selection-form";
+import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
 
 interface MemberDetailsFormProps {
-  form: UseFormReturn<RegistrationFormData>;
+  form: UseFormReturn<RegisterMemberInput>;
 }
 
 export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
-  const memberDateOfBirth = form.watch("memberDateOfBirth");
-  const memberGender = form.watch("memberGender");
+  const memberDateOfBirth = form.watch("memberData.dateOfBirth");
+  const memberGender = form.watch("memberData.gender");
   const age = memberDateOfBirth ? calculateAge(memberDateOfBirth) : null;
 
   const genderOptions = [
@@ -30,8 +30,8 @@ export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
     if (memberDateOfBirth) {
       const age = calculateAge(memberDateOfBirth);
       if (age < 11) {
-        form.setValue("memberEmailAddress", undefined);
-        form.setValue("memberPhoneNumber", undefined);
+        form.setValue("memberData.emailAddress", null);
+        form.setValue("memberData.phoneNumber", null);
       }
     }
   }, [memberDateOfBirth, form]);
@@ -45,24 +45,24 @@ export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
         <div className="grid grid-cols-2 gap-4">
           <FormFieldComponent
             form={form}
-            name="memberFirstName"
+            name="memberData.name.firstName"
             label="Voornaam"
           />
           <FormFieldComponent
             form={form}
-            name="memberLastName"
+            name="memberData.name.lastName"
             label="Achternaam"
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <DatePicker
             form={form}
-            name="memberDateOfBirth"
+            name="memberData.dateOfBirth"
             label="Geboortedatum"
           />
           <RadioGroupField
             form={form}
-            name="memberGender"
+            name="memberData.gender"
             label="Geslacht"
             options={genderOptions}
           />
@@ -72,7 +72,7 @@ export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
           <>
             <FormFieldComponent
               form={form}
-              name="memberEmailAddress"
+              name="memberData.emailAddress"
               label={`E-mailadres ${age >= 15 ? "(verplicht)" : "(optioneel)"}`}
               type="email"
               placeholder="E-mailadres van lid zelf"
@@ -84,7 +84,7 @@ export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
             </FormDescription>
             <FormFieldComponent
               form={form}
-              name="memberPhoneNumber"
+              name="memberData.phoneNumber"
               label={`GSM-nummer ${age >= 15 ? "(verplicht)" : "(optioneel)"}`}
               type="tel"
               placeholder="GSM-nummer van lid zelf"

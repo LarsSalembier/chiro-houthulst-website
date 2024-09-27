@@ -1,165 +1,142 @@
+import { startSpan } from "@sentry/nextjs";
 import { injectable } from "inversify";
-import { type IEmergencyContactsRepository } from "~/application/repositories/emergency-contacts.repository.interface";
+import { IEmergencyContactsRepository } from "~/application/repositories/emergency-contacts.repository.interface";
 import {
-  type EmergencyContact,
-  type EmergencyContactInsert,
+  EmergencyContact,
+  EmergencyContactInsert,
+  EmergencyContactUpdate,
 } from "~/domain/entities/emergency-contact";
 import {
   EmergencyContactNotFoundError,
   MemberAlreadyHasEmergencyContactError,
 } from "~/domain/errors/emergency-contacts";
-import { MemberNotFoundError } from "~/domain/errors/members";
-import { type IMembersRepository } from "~/application/repositories/members.repository.interface";
-import { type RecursivePartial } from "~/types/recursive-partial";
+import { mockData } from "~/infrastructure/mock-data";
 
 @injectable()
 export class MockEmergencyContactsRepository
   implements IEmergencyContactsRepository
 {
-  private _emergencyContacts: EmergencyContact[] = [];
-  private _membersRepository: IMembersRepository;
+  private emergencyContacts: EmergencyContact[] = mockData.emergencyContacts;
 
-  constructor(membersRepository: IMembersRepository) {
-    this._membersRepository = membersRepository;
-  }
-
-  private mapToEntity(
-    emergencyContact: EmergencyContactInsert,
-  ): EmergencyContact {
-    return {
-      ...emergencyContact,
-      name: {
-        firstName: emergencyContact.name.firstName,
-        lastName: emergencyContact.name.lastName,
-      },
-    };
-  }
-
-  /**
-   * Creates a new emergency contact for a member.
-   *
-   * @param emergencyContact The emergency contact data to insert.
-   * @returns The created emergency contact.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MemberAlreadyHasEmergencyContactError} If the member already has an emergency contact.
-   */
   async createEmergencyContact(
     emergencyContact: EmergencyContactInsert,
   ): Promise<EmergencyContact> {
-    // Check if the member exists
-    const memberExists = await this._membersRepository.getMember(
-      emergencyContact.memberId,
+    return startSpan(
+      { name: "MockEmergencyContactsRepository > createEmergencyContact" },
+      () => {
+        const existingEmergencyContact = this.emergencyContacts.find(
+          (ec) => ec.memberId === emergencyContact.memberId,
+        );
+
+        if (existingEmergencyContact) {
+          throw new MemberAlreadyHasEmergencyContactError(
+            "Member already has an emergency contact",
+          );
+        }
+
+        const newEmergencyContact: EmergencyContact = {
+          memberId: emergencyContact.memberId,
+          name: {
+            firstName: emergencyContact.name.firstName,
+            lastName: emergencyContact.name.lastName,
+          },
+          phoneNumber: emergencyContact.phoneNumber,
+          relationship: emergencyContact.relationship,
+        };
+
+        this.emergencyContacts.push(newEmergencyContact);
+        return newEmergencyContact;
+      },
     );
-
-    if (!memberExists) {
-      throw new MemberNotFoundError("Member not found");
-    }
-
-    // Check if the member already has an emergency contact
-    const existingContact = this._emergencyContacts.find(
-      (contact) => contact.memberId === emergencyContact.memberId,
-    );
-
-    if (existingContact) {
-      throw new MemberAlreadyHasEmergencyContactError(
-        "Member already has an emergency contact",
-      );
-    }
-
-    // Create and store the new emergency contact
-    const newContact = this.mapToEntity(emergencyContact);
-    this._emergencyContacts.push(newContact);
-    return newContact;
   }
 
-  /**
-   * Gets an emergency contact by its member ID.
-   *
-   * @param memberId The ID of the member whose emergency contact to retrieve.
-   * @returns The emergency contact if found, undefined otherwise.
-   * @throws {MemberNotFoundError} If the member is not found.
-   */
-  async getEmergencyContact(
+  async getEmergencyContactByMemberId(
     memberId: number,
   ): Promise<EmergencyContact | undefined> {
-    // Check if the member exists
-    const memberExists = await this._membersRepository.getMember(memberId);
-
-    if (!memberExists) {
-      throw new MemberNotFoundError("Member not found");
-    }
-
-    return this._emergencyContacts.find(
-      (contact) => contact.memberId === memberId,
+    return startSpan(
+      {
+        name: "MockEmergencyContactsRepository > getEmergencyContactByMemberId",
+      },
+      () => {
+        const emergencyContact = this.emergencyContacts.find(
+          (ec) => ec.memberId === memberId,
+        );
+        return emergencyContact;
+      },
     );
   }
 
-  /**
-   * Updates an existing emergency contact.
-   *
-   * @param memberId The ID of the member whose emergency contact to update.
-   * @param emergencyContact The updated emergency contact data.
-   * @returns The updated emergency contact.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {EmergencyContactNotFoundError} If the emergency contact is not found.
-   */
+  async getAllEmergencyContacts(): Promise<EmergencyContact[]> {
+    return startSpan(
+      {
+        name: "MockEmergencyContactsRepository > getAllEmergencyContacts",
+      },
+      () => {
+        return this.emergencyContacts;
+      },
+    );
+  }
+
   async updateEmergencyContact(
     memberId: number,
-    emergencyContact: RecursivePartial<EmergencyContactInsert>,
+    emergencyContact: EmergencyContactUpdate,
   ): Promise<EmergencyContact> {
-    // Check if the member exists
-    const memberExists = await this._membersRepository.getMember(memberId);
+    return startSpan(
+      { name: "MockEmergencyContactsRepository > updateEmergencyContact" },
+      () => {
+        const emergencyContactIndex = this.emergencyContacts.findIndex(
+          (ec) => ec.memberId === memberId,
+        );
+        if (emergencyContactIndex === -1) {
+          throw new EmergencyContactNotFoundError(
+            "Emergency contact not found",
+          );
+        }
 
-    if (!memberExists) {
-      throw new MemberNotFoundError("Member not found");
-    }
+        this.emergencyContacts[emergencyContactIndex] = {
+          ...this.emergencyContacts[emergencyContactIndex]!,
+          ...emergencyContact,
+          name: {
+            firstName:
+              emergencyContact.name?.firstName ??
+              this.emergencyContacts[emergencyContactIndex]!.name.firstName,
+            lastName:
+              emergencyContact.name?.lastName ??
+              this.emergencyContacts[emergencyContactIndex]!.name.lastName,
+          },
+        };
 
-    const index = this._emergencyContacts.findIndex(
-      (contact) => contact.memberId === memberId,
-    );
-
-    if (index === -1) {
-      throw new EmergencyContactNotFoundError("Emergency contact not found");
-    }
-
-    // Update the emergency contact
-    const existingContact = this._emergencyContacts[index]!;
-    const updatedContact = {
-      ...existingContact,
-      ...emergencyContact,
-      name: {
-        ...existingContact.name,
-        ...emergencyContact.name,
+        return this.emergencyContacts[emergencyContactIndex];
       },
-    };
-
-    this._emergencyContacts[index] = updatedContact;
-    return updatedContact;
+    );
   }
 
-  /**
-   * Deletes an emergency contact by its member ID.
-   *
-   * @param memberId The ID of the member whose emergency contact to delete.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {EmergencyContactNotFoundError} If the emergency contact is not found.
-   */
   async deleteEmergencyContact(memberId: number): Promise<void> {
-    // Check if the member exists
-    const memberExists = await this._membersRepository.getMember(memberId);
+    return startSpan(
+      { name: "MockEmergencyContactsRepository > deleteEmergencyContact" },
+      () => {
+        const emergencyContactIndex = this.emergencyContacts.findIndex(
+          (ec) => ec.memberId === memberId,
+        );
+        if (emergencyContactIndex === -1) {
+          throw new EmergencyContactNotFoundError(
+            "Emergency contact not found",
+          );
+        }
 
-    if (!memberExists) {
-      throw new MemberNotFoundError("Member not found");
-    }
-
-    const index = this._emergencyContacts.findIndex(
-      (contact) => contact.memberId === memberId,
+        this.emergencyContacts.splice(emergencyContactIndex, 1);
+      },
     );
+  }
 
-    if (index === -1) {
-      throw new EmergencyContactNotFoundError("Emergency contact not found");
-    }
-
-    this._emergencyContacts.splice(index, 1);
+  async deleteAllEmergencyContacts(): Promise<void> {
+    return startSpan(
+      {
+        name: "MockEmergencyContactsRepository > deleteAllEmergencyContacts",
+      },
+      () => {
+        this.emergencyContacts = [];
+      },
+    );
   }
 }

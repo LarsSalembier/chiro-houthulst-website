@@ -1,212 +1,122 @@
 import {
-  type EventUpdate,
   type Event_,
   type EventInsert,
+  type EventUpdate,
 } from "~/domain/entities/event";
-import { type Group } from "~/domain/entities/group";
-import { type PaymentMethod } from "~/domain/enums/payment-method";
-import { type EventRegistration } from "~/domain/value-objects/event-registration";
 
+/**
+ * Repository interface for accessing and managing events.
+ */
 export interface IEventsRepository {
   /**
-   * Creates an event.
+   * Creates a new event.
    *
-   * @param event The event insert input.
+   * @param event - The event data to insert.
    * @returns The created event.
-   * @throws {EventWithSameFacebookEventUrlAlreadyExistsError} If an event with the same Facebook Event URL already exists.
-   * @throws {DatabaseOperationError} If the operation fails.
+   *
+   * @throws {EventWithSameFacebookEventUrlAlreadyExistsError} If an event with the same Facebook event URL already exists.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   createEvent(event: EventInsert): Promise<Event_>;
 
   /**
-   * Returns an event by id, or undefined if not found.
+   * Retrieves an event by its unique identifier.
    *
-   * @param id The event id.
-   * @returns The event, or undefined if not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param id - The ID of the event to retrieve.
+   * @returns The event matching the given ID, or `undefined` if not found.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getEvent(id: number): Promise<Event_ | undefined>;
+  getEventById(id: number): Promise<Event_ | undefined>;
 
   /**
-   * Returns all events.
+   * Retrieves all events.
    *
-   * @returns All events.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @returns A list of all events.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getEvents(): Promise<Event_[]>;
+  getAllEvents(): Promise<Event_[]>;
 
   /**
-   * Updates an event by id.
+   * Get all events that are linked to a group.
    *
-   * @param id The event id.
-   * @param input The event update input.
+   * @param groupId - The ID of the group to get events for.
+   * @returns A list of all events linked to the group.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
+   */
+  getEventsByGroupId(groupId: number): Promise<Event_[]>;
+
+  /**
+   * Updates an existing event.
+   *
+   * @param id - The ID of the event to update.
+   * @param event - The event data to apply as updates.
    * @returns The updated event.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {EventWithSameFacebookEventUrlAlreadyExistsError} If an event with the same Facebook Event URL already exists.
-   * @throws {DatabaseOperationError} If the operation fails.
+   *
+   * @throws {EventNotFoundError} If no event with the given ID exists.
+   * @throws {EventWithSameFacebookEventUrlAlreadyExistsError} If an event with the same Facebook event URL already exists.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   updateEvent(id: number, event: EventUpdate): Promise<Event_>;
 
   /**
-   * Deletes an event by id. This will also delete all registrations for the event.
+   * Deletes an event by its unique identifier.
    *
-   * @param id The event id.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param id - The ID of the event to delete.
+   *
+   * @throws {EventNotFoundError} If no event with the given ID exists.
+   * @throws {EventStillReferencedError} If the event is still referenced by other entities (e.g., event_groups, event_registrations tables) and cannot be deleted.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   deleteEvent(id: number): Promise<void>;
 
   /**
-   * Gets the groups associated with an event.
+   * Deletes all events.
    *
-   * @param eventId The event id.
-   * @returns The groups associated with the event.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @throws {EventStillReferencedError} If any event is still referenced by other entities (e.g., event_groups, event_registrations tables) and cannot be deleted.
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getEventGroups(eventId: number): Promise<Group[]>;
+  deleteAllEvents(): Promise<void>;
 
   /**
    * Adds a group to an event.
    *
-   * @param eventId The event id.
-   * @param groupId The group id.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {GroupNotFoundError} If the group is not found.
+   * @param eventId - The ID of the event to add the group to.
+   * @param groupId - The ID of the group to add to the event.
+   *
+   * @throws {EventNotFoundError} If no event with the given ID exists.
+   * @throws {GroupNotFoundError} If no group with the given ID exists.
    * @throws {GroupAlreadyLinkedToEventError} If the group is already linked to the event.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   addGroupToEvent(eventId: number, groupId: number): Promise<void>;
 
   /**
    * Removes a group from an event.
    *
-   * @param eventId The event id.
-   * @param groupId The group id.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {GroupNotFoundError} If the group is not found.
+   * @param eventId - The ID of the event to remove the group from.
+   * @param groupId - The ID of the group to remove from the event.
+   *
    * @throws {GroupNotLinkedToEventError} If the group is not linked to the event.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   removeGroupFromEvent(eventId: number, groupId: number): Promise<void>;
 
   /**
-   * Gets the registrations for an event.
+   * Removes all groups from an event.
    *
-   * @param eventId The event id.
-   * @returns The registrations for the event.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param eventId - The ID of the event to remove all groups from.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getRegistrations(eventId: number): Promise<EventRegistration[]>;
+  removeAllGroupsFromEvent(eventId: number): Promise<void>;
 
   /**
-   * Gets a registration for an event.
+   * Removes all groups from all events.
    *
-   * @param eventId The event id.
-   * @param memberId The member id.
-   * @returns The registration for the event, or undefined if not found.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getRegistration(
-    eventId: number,
-    memberId: number,
-  ): Promise<EventRegistration | undefined>;
-
-  /**
-   * Gets the paid registrations for an event.
-   * @param eventId The event id.
-   * @returns The paid registrations for the event.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getPaidRegistrations(eventId: number): Promise<EventRegistration[]>;
-
-  /**
-   * Gets the unpaid registrations for an event.
-   *
-   * @param eventId The event id.
-   * @returns The unpaid registrations for the event.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getUnpaidRegistrations(eventId: number): Promise<EventRegistration[]>;
-
-  /**
-   * Registers a member to an event.
-   *
-   * @param eventId The event id.
-   * @param memberId The member id.
-   * @param workYearId The id of the work year the member is enrolled in.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {WorkyearNotFoundError} If no workyear is found for the given date.
-   * @throws {MemberAlreadyRegisteredError} If the member is already registered to the event.
-   * @throws {MemberNotEnrolledThisYearError} If the member is not enrolled in the given work year.
-   * @throws {MemberNotInGroupError} If the member is not in a group associated with the event.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  registerToEvent(eventId: number, memberId: number, date: Date): Promise<void>;
-
-  /**
-   * Unregisters a member from an event.
-   *
-   * @param eventId The event id.
-   * @param memberId The member id.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MemberNotRegisteredError} If the member is not registered to the event.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  unregisterFromEvent(eventId: number, memberId: number): Promise<void>;
-
-  /**
-   * Marks a registration as paid.
-   *
-   * @param eventId The event id.
-   * @param memberId The member id.
-   * @param paymentMethod The payment method.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MemberNotRegisteredError} If the member is not registered to the event.
-   * @throws {MemberAlreadyPaidError} If the member has already paid for the event.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  markRegistrationAsPaid(
-    eventId: number,
-    memberId: number,
-    paymentMethod: PaymentMethod,
-  ): Promise<void>;
-
-  /**
-   * Gets the events for a member.
-   *
-   * @param memberId The member id.
-   * @returns The events for the member.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getEventsForMember(memberId: number): Promise<Event_[]>;
-
-  /**
-   * Gets the events for a group.
-   *
-   * @param groupId The group id.
-   * @returns The events for the group.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {DatabaseOperationError} If the operation fails
-   */
-  getEventsForGroup(groupId: number): Promise<Event_[]>;
-
-  /**
-   * Gets the registration count for an event.
-   *
-   * @param eventId The event id.
-   * @returns The registration count for the event.
-   * @throws {EventNotFoundError} If the event is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getRegistrationCount(eventId: number): Promise<number>;
+  removeAllGroupsFromAllEvents(): Promise<void>;
 }

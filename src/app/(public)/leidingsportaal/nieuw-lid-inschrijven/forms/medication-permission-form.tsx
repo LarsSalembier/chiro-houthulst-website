@@ -1,18 +1,17 @@
 import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import CardWrapper from "~/components/card-wrapper";
-import { type RegistrationFormData } from "../schemas";
+import CheckboxField from "~/components/forms/checkbox-field";
 import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
 
 interface MedicationPermissionFormProps {
-  form: UseFormReturn<RegistrationFormData>;
+  form: UseFormReturn<RegisterMemberInput>;
 }
 
 export default function MedicationPermissionForm({
@@ -25,34 +24,18 @@ export default function MedicationPermissionForm({
     >
       <FormField
         control={form.control}
-        name="permissionMedication"
+        name="medicalInformation.permissionMedication"
         render={({ field }) => (
           <FormItem className="space-y-3">
             <FormControl>
-              <RadioGroup
-                onValueChange={field.onChange}
-                className="flex flex-col space-y-1"
-              >
-                <FormItem className="flex items-center space-x-3 space-y-0">
-                  <FormControl>
-                    <RadioGroupItem value="true" />
-                  </FormControl>
-                  <FormLabel className="font-normal">
-                    Ja, wij geven toestemming aan de begeleiders om bij
-                    hoogdringendheid aan onze zoon of dochter een dosis via de
-                    apotheek vrij verkrijgbare pijnstillende en koortswerende
-                    medicatie toe te dienen.*
-                  </FormLabel>
-                </FormItem>
-                <FormItem className="flex items-center space-x-3 space-y-0">
-                  <FormControl>
-                    <RadioGroupItem value="false" />
-                  </FormControl>
-                  <FormLabel className="font-normal">
-                    Nee, wij geven geen toestemming
-                  </FormLabel>
-                </FormItem>
-              </RadioGroup>
+              <CheckboxField
+                form={form}
+                label="Ja, wij geven toestemming aan de begeleiders om bij
+                hoogdringendheid aan onze zoon of dochter een dosis via de
+                apotheek vrij verkrijgbare pijnstillende en koortswerende
+                medicatie toe te dienen.*"
+                {...field}
+              />
             </FormControl>
             <FormMessage />
             <p className="text-sm text-muted-foreground">

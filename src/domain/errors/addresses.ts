@@ -1,6 +1,4 @@
-import { NotFoundError } from "./common";
-
-export class AddressNotFoundError extends NotFoundError {
+export class AddressNotFoundError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
   }

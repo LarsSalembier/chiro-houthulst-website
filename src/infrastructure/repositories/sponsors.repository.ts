@@ -1,47 +1,46 @@
 import { captureException, startSpan } from "@sentry/nextjs";
 import { eq } from "drizzle-orm";
 import { injectable } from "inversify";
-import { type ISponsorsRepository } from "~/application/repositories/sponsors.repository.interface";
+import { ISponsorsRepository } from "~/application/repositories/sponsors.repository.interface";
+import {
+  Sponsor,
+  SponsorInsert,
+  SponsorUpdate,
+} from "~/domain/entities/sponsor";
+import { DatabaseOperationError } from "~/domain/errors/common";
 import { db } from "drizzle";
-import { sponsors as sponsorsTable } from "drizzle/schema";
+import {
+  sponsors as sponsorsTable,
+  UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT,
+} from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {
-  SponsorAlreadyExistsError,
   SponsorNotFoundError,
   SponsorStillReferencedError,
+  SponsorWithThatCompanyNameAlreadyExistsError,
 } from "~/domain/errors/sponsors";
-import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
-import {
-  type SponsorUpdate,
-  type Sponsor,
-  type SponsorInsert,
-} from "~/domain/entities/sponsor";
 import { AddressNotFoundError } from "~/domain/errors/addresses";
-import { getInjection } from "di/container";
 
 @injectable()
 export class SponsorsRepository implements ISponsorsRepository {
-  constructor(
-    private readonly addressRepository = getInjection("IAddressesRepository"),
-  ) {}
-
-  private mapToEntity(dbSponsor: typeof sponsorsTable.$inferSelect): Sponsor {
+  private mapToEntity(sponsor: typeof sponsorsTable.$inferSelect): Sponsor {
     return {
-      ...dbSponsor,
+      ...sponsor,
       companyOwnerName:
-        dbSponsor.companyOwnerFirstName && dbSponsor.companyOwnerLastName
+        sponsor.companyOwnerFirstName !== null &&
+        sponsor.companyOwnerLastName !== null
           ? {
-              firstName: dbSponsor.companyOwnerFirstName,
-              lastName: dbSponsor.companyOwnerLastName,
+              firstName: sponsor.companyOwnerFirstName,
+              lastName: sponsor.companyOwnerLastName,
             }
           : null,
     };
   }
 
   private mapToDbFieldsPartial(
-    sponsor: SponsorUpdate | SponsorInsert,
-  ): Partial<typeof sponsorsTable.$inferSelect> {
+    sponsor: SponsorInsert | SponsorUpdate,
+  ): Partial<typeof sponsorsTable.$inferInsert> {
     return {
       ...sponsor,
       companyOwnerFirstName: sponsor.companyOwnerName?.firstName,
@@ -51,36 +50,17 @@ export class SponsorsRepository implements ISponsorsRepository {
 
   private mapToDbFields(
     sponsor: SponsorInsert,
-  ): typeof sponsorsTable.$inferSelect {
+  ): typeof sponsorsTable.$inferInsert {
     return this.mapToDbFieldsPartial(
       sponsor,
-    ) as typeof sponsorsTable.$inferSelect;
+    ) as typeof sponsorsTable.$inferInsert;
   }
 
-  /**
-   * Creates a new sponsor.
-   *
-   * @param sponsor The sponsor data to insert.
-   * @returns The created sponsor.
-   * @throws {SponsorAlreadyExistsError} If a sponsor with the same company name already exists.
-   * @throws {AddressNotFoundError} If the address ID is provided and the address is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async createSponsor(sponsor: Sponsor): Promise<Sponsor> {
+  async createSponsor(sponsor: SponsorInsert): Promise<Sponsor> {
     return await startSpan(
       { name: "SponsorsRepository > createSponsor" },
       async () => {
         try {
-          if (sponsor.addressId) {
-            const address = await this.addressRepository.getAddressById(
-              sponsor.addressId,
-            );
-
-            if (!address) {
-              throw new AddressNotFoundError("Address not found");
-            }
-          }
-
           const query = db
             .insert(sponsorsTable)
             .values(this.mapToDbFields(sponsor))
@@ -101,18 +81,28 @@ export class SponsorsRepository implements ISponsorsRepository {
 
           return this.mapToEntity(createdSponsor);
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof DatabaseOperationError) {
             throw error;
           }
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation
+            error.code === PostgresErrorCode.UniqueViolation &&
+            error.constraint === UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT
           ) {
-            throw new SponsorAlreadyExistsError(
-              `Sponsor with company name ${sponsor.companyName} already exists`,
+            throw new SponsorWithThatCompanyNameAlreadyExistsError(
+              "A sponsor with that company name already exists",
               { cause: error },
             );
+          }
+
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.ForeignKeyViolation
+          ) {
+            throw new AddressNotFoundError("Address not found", {
+              cause: error,
+            });
           }
 
           captureException(error, { data: sponsor });
@@ -124,23 +114,16 @@ export class SponsorsRepository implements ISponsorsRepository {
     );
   }
 
-  /**
-   * Returns a sponsor by id, or undefined if not found.
-   *
-   * @param id The sponsor id.
-   * @returns The sponsor, or undefined if not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getSponsor(id: number): Promise<Sponsor | undefined> {
+  async getSponsorById(id: number): Promise<Sponsor | undefined> {
     return await startSpan(
-      { name: "SponsorsRepository > getSponsor" },
+      { name: "SponsorsRepository > getSponsorById" },
       async () => {
         try {
           const query = db.query.sponsors.findFirst({
             where: eq(sponsorsTable.id, id),
           });
 
-          const dbSponsor = await startSpan(
+          const sponsor = await startSpan(
             {
               name: query.toSQL().sql,
               op: "db.query",
@@ -149,13 +132,9 @@ export class SponsorsRepository implements ISponsorsRepository {
             () => query.execute(),
           );
 
-          if (!dbSponsor) {
-            return undefined;
-          }
-
-          return this.mapToEntity(dbSponsor);
+          return sponsor ? this.mapToEntity(sponsor) : undefined;
         } catch (error) {
-          captureException(error, { data: { id } });
+          captureException(error, { data: { sponsorId: id } });
           throw new DatabaseOperationError("Failed to get sponsor", {
             cause: error,
           });
@@ -164,25 +143,18 @@ export class SponsorsRepository implements ISponsorsRepository {
     );
   }
 
-  /**
-   * Returns a sponsor by company name, or undefined if not found.
-   *
-   * @param companyName The sponsor company name.
-   * @returns The sponsor, or undefined if not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async getSponsorByCompanyName(
     companyName: string,
   ): Promise<Sponsor | undefined> {
     return await startSpan(
-      { name: "SponsorsRepository > getSponsor" },
+      { name: "SponsorsRepository > getSponsorByCompanyName" },
       async () => {
         try {
           const query = db.query.sponsors.findFirst({
             where: eq(sponsorsTable.companyName, companyName),
           });
 
-          const dbSponsor = await startSpan(
+          const sponsor = await startSpan(
             {
               name: query.toSQL().sql,
               op: "db.query",
@@ -191,11 +163,7 @@ export class SponsorsRepository implements ISponsorsRepository {
             () => query.execute(),
           );
 
-          if (!dbSponsor) {
-            return undefined;
-          }
-
-          return this.mapToEntity(dbSponsor);
+          return sponsor ? this.mapToEntity(sponsor) : undefined;
         } catch (error) {
           captureException(error, { data: { companyName } });
           throw new DatabaseOperationError("Failed to get sponsor", {
@@ -206,20 +174,14 @@ export class SponsorsRepository implements ISponsorsRepository {
     );
   }
 
-  /**
-   * Gets all sponsors.
-   *
-   * @returns All sponsors.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getSponsors(): Promise<Sponsor[]> {
+  async getAllSponsors(): Promise<Sponsor[]> {
     return await startSpan(
-      { name: "SponsorsRepository > getSponsors" },
+      { name: "SponsorsRepository > getAllSponsors" },
       async () => {
         try {
           const query = db.query.sponsors.findMany();
 
-          const dbSponsors = await startSpan(
+          const allSponsors = await startSpan(
             {
               name: query.toSQL().sql,
               op: "db.query",
@@ -228,10 +190,10 @@ export class SponsorsRepository implements ISponsorsRepository {
             () => query.execute(),
           );
 
-          return dbSponsors.map((sponsor) => this.mapToEntity(sponsor));
+          return allSponsors.map((sponsor) => this.mapToEntity(sponsor));
         } catch (error) {
           captureException(error);
-          throw new DatabaseOperationError("Failed to get sponsors", {
+          throw new DatabaseOperationError("Failed to get all sponsors", {
             cause: error,
           });
         }
@@ -239,31 +201,11 @@ export class SponsorsRepository implements ISponsorsRepository {
     );
   }
 
-  /**
-   * Updates a sponsor.
-   *
-   * @param id The ID of the sponsor to update.
-   * @param sponsor The sponsor data to update.
-   * @returns The updated sponsor.
-   * @throws {SponsorNotFoundError} If the sponsor is not found.
-   * @throws {AddressNotFoundError} If a new address ID is provided and the address is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async updateSponsor(id: number, sponsor: SponsorUpdate): Promise<Sponsor> {
     return await startSpan(
       { name: "SponsorsRepository > updateSponsor" },
       async () => {
         try {
-          if (sponsor.addressId) {
-            const address = await this.addressRepository.getAddressById(
-              sponsor.addressId,
-            );
-
-            if (!address) {
-              throw new AddressNotFoundError("Address not found");
-            }
-          }
-
           const query = db
             .update(sponsorsTable)
             .set(this.mapToDbFieldsPartial(sponsor))
@@ -285,11 +227,31 @@ export class SponsorsRepository implements ISponsorsRepository {
 
           return this.mapToEntity(updatedSponsor);
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof SponsorNotFoundError) {
             throw error;
           }
 
-          captureException(error, { data: { id, sponsor } });
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.UniqueViolation &&
+            error.constraint === UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT
+          ) {
+            throw new SponsorWithThatCompanyNameAlreadyExistsError(
+              "A sponsor with that company name already exists",
+              { cause: error },
+            );
+          }
+
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.ForeignKeyViolation
+          ) {
+            throw new AddressNotFoundError("Address not found", {
+              cause: error,
+            });
+          }
+
+          captureException(error, { data: { sponsorId: id, sponsor } });
           throw new DatabaseOperationError("Failed to update sponsor", {
             cause: error,
           });
@@ -298,14 +260,6 @@ export class SponsorsRepository implements ISponsorsRepository {
     );
   }
 
-  /**
-   * Deletes a sponsor.
-   *
-   * @param id The ID of the sponsor to delete.
-   * @throws {SponsorNotFoundError} If the sponsor is not found.
-   * @throws {SponsorStillReferencedError} If the sponsor is still referenced by sponsorship agreements.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async deleteSponsor(id: number): Promise<void> {
     return await startSpan(
       { name: "SponsorsRepository > deleteSponsor" },
@@ -329,23 +283,58 @@ export class SponsorsRepository implements ISponsorsRepository {
             throw new SponsorNotFoundError("Sponsor not found");
           }
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof SponsorNotFoundError) {
             throw error;
           }
 
-          if (isDatabaseError(error)) {
-            if (error.code === PostgresErrorCode.ForeignKeyViolation) {
-              throw new SponsorStillReferencedError(
-                "Sponsor is still referenced by sponsorship agreements",
-                { cause: error },
-              );
-            }
-
-            captureException(error, { data: { id } });
-            throw new DatabaseOperationError("Failed to delete sponsor", {
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.ForeignKeyViolation
+          ) {
+            throw new SponsorStillReferencedError("Sponsor still referenced", {
               cause: error,
             });
           }
+
+          captureException(error, { data: { sponsorId: id } });
+          throw new DatabaseOperationError("Failed to delete sponsor", {
+            cause: error,
+          });
+        }
+      },
+    );
+  }
+
+  async deleteAllSponsors(): Promise<void> {
+    return await startSpan(
+      { name: "SponsorsRepository > deleteAllSponsors" },
+      async () => {
+        try {
+          // eslint-disable-next-line drizzle/enforce-delete-with-where
+          const query = db.delete(sponsorsTable).returning();
+
+          await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+        } catch (error) {
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.ForeignKeyViolation
+          ) {
+            throw new SponsorStillReferencedError("Sponsor still referenced", {
+              cause: error,
+            });
+          }
+
+          captureException(error);
+          throw new DatabaseOperationError("Failed to delete all sponsors", {
+            cause: error,
+          });
         }
       },
     );

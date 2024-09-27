@@ -10,9 +10,11 @@ import { MembersModule } from "./modules/members.module";
 import { ParentsModule } from "./modules/parents.module";
 import { SponsorsModule } from "./modules/sponsors.module";
 import { SponsorshipAgreementsModule } from "./modules/sponsorship-agreements.module";
-import { WorkyearsModule } from "./modules/work-years.module";
+import { WorkYearsModule } from "./modules/work-years.module";
 import { YearlyMembershipsModule } from "./modules/yearly-memberships.module";
 import { EventsModule } from "./modules/events.module";
+import { EventRegistrationsModule } from "./modules/event-registrations.module";
+import { AuthenticationModule } from "./modules/authentication.module";
 
 const ApplicationContainer = new Container({
   defaultScope: "Singleton",
@@ -21,6 +23,7 @@ const ApplicationContainer = new Container({
 export const initializeContainer = () => {
   ApplicationContainer.load(AddressesModule);
   ApplicationContainer.load(EmergencyContactsModule);
+  ApplicationContainer.load(EventRegistrationsModule);
   ApplicationContainer.load(EventsModule);
   ApplicationContainer.load(GroupsModule);
   ApplicationContainer.load(MedicalInformationModule);
@@ -28,13 +31,15 @@ export const initializeContainer = () => {
   ApplicationContainer.load(ParentsModule);
   ApplicationContainer.load(SponsorsModule);
   ApplicationContainer.load(SponsorshipAgreementsModule);
-  ApplicationContainer.load(WorkyearsModule);
+  ApplicationContainer.load(WorkYearsModule);
   ApplicationContainer.load(YearlyMembershipsModule);
+  ApplicationContainer.load(AuthenticationModule);
 };
 
 export const destroyContainer = () => {
   ApplicationContainer.unload(AddressesModule);
   ApplicationContainer.unload(EmergencyContactsModule);
+  ApplicationContainer.unload(EventRegistrationsModule);
   ApplicationContainer.unload(EventsModule);
   ApplicationContainer.unload(GroupsModule);
   ApplicationContainer.unload(MedicalInformationModule);
@@ -42,8 +47,9 @@ export const destroyContainer = () => {
   ApplicationContainer.unload(ParentsModule);
   ApplicationContainer.unload(SponsorsModule);
   ApplicationContainer.unload(SponsorshipAgreementsModule);
-  ApplicationContainer.unload(WorkyearsModule);
+  ApplicationContainer.unload(WorkYearsModule);
   ApplicationContainer.unload(YearlyMembershipsModule);
+  ApplicationContainer.unload(AuthenticationModule);
 };
 
 if (process.env.NODE_ENV !== "test") {

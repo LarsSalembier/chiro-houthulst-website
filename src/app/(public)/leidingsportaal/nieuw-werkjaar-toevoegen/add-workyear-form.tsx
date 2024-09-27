@@ -23,37 +23,16 @@ import {
   FormControl,
   FormMessage,
 } from "~/components/ui/form";
-import { createWorkyear } from "../actions";
 import { cn } from "~/lib/utils";
-import { z } from "zod";
-
-const formSchema = z
-  .object({
-    startDate: z.date({
-      required_error: "Startdatum is verplicht",
-      invalid_type_error: "Startdatum moet een geldige datum zijn",
-    }),
-    endDate: z.date({
-      required_error: "Einddatum is verplicht",
-      invalid_type_error: "Einddatum moet een geldige datum zijn",
-    }),
-    membershipFee: z.coerce
-      .number({
-        required_error: "Lidgeld is verplicht",
-        invalid_type_error: "Lidgeld moet een geldig getal zijn",
-      })
-      .positive("Lidgeld moet positief zijn"),
-  })
-  .refine((data) => data.startDate <= data.endDate, {
-    message: "Startdatum moet voor einddatum liggen",
-    path: ["endDate"],
-  });
-
-type WorkyearFormData = z.infer<typeof formSchema>;
+import {
+  type CreateWorkYearInput,
+  createWorkYearSchema,
+} from "~/interface-adapters/controllers/work-years/create-work-year.controller";
+import { createWorkYear } from "./actions";
 
 export default function AddWorkyearForm() {
-  const form = useForm<WorkyearFormData>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<CreateWorkYearInput>({
+    resolver: zodResolver(createWorkYearSchema),
     defaultValues: {
       startDate: undefined,
       endDate: undefined,
@@ -61,15 +40,12 @@ export default function AddWorkyearForm() {
     },
   });
 
-  const onSubmit = async (data: WorkyearFormData) => {
-    console.log("Test");
+  const onSubmit = async (data: CreateWorkYearInput) => {
     try {
-      console.log("Test");
-      const result = await createWorkyear(data);
+      const result = await createWorkYear(data);
 
       if ("error" in result) {
-        toast.error("Er is iets misgegaan bij het aanmaken van het werkjaar.");
-        return;
+        toast.error(result.error);
       }
 
       toast.success("Werkjaar succesvol aangemaakt!");

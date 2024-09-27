@@ -1,108 +1,92 @@
 import {
-  type GroupUpdate,
   type Group,
   type GroupInsert,
+  type GroupUpdate,
 } from "~/domain/entities/group";
-import { type Gender } from "~/domain/enums/gender";
 
+/**
+ * Repository interface for accessing and managing groups.
+ */
 export interface IGroupsRepository {
   /**
    * Creates a new group.
    *
-   * @param group The group data to insert.
+   * @param group - The group data to insert.
    * @returns The created group.
-   * @throws {GroupNameAlreadyExistsError} If a group with the same name already exists.
-   * @throws {DatabaseOperationError} If the operation fails.
+   *
+   * @throws {GroupWithThatNameAlreadyExistsError} If a group with the same name already exists.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   createGroup(group: GroupInsert): Promise<Group>;
 
   /**
-   * Returns a group by id, or undefined if not found.
+   * Retrieves a group by its unique identifier.
    *
-   * @param id The group id.
-   * @returns The group, or undefined if not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param id - The ID of the group to retrieve.
+   * @returns The group matching the given ID, or `undefined` if not found.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getGroup(id: number): Promise<Group | undefined>;
+  getGroupById(id: number): Promise<Group | undefined>;
 
   /**
-   * Returns a group by name, or undefined if not found.
+   * Retrieves a group by its unique name.
    *
-   * @param groupName The group name.
-   * @returns The group, or undefined if not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param name - The name of the group to retrieve.
+   * @returns The group matching the given name, or `undefined` if not found.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getGroupByName(groupName: string): Promise<Group | undefined>;
+  getGroupByName(name: string): Promise<Group | undefined>;
 
   /**
-   * Returns all groups.
+   * Retrieves all groups.
    *
-   * @returns All groups.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @returns A list of all groups.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getGroups(): Promise<Group[]>;
+  getAllGroups(): Promise<Group[]>;
 
   /**
-   * Returns all active groups.
+   * Retrieves all groups linked to an event.
    *
-   * @returns All active groups.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param eventId - The ID of the event to retrieve groups for.
+   * @returns A list of all groups linked to the event.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getActiveGroups(): Promise<Group[]>;
+  getGroupsByEventId(eventId: number): Promise<Group[]>;
 
   /**
-   * Returns all active groups a member can be registered in for the given birth date and gender.
+   * Updates an existing group.
    *
-   * @param birthDate The member's birth date.
-   * @param gender The member's gender.
-   * @returns All groups for the given birth date.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getActiveGroupsForBirthDateAndGender(
-    birthDate: Date,
-    gender: Gender,
-  ): Promise<Group[]>;
-
-  /**
-   * Updates a group by name.
-   *
-   * @param id The group id.
-   * @param group The group data to update.
+   * @param id - The ID of the group to update.
+   * @param group - The group data to apply as updates.
    * @returns The updated group.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {GroupNameAlreadyExistsError} If a group with the same name already exists.
-   * @throws {DatabaseOperationError} If the operation fails.
+   *
+   * @throws {GroupNotFoundError} If no group with the given ID exists.
+   * @throws {GroupWithThatNameAlreadyExistsError} If the updated group name would create a duplicate.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   updateGroup(id: number, group: GroupUpdate): Promise<Group>;
 
   /**
-   * Deletes a group by name.
+   * Deletes a group by its unique identifier.
    *
-   * @param id The group id.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {GroupIsStillReferencedError} If the group is still referenced.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param id - The ID of the group to delete.
+   *
+   * @throws {GroupNotFoundError} If no group with the given ID exists.
+   * @throws {GroupStillReferencedError} If the group is still referenced by other entities and cannot be deleted.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   deleteGroup(id: number): Promise<void>;
 
   /**
-   * Checks if a group is active.
+   * Deletes all groups.
    *
-   * @param id The group id.
-   * @returns True if the group is active, false otherwise.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @throws {GroupStillReferencedError} If any group is still referenced by other entities and cannot be deleted.
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  isGroupActive(id: number): Promise<boolean>;
-
-  /**
-   * Gets the amount of members in a group.
-   *
-   * @param groupId The group id.
-   * @param workYearId The workyear id.
-   * @returns The amount of members in the group.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getMembersCount(groupId: number, workYearId: number): Promise<number>;
+  deleteAllGroups(): Promise<void>;
 }

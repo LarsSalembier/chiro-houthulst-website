@@ -1,11 +1,11 @@
 import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import CardWrapper from "~/components/card-wrapper";
-import { type RegistrationFormData } from "../schemas";
-import RadioGroupField from "~/components/forms/radio-group-field";
+import CheckboxField from "~/components/forms/checkbox-field";
+import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
 
 interface SportsAndActivitiesFormProps {
-  form: UseFormReturn<RegistrationFormData>;
+  form: UseFormReturn<RegisterMemberInput>;
 }
 
 export default function SportsAndActivitiesForm({
@@ -14,35 +14,20 @@ export default function SportsAndActivitiesForm({
   return (
     <CardWrapper title="Sport en spel">
       <div className="space-y-4">
-        <RadioGroupField
+        <CheckboxField
           form={form}
-          name="getsTiredQuickly"
+          name="medicalInformation.getsTiredQuickly"
           label="Is uw kind snel moe?"
-          showBelowEachother
-          options={[
-            { value: "true", label: "Ja" },
-            { value: "false", label: "Nee" },
-          ]}
         />
-        <RadioGroupField
+        <CheckboxField
           form={form}
-          name="canParticipateSports"
+          name="medicalInformation.canParticipateSports"
           label="Kan uw kind deelnemen aan sport en spel afgestemd op zijn/haar leeftijd?"
-          showBelowEachother
-          options={[
-            { value: "true", label: "Ja" },
-            { value: "false", label: "Nee" },
-          ]}
         />
-        <RadioGroupField
+        <CheckboxField
           form={form}
-          name="canSwim"
+          name="medicalInformation.canSwim"
           label="Kan uw kind zwemmen?"
-          showBelowEachother
-          options={[
-            { value: "true", label: "Ja" },
-            { value: "false", label: "Nee" },
-          ]}
         />
       </div>
     </CardWrapper>

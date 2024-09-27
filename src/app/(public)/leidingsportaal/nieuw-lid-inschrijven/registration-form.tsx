@@ -8,11 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "~/components/ui/form";
 import { PlusIcon } from "lucide-react";
 import { type Metadata } from "next";
-import {
-  type parentSchema,
-  registrationFormSchema,
-  type RegistrationFormData,
-} from "./schemas";
 import MemberDetailsForm from "./forms/member-details-form";
 import { ParentForm } from "./forms/parent-form";
 import { AllergiesForm } from "./forms/allergies-form";
@@ -24,10 +19,16 @@ import PrivacyForm from "./forms/privacy-form";
 import SportsAndActivitiesForm from "./forms/sports-and-activities-form";
 import FormFieldComponent from "./form-field";
 import CardWrapper from "../../../../components/card-wrapper";
-import { type z } from "zod";
-import { signUpMember } from "./actions";
 import MedicationPermissionForm from "./forms/medication-permission-form";
 import { Section, SectionContent, SectionTitle } from "~/components/section";
+import { registerMember } from "./actions";
+import {
+  registerMemberSchema,
+  type RegisterMemberInput,
+} from "~/interface-adapters/controllers/members/schema";
+import CheckboxField from "~/components/forms/checkbox-field";
+import RadioGroupField from "~/components/forms/radio-group-field";
+import { useEffect } from "react";
 
 export const metadata: Metadata = {
   title: "Uw kind inschrijven",
@@ -35,26 +36,60 @@ export const metadata: Metadata = {
 };
 
 export default function RegistrationForm() {
-  const form = useForm<RegistrationFormData>({
-    resolver: zodResolver(registrationFormSchema),
+  const form = useForm<RegisterMemberInput>({
+    resolver: zodResolver(registerMemberSchema),
     defaultValues: {
-      parents: [{}],
-      permissionPhotos: true,
+      memberData: {
+        gdprPermissionToPublishPhotos: true,
+      },
+      parentsWithAddresses: [
+        {
+          parent: {
+            name: {
+              firstName: "",
+              lastName: "",
+            },
+            phoneNumber: "",
+            emailAddress: "",
+            relationship: "MOTHER",
+          },
+          address: {
+            street: "",
+            houseNumber: "",
+            box: "",
+            postalCode: 0,
+            municipality: "",
+          },
+        },
+      ],
     },
   });
 
+  const paymentMethod = form.watch("yearlyMembership.paymentMethod");
+  const paid = form.watch("yearlyMembership.paymentReceived");
+
+  useEffect(() => {
+    if (paymentMethod || paid) {
+      form.setValue("yearlyMembership.paymentDate", new Date());
+    } else {
+      form.setValue("yearlyMembership.paymentDate", null);
+    }
+  }, [paymentMethod, paid, form]);
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "parents",
+    name: "parentsWithAddresses",
   });
 
-  const onSubmit = async (data: RegistrationFormData) => {
-    console.log(data);
-
+  const onSubmit = async (data: RegisterMemberInput) => {
     try {
-      await signUpMember(data);
-      console.log(data);
-      toast.success(`${data.memberFirstName} is ingeschreven!`);
+      const result = await registerMember(data);
+
+      if ("error" in result) {
+        toast.error(result.error);
+      } else {
+        toast.success(`${data.memberData.name.firstName} is ingeschreven.`);
+      }
     } catch (error) {
       handleError(error);
     }
@@ -68,6 +103,13 @@ export default function RegistrationForm() {
       console.error("Error adding member", error);
     }
   };
+
+  const paymentMethodOptions = [
+    { value: "CASH", label: "Cash" },
+    { value: "BANK_TRANSFER", label: "Overschrijving" },
+    { value: "PAYCONIQ", label: "Payconiq" },
+    { value: "OTHER", label: "Andere" },
+  ];
 
   return (
     <Form {...form}>
@@ -91,18 +133,33 @@ export default function RegistrationForm() {
                 variant="secondary"
                 onClick={() =>
                   append({
-                    street: form.watch(`parents.${fields.length - 1}.street`),
-                    houseNumber: form.watch(
-                      `parents.${fields.length - 1}.houseNumber`,
-                    ),
-                    bus: form.watch(`parents.${fields.length - 1}.bus`),
-                    postalCode: form.watch(
-                      `parents.${fields.length - 1}.postalCode`,
-                    ),
-                    municipality: form.watch(
-                      `parents.${fields.length - 1}.municipality`,
-                    ),
-                  } as z.infer<typeof parentSchema>)
+                    parent: {
+                      name: {
+                        firstName: "",
+                        lastName: "",
+                      },
+                      phoneNumber: "",
+                      emailAddress: "",
+                      relationship: "MOTHER",
+                    },
+                    address: {
+                      street: form.watch(
+                        `parentsWithAddresses.${fields.length - 1}.address.street`,
+                      ),
+                      houseNumber: form.watch(
+                        `parentsWithAddresses.${fields.length - 1}.address.houseNumber`,
+                      ),
+                      box: form.watch(
+                        `parentsWithAddresses.${fields.length - 1}.address.box`,
+                      ),
+                      postalCode: form.watch(
+                        `parentsWithAddresses.${fields.length - 1}.address.postalCode`,
+                      ),
+                      municipality: form.watch(
+                        `parentsWithAddresses.${fields.length - 1}.address.municipality`,
+                      ),
+                    },
+                  })
                 }
               >
                 <PlusIcon className="mr-2 h-4 w-4" />
@@ -125,10 +182,24 @@ export default function RegistrationForm() {
             <CardWrapper title="Algemene opmerkingen">
               <FormFieldComponent
                 form={form}
-                name="otherRemarks"
+                name="medicalInformation.otherRemarks"
                 label="Zijn er nog zaken die we zeker moeten weten over uw kind? Zijn er zaken waar we extra rekening mee moeten houden?"
                 placeholder="Vul hier eventuele opmerkingen in"
               />
+            </CardWrapper>
+            <CardWrapper title="Betaling">
+              <div className="flex flex-col gap-4">
+                <CheckboxField
+                  form={form}
+                  name="yearlyMembership.paymentReceived"
+                  label="Betaling ontvangen?"
+                />
+                <RadioGroupField
+                  form={form}
+                  name="yearlyMembership.paymentMethod"
+                  options={paymentMethodOptions}
+                />
+              </div>
             </CardWrapper>
 
             <div className="flex flex-col gap-4">

@@ -1,12 +1,10 @@
-import { NotFoundError } from "./common";
-
-export class SponsorAlreadyExistsError extends Error {
+export class SponsorWithThatCompanyNameAlreadyExistsError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
   }
 }
 
-export class SponsorNotFoundError extends NotFoundError {
+export class SponsorNotFoundError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
   }

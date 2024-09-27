@@ -1,28 +1,29 @@
 import { captureException, startSpan } from "@sentry/nextjs";
 import { eq } from "drizzle-orm";
 import { injectable } from "inversify";
-import { type IEmergencyContactsRepository } from "~/application/repositories/emergency-contacts.repository.interface";
+import { IEmergencyContactsRepository } from "~/application/repositories/emergency-contacts.repository.interface";
 import {
-  type EmergencyContactUpdate,
-  type EmergencyContact,
-  type EmergencyContactInsert,
+  EmergencyContactUpdate,
+  EmergencyContact,
+  EmergencyContactInsert,
 } from "~/domain/entities/emergency-contact";
 import { db } from "drizzle";
-import { emergencyContacts } from "drizzle/schema";
+import { emergencyContacts as emergencyContactsTable } from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {
   EmergencyContactNotFoundError,
   MemberAlreadyHasEmergencyContactError,
 } from "~/domain/errors/emergency-contacts";
-import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
+import { DatabaseOperationError } from "~/domain/errors/common";
+import { MemberNotFoundError } from "~/domain/errors/members";
 
 @injectable()
 export class EmergencyContactsRepository
   implements IEmergencyContactsRepository
 {
-  private mapSponsorsToEntity(
-    emergencyContact: typeof emergencyContacts.$inferSelect,
+  private mapToEntity(
+    emergencyContact: typeof emergencyContactsTable.$inferSelect,
   ): EmergencyContact {
     return {
       ...emergencyContact,
@@ -35,7 +36,7 @@ export class EmergencyContactsRepository
 
   private mapToDbFieldsPartial(
     emergencyContact: EmergencyContactInsert | EmergencyContactUpdate,
-  ): Partial<typeof emergencyContacts.$inferInsert> {
+  ): Partial<typeof emergencyContactsTable.$inferInsert> {
     return {
       ...emergencyContact,
       firstName: emergencyContact.name?.firstName,
@@ -45,21 +46,12 @@ export class EmergencyContactsRepository
 
   private mapToDbFields(
     emergencyContact: EmergencyContactInsert,
-  ): typeof emergencyContacts.$inferInsert {
+  ): typeof emergencyContactsTable.$inferInsert {
     return this.mapToDbFieldsPartial(
       emergencyContact,
-    ) as typeof emergencyContacts.$inferInsert;
+    ) as typeof emergencyContactsTable.$inferInsert;
   }
 
-  /**
-   * Creates a new emergency contact for a member.
-   *
-   * @param emergencyContact The emergency contact data to insert.
-   * @returns The created emergency contact.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MemberAlreadyHasEmergencyContactError} If the member already has an emergency contact.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async createEmergencyContact(
     emergencyContact: EmergencyContactInsert,
   ): Promise<EmergencyContact> {
@@ -68,7 +60,7 @@ export class EmergencyContactsRepository
       async () => {
         try {
           const query = db
-            .insert(emergencyContacts)
+            .insert(emergencyContactsTable)
             .values(this.mapToDbFields(emergencyContact))
             .returning();
 
@@ -87,16 +79,22 @@ export class EmergencyContactsRepository
             );
           }
 
-          return this.mapSponsorsToEntity(createdEmergencyContact);
+          return this.mapToEntity(createdEmergencyContact);
         } catch (error) {
-          if (
-            isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation
-          ) {
-            throw new MemberAlreadyHasEmergencyContactError(
-              "Member already has an emergency contact",
-              { cause: error },
-            );
+          if (error instanceof DatabaseOperationError) {
+            throw error;
+          }
+
+          if (isDatabaseError(error)) {
+            if (error.code === PostgresErrorCode.UniqueViolation) {
+              throw new MemberAlreadyHasEmergencyContactError(
+                "Member already has an emergency contact",
+              );
+            }
+
+            if (error.code === PostgresErrorCode.ForeignKeyViolation) {
+              throw new MemberNotFoundError("Member not found");
+            }
           }
 
           captureException(error, { data: emergencyContact });
@@ -111,23 +109,17 @@ export class EmergencyContactsRepository
     );
   }
 
-  /**
-   * Gets an emergency contact by its member ID.
-   *
-   * @param memberId The ID of the member whose emergency contact to retrieve.
-   * @returns The emergency contact if found, undefined otherwise.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getEmergencyContact(
+  async getEmergencyContactByMemberId(
     memberId: number,
   ): Promise<EmergencyContact | undefined> {
     return await startSpan(
-      { name: "EmergencyContactsRepository > getEmergencyContact" },
+      {
+        name: "EmergencyContactsRepository > getEmergencyContactByMemberId",
+      },
       async () => {
         try {
           const query = db.query.emergencyContacts.findFirst({
-            where: eq(emergencyContacts.memberId, memberId),
+            where: eq(emergencyContactsTable.memberId, memberId),
           });
 
           const emergencyContact = await startSpan(
@@ -139,11 +131,9 @@ export class EmergencyContactsRepository
             () => query.execute(),
           );
 
-          if (!emergencyContact) {
-            return undefined;
-          }
-
-          return this.mapSponsorsToEntity(emergencyContact);
+          return emergencyContact
+            ? this.mapToEntity(emergencyContact)
+            : undefined;
         } catch (error) {
           captureException(error, { data: { memberId } });
           throw new DatabaseOperationError("Failed to get emergency contact", {
@@ -154,16 +144,38 @@ export class EmergencyContactsRepository
     );
   }
 
-  /**
-   * Updates an existing emergency contact.
-   *
-   * @param memberId The ID of the member whose emergency contact to update.
-   * @param emergencyContact The updated emergency contact data.
-   * @returns The updated emergency contact.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {EmergencyContactNotFoundError} If the emergency contact is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
+  async getAllEmergencyContacts(): Promise<EmergencyContact[]> {
+    return await startSpan(
+      { name: "EmergencyContactsRepository > getAllEmergencyContacts" },
+      async () => {
+        try {
+          const query = db.query.emergencyContacts.findMany();
+
+          const allEmergencyContacts = await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+
+          return allEmergencyContacts.map((emergencyContact) =>
+            this.mapToEntity(emergencyContact),
+          );
+        } catch (error) {
+          captureException(error);
+          throw new DatabaseOperationError(
+            "Failed to get all emergency contacts",
+            {
+              cause: error,
+            },
+          );
+        }
+      },
+    );
+  }
+
   async updateEmergencyContact(
     memberId: number,
     emergencyContact: EmergencyContactUpdate,
@@ -173,9 +185,9 @@ export class EmergencyContactsRepository
       async () => {
         try {
           const query = db
-            .update(emergencyContacts)
+            .update(emergencyContactsTable)
             .set(this.mapToDbFieldsPartial(emergencyContact))
-            .where(eq(emergencyContacts.memberId, memberId))
+            .where(eq(emergencyContactsTable.memberId, memberId))
             .returning();
 
           const [updatedEmergencyContact] = await startSpan(
@@ -193,13 +205,15 @@ export class EmergencyContactsRepository
             );
           }
 
-          return this.mapSponsorsToEntity(updatedEmergencyContact);
+          return this.mapToEntity(updatedEmergencyContact);
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof EmergencyContactNotFoundError) {
             throw error;
           }
 
-          captureException(error, { data: { memberId, emergencyContact } });
+          captureException(error, {
+            data: { memberId, emergencyContact },
+          });
           throw new DatabaseOperationError(
             "Failed to update emergency contact",
             {
@@ -211,22 +225,14 @@ export class EmergencyContactsRepository
     );
   }
 
-  /**
-   * Deletes an emergency contact by its member ID.
-   *
-   * @param memberId The ID of the member whose emergency contact to delete.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {EmergencyContactNotFoundError} If the emergency contact is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async deleteEmergencyContact(memberId: number): Promise<void> {
     return await startSpan(
       { name: "EmergencyContactsRepository > deleteEmergencyContact" },
       async () => {
         try {
           const query = db
-            .delete(emergencyContacts)
-            .where(eq(emergencyContacts.memberId, memberId))
+            .delete(emergencyContactsTable)
+            .where(eq(emergencyContactsTable.memberId, memberId))
             .returning();
 
           const [deletedEmergencyContact] = await startSpan(
@@ -244,13 +250,44 @@ export class EmergencyContactsRepository
             );
           }
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof EmergencyContactNotFoundError) {
             throw error;
           }
 
           captureException(error, { data: { memberId } });
           throw new DatabaseOperationError(
             "Failed to delete emergency contact",
+            {
+              cause: error,
+            },
+          );
+        }
+      },
+    );
+  }
+
+  async deleteAllEmergencyContacts(): Promise<void> {
+    return await startSpan(
+      {
+        name: "EmergencyContactsRepository > deleteAllEmergencyContacts",
+      },
+      async () => {
+        try {
+          // eslint-disable-next-line drizzle/enforce-delete-with-where
+          const query = db.delete(emergencyContactsTable).returning();
+
+          await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+        } catch (error) {
+          captureException(error);
+          throw new DatabaseOperationError(
+            "Failed to delete all emergency contacts",
             {
               cause: error,
             },

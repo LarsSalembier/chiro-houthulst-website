@@ -8,17 +8,14 @@ import {
   TableBody,
   TableCell,
 } from "~/components/ui/table";
-import { getGroups, getMembersForGroup } from "./actions";
 import { type Group } from "~/domain/entities/group";
 import Link from "next/link";
 import { Section, SectionContent, SectionTitle } from "~/components/section";
+import { getMembersForGroupUseCase } from "~/application/use-cases/members/get-members-for-group";
+import { getGroupsUseCase } from "~/application/use-cases/groups/get-groups.use-case";
 
 export default async function LeidingsportaalContent() {
-  const groups = await getGroups();
-
-  if ("error" in groups) {
-    return <div>{groups.error}</div>;
-  }
+  const groups = await getGroupsUseCase();
 
   return (
     <div className="space-y-6">
@@ -40,13 +37,9 @@ export default async function LeidingsportaalContent() {
 }
 
 async function GroupCard({ group }: { group: Group }) {
-  const members = await getMembersForGroup(group.id);
+  const members = await getMembersForGroupUseCase(group.id);
 
   console.log(members);
-
-  if ("error" in members) {
-    return <div>{members.error}</div>;
-  }
 
   return (
     <Card>
@@ -64,13 +57,15 @@ async function GroupCard({ group }: { group: Group }) {
           </TableHeader>
           <TableBody>
             {members.map((member) => (
-              <TableRow key={member.id}>
+              <TableRow key={member.member.id}>
                 <TableCell>
-                  {member.name.firstName} {member.name.lastName}
+                  {member.member.name.firstName} {member.member.name.lastName}
                 </TableCell>
-                <TableCell>{member.emailAddress ?? "Geen"}</TableCell>
+                <TableCell>{member.member.emailAddress ?? "Geen"}</TableCell>
                 <TableCell>
-                  {new Date(member.dateOfBirth).toLocaleDateString("nl-BE")}
+                  {new Date(member.member.dateOfBirth).toLocaleDateString(
+                    "nl-BE",
+                  )}
                 </TableCell>
               </TableRow>
             ))}

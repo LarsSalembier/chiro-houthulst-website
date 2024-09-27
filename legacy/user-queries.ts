@@ -37,6 +37,7 @@ export async function setRole(userId: string, role: Role) {
     publicMetadata: { role },
   });
 }
+
 /**
  * Get users by query. If no query is provided, all users are returned.
  *

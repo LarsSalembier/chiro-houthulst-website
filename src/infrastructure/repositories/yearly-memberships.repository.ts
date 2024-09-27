@@ -1,51 +1,29 @@
 import { captureException, startSpan } from "@sentry/nextjs";
 import { and, eq } from "drizzle-orm";
 import { injectable } from "inversify";
-import { type IYearlyMembershipsRepository } from "~/application/repositories/yearly-memberships.repository.interface";
+import { IYearlyMembershipsRepository } from "~/application/repositories/yearly-memberships.repository.interface";
 import {
-  type YearlyMembershipUpdate,
-  type YearlyMembership,
-  type YearlyMembershipInsert,
+  YearlyMembership,
+  YearlyMembershipInsert,
+  YearlyMembershipUpdate,
 } from "~/domain/entities/yearly-membership";
+import { db } from "drizzle";
+import { yearlyMemberships as yearlyMembershipsTable } from "drizzle/schema";
+import { DatabaseOperationError } from "~/domain/errors/common";
+import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {
   MemberAlreadyHasYearlyMembershipError,
   YearlyMembershipNotFoundError,
 } from "~/domain/errors/yearly-memberships";
 import { MemberNotFoundError } from "~/domain/errors/members";
-import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
-import { isDatabaseError } from "~/domain/errors/database-error";
-import { db } from "drizzle";
-import { yearlyMemberships } from "drizzle/schema";
-import { type PaymentMethod } from "~/domain/enums/payment-method";
-import { WorkyearNotFoundError } from "~/domain/errors/workyears";
+import { WorkYearNotFoundError } from "~/domain/errors/work-years";
 import { GroupNotFoundError } from "~/domain/errors/groups";
-import { MemberAlreadyPaidError } from "~/domain/errors/members";
-import { type IGroupsRepository } from "~/application/repositories/groups.repository.interface";
-import { type IMembersRepository } from "~/application/repositories/members.repository.interface";
-import { type IWorkyearsRepository } from "~/application/repositories/workyears.repository.interface";
-import { getInjection } from "di/container";
 
 @injectable()
 export class YearlyMembershipsRepository
   implements IYearlyMembershipsRepository
 {
-  constructor(
-    private readonly membersRepository = getInjection("IMembersRepository"),
-    private readonly workyearsRepository = getInjection("IWorkyearsRepository"),
-    private readonly groupsRepository = getInjection("IGroupsRepository"),
-  ) {}
-
-  /**
-   * Creates a new yearly membership for a member.
-   *
-   * @param yearlyMembership The yearly membership data to insert.
-   * @returns The created yearly membership.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {WorkyearNotFoundError} If the workyear is not found.
-   * @throws {MemberAlreadyHasYearlyMembershipError} If the member already has a yearly membership for the given work year.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async createYearlyMembership(
     yearlyMembership: YearlyMembershipInsert,
   ): Promise<YearlyMembership> {
@@ -53,24 +31,8 @@ export class YearlyMembershipsRepository
       { name: "YearlyMembershipsRepository > createYearlyMembership" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(
-            yearlyMembership.memberId,
-          );
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
-          const workYearExists = await this.workyearsRepository.getWorkyear(
-            yearlyMembership.workYearId,
-          );
-
-          if (!workYearExists) {
-            throw new WorkyearNotFoundError("Workyear not found");
-          }
-
           const query = db
-            .insert(yearlyMemberships)
+            .insert(yearlyMembershipsTable)
             .values(yearlyMembership)
             .returning();
 
@@ -91,14 +53,39 @@ export class YearlyMembershipsRepository
 
           return createdYearlyMembership;
         } catch (error) {
-          if (
-            isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation
-          ) {
-            throw new MemberAlreadyHasYearlyMembershipError(
-              "Member already has a yearly membership for the given work year",
-              { cause: error },
-            );
+          if (error instanceof DatabaseOperationError) {
+            throw error;
+          }
+
+          if (isDatabaseError(error)) {
+            if (error.code === PostgresErrorCode.UniqueViolation) {
+              throw new MemberAlreadyHasYearlyMembershipError(
+                "Member already has a yearly membership for this work year",
+                {
+                  cause: error,
+                },
+              );
+            }
+
+            if (error.code === PostgresErrorCode.ForeignKeyViolation) {
+              if (error.column === "member_id") {
+                throw new MemberNotFoundError("Member not found", {
+                  cause: error,
+                });
+              }
+
+              if (error.column === "work_year_id") {
+                throw new WorkYearNotFoundError("Work year not found", {
+                  cause: error,
+                });
+              }
+
+              if (error.column === "group_id") {
+                throw new GroupNotFoundError("Group not found", {
+                  cause: error,
+                });
+              }
+            }
           }
 
           captureException(error, { data: yearlyMembership });
@@ -113,26 +100,18 @@ export class YearlyMembershipsRepository
     );
   }
 
-  /**
-   * Gets the yearly membership for a specific member and work year.
-   *
-   * @param memberId The ID of the member.
-   * @param workYearId The ID of the work year.
-   * @returns The yearly membership if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getYearlyMembership(
+  async getYearlyMembershipByIds(
     memberId: number,
     workYearId: number,
   ): Promise<YearlyMembership | undefined> {
     return await startSpan(
-      { name: "YearlyMembershipsRepository > getYearlyMembership" },
+      { name: "YearlyMembershipsRepository > getYearlyMembershipByIds" },
       async () => {
         try {
           const query = db.query.yearlyMemberships.findFirst({
             where: and(
-              eq(yearlyMemberships.memberId, memberId),
-              eq(yearlyMemberships.workYearId, workYearId),
+              eq(yearlyMembershipsTable.memberId, memberId),
+              eq(yearlyMembershipsTable.workYearId, workYearId),
             ),
           });
 
@@ -156,18 +135,36 @@ export class YearlyMembershipsRepository
     );
   }
 
-  /**
-   * Updates the yearly membership for a specific member and work year.
-   *
-   * @param memberId The ID of the member.
-   * @param workYearId The ID of the work year.
-   * @param yearlyMembership The updated yearly membership data.
-   * @returns The updated yearly membership.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {WorkyearNotFoundError} If the workyear is not found.
-   * @throws {YearlyMembershipNotFoundError} If the yearly membership is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
+  async getAllYearlyMemberships(): Promise<YearlyMembership[]> {
+    return await startSpan(
+      { name: "YearlyMembershipsRepository > getAllYearlyMemberships" },
+      async () => {
+        try {
+          const query = db.query.yearlyMemberships.findMany();
+
+          const allYearlyMemberships = await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+
+          return allYearlyMemberships;
+        } catch (error) {
+          captureException(error);
+          throw new DatabaseOperationError(
+            "Failed to get all yearly memberships",
+            {
+              cause: error,
+            },
+          );
+        }
+      },
+    );
+  }
+
   async updateYearlyMembership(
     memberId: number,
     workYearId: number,
@@ -177,26 +174,13 @@ export class YearlyMembershipsRepository
       { name: "YearlyMembershipsRepository > updateYearlyMembership" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
-          const workYearExists =
-            await this.workyearsRepository.getWorkyear(workYearId);
-
-          if (!workYearExists) {
-            throw new WorkyearNotFoundError("Workyear not found");
-          }
-
           const query = db
-            .update(yearlyMemberships)
+            .update(yearlyMembershipsTable)
             .set(yearlyMembership)
             .where(
               and(
-                eq(yearlyMemberships.memberId, memberId),
-                eq(yearlyMemberships.workYearId, workYearId),
+                eq(yearlyMembershipsTable.memberId, memberId),
+                eq(yearlyMembershipsTable.workYearId, workYearId),
               ),
             )
             .returning();
@@ -218,8 +202,18 @@ export class YearlyMembershipsRepository
 
           return updatedYearlyMembership;
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof YearlyMembershipNotFoundError) {
             throw error;
+          }
+
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.ForeignKeyViolation &&
+            error.table === "group_id"
+          ) {
+            throw new GroupNotFoundError("Group not found", {
+              cause: error,
+            });
           }
 
           captureException(error, {
@@ -236,16 +230,6 @@ export class YearlyMembershipsRepository
     );
   }
 
-  /**
-   * Deletes the yearly membership for a specific member and work year.
-   *
-   * @param memberId The ID of the member.
-   * @param workYearId The ID of the work year.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {WorkyearNotFoundError} If the workyear is not found.
-   * @throws {YearlyMembershipNotFoundError} If the yearly membership is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async deleteYearlyMembership(
     memberId: number,
     workYearId: number,
@@ -254,25 +238,12 @@ export class YearlyMembershipsRepository
       { name: "YearlyMembershipsRepository > deleteYearlyMembership" },
       async () => {
         try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
-          const workYearExists =
-            await this.workyearsRepository.getWorkyear(workYearId);
-
-          if (!workYearExists) {
-            throw new WorkyearNotFoundError("Workyear not found");
-          }
-
           const query = db
-            .delete(yearlyMemberships)
+            .delete(yearlyMembershipsTable)
             .where(
               and(
-                eq(yearlyMemberships.memberId, memberId),
-                eq(yearlyMemberships.workYearId, workYearId),
+                eq(yearlyMembershipsTable.memberId, memberId),
+                eq(yearlyMembershipsTable.workYearId, workYearId),
               ),
             )
             .returning();
@@ -292,7 +263,7 @@ export class YearlyMembershipsRepository
             );
           }
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof YearlyMembershipNotFoundError) {
             throw error;
           }
 
@@ -308,204 +279,15 @@ export class YearlyMembershipsRepository
     );
   }
 
-  /**
-   * Gets all paid yearly memberships for a specific group and work year.
-   *
-   * @param groupId The ID of the group.
-   * @param workYearId The ID of the work year.
-   * @returns An array of paid yearly memberships.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {WorkyearNotFoundError} If the workyear is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getPaidYearlyMembershipsByGroup(
-    groupId: number,
-    workYearId: number,
-  ): Promise<YearlyMembership[]> {
-    return await startSpan(
-      { name: "YearlyMembershipsRepository > getPaidYearlyMembershipsByGroup" },
-      async () => {
-        try {
-          const groupExists = await this.groupsRepository.getGroup(groupId);
-
-          if (!groupExists) {
-            throw new GroupNotFoundError("Group not found");
-          }
-
-          const workYearExists =
-            await this.workyearsRepository.getWorkyear(workYearId);
-
-          if (!workYearExists) {
-            throw new WorkyearNotFoundError("Workyear not found");
-          }
-
-          const query = db.query.yearlyMemberships.findMany({
-            where: and(
-              eq(yearlyMemberships.groupId, groupExists.id),
-              eq(yearlyMemberships.workYearId, workYearId),
-              eq(yearlyMemberships.paymentReceived, true),
-            ),
-          });
-
-          const yearlyMemberships_ = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          return yearlyMemberships_;
-        } catch (error) {
-          if (error instanceof NotFoundError) {
-            throw error;
-          }
-
-          captureException(error, { data: { groupId, workYearId } });
-          throw new DatabaseOperationError(
-            "Failed to get paid yearly memberships by group",
-            {
-              cause: error,
-            },
-          );
-        }
-      },
-    );
-  }
-
-  /**
-   * Gets all unpaid yearly memberships for a specific group and work year.
-   *
-   * @param groupId The ID of the group.
-   * @param workYearId The ID of the work year.
-   * @returns An array of unpaid yearly memberships.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {WorkyearNotFoundError} If the workyear is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getUnpaidYearlyMembershipsByGroup(
-    groupId: number,
-    workYearId: number,
-  ): Promise<YearlyMembership[]> {
+  async deleteAllYearlyMemberships(): Promise<void> {
     return await startSpan(
       {
-        name: "YearlyMembershipsRepository > getUnpaidYearlyMembershipsByGroup",
+        name: "YearlyMembershipsRepository > deleteAllYearlyMemberships",
       },
       async () => {
         try {
-          const groupExists = await this.groupsRepository.getGroup(groupId);
-
-          if (!groupExists) {
-            throw new GroupNotFoundError("Group not found");
-          }
-
-          const workYearExists =
-            await this.workyearsRepository.getWorkyear(workYearId);
-
-          if (!workYearExists) {
-            throw new WorkyearNotFoundError("Workyear not found");
-          }
-
-          const query = db.query.yearlyMemberships.findMany({
-            where: and(
-              eq(yearlyMemberships.groupId, groupExists.id),
-              eq(yearlyMemberships.workYearId, workYearId),
-              eq(yearlyMemberships.paymentReceived, false),
-            ),
-          });
-
-          const yearlyMemberships_ = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          return yearlyMemberships_;
-        } catch (error) {
-          if (error instanceof NotFoundError) {
-            throw error;
-          }
-
-          captureException(error, { data: { groupId, workYearId } });
-          throw new DatabaseOperationError(
-            "Failed to get unpaid yearly memberships by group",
-            {
-              cause: error,
-            },
-          );
-        }
-      },
-    );
-  }
-
-  /**
-   * Marks a yearly membership as paid.
-   *
-   * @param memberId The ID of the member.
-   * @param workYearId The ID of the work year.
-   * @param paymentMethod The payment method.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {WorkyearNotFoundError} If the workyear is not found.
-   * @throws {YearlyMembershipNotFoundError} If the yearly membership is not found.
-   * @throws {MemberAlreadyPaidError} If the member has already paid for the yearly membership.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async markYearlyMembershipAsPaid(
-    memberId: number,
-    workYearId: number,
-    paymentMethod: PaymentMethod,
-  ): Promise<void> {
-    return await startSpan(
-      { name: "YearlyMembershipsRepository > markYearlyMembershipAsPaid" },
-      async () => {
-        try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
-          const workYearExists =
-            await this.workyearsRepository.getWorkyear(workYearId);
-
-          if (!workYearExists) {
-            throw new WorkyearNotFoundError("Workyear not found");
-          }
-
-          const yearlyMembership = await this.getYearlyMembership(
-            memberId,
-            workYearId,
-          );
-
-          if (!yearlyMembership) {
-            throw new YearlyMembershipNotFoundError(
-              "Yearly membership not found",
-            );
-          }
-
-          if (yearlyMembership.paymentReceived) {
-            throw new MemberAlreadyPaidError(
-              "Member already paid for this work year",
-            );
-          }
-
-          const query = db
-            .update(yearlyMemberships)
-            .set({
-              paymentReceived: true,
-              paymentMethod: paymentMethod,
-              paymentDate: new Date(),
-            })
-            .where(
-              and(
-                eq(yearlyMemberships.memberId, memberId),
-                eq(yearlyMemberships.workYearId, workYearId),
-              ),
-            );
+          // eslint-disable-next-line drizzle/enforce-delete-with-where
+          const query = db.delete(yearlyMembershipsTable).returning();
 
           await startSpan(
             {
@@ -516,123 +298,9 @@ export class YearlyMembershipsRepository
             () => query.execute(),
           );
         } catch (error) {
-          if (
-            error instanceof NotFoundError ||
-            error instanceof MemberAlreadyPaidError
-          ) {
-            throw error;
-          }
-
-          captureException(error, {
-            data: { memberId, workYearId, paymentMethod },
-          });
+          captureException(error);
           throw new DatabaseOperationError(
-            "Failed to mark yearly membership as paid",
-            {
-              cause: error,
-            },
-          );
-        }
-      },
-    );
-  }
-
-  /**
-   * Gets all yearly memberships for a specific member.
-   *
-   * @param memberId The ID of the member.
-   * @returns An array of yearly memberships.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getYearlyMembershipsForMember(
-    memberId: number,
-  ): Promise<YearlyMembership[]> {
-    return await startSpan(
-      { name: "YearlyMembershipsRepository > getYearlyMembershipsForMember" },
-      async () => {
-        try {
-          const memberExists = await this.membersRepository.getMember(memberId);
-
-          if (!memberExists) {
-            throw new MemberNotFoundError("Member not found");
-          }
-
-          const query = db.query.yearlyMemberships.findMany({
-            where: eq(yearlyMemberships.memberId, memberId),
-          });
-
-          const yearlyMemberships_ = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          return yearlyMemberships_;
-        } catch (error) {
-          if (error instanceof NotFoundError) {
-            throw error;
-          }
-
-          captureException(error, { data: { memberId } });
-          throw new DatabaseOperationError(
-            "Failed to get yearly memberships for member",
-            {
-              cause: error,
-            },
-          );
-        }
-      },
-    );
-  }
-
-  /**
-   * Gets all yearly memberships for a specific work year.
-   *
-   * @param workYearId The ID of the work year.
-   * @returns An array of yearly memberships.
-   * @throws {WorkyearNotFoundError} If the workyear is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getYearlyMembershipsForWorkYear(
-    workYearId: number,
-  ): Promise<YearlyMembership[]> {
-    return await startSpan(
-      { name: "YearlyMembershipsRepository > getYearlyMembershipsForWorkYear" },
-      async () => {
-        try {
-          const workYearExists =
-            await this.workyearsRepository.getWorkyear(workYearId);
-
-          if (!workYearExists) {
-            throw new WorkyearNotFoundError("Workyear not found");
-          }
-
-          const query = db.query.yearlyMemberships.findMany({
-            where: eq(yearlyMemberships.workYearId, workYearId),
-          });
-
-          const yearlyMemberships_ = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          return yearlyMemberships_;
-        } catch (error) {
-          if (error instanceof NotFoundError) {
-            throw error;
-          }
-
-          captureException(error, { data: { workYearId } });
-          throw new DatabaseOperationError(
-            "Failed to get yearly memberships for work year",
+            "Failed to delete all yearly memberships",
             {
               cause: error,
             },

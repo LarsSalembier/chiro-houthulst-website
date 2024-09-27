@@ -1,205 +1,170 @@
+import { startSpan } from "@sentry/nextjs";
 import { injectable } from "inversify";
-import { type ISponsorsRepository } from "~/application/repositories/sponsors.repository.interface";
+import { ISponsorsRepository } from "~/application/repositories/sponsors.repository.interface";
 import {
-  type Sponsor,
-  type SponsorInsert,
-  type SponsorUpdate,
+  Sponsor,
+  SponsorInsert,
+  SponsorUpdate,
 } from "~/domain/entities/sponsor";
 import {
-  SponsorAlreadyExistsError,
   SponsorNotFoundError,
   SponsorStillReferencedError,
+  SponsorWithThatCompanyNameAlreadyExistsError,
 } from "~/domain/errors/sponsors";
 import { AddressNotFoundError } from "~/domain/errors/addresses";
-import { type IAddressesRepository } from "~/application/repositories/addresses.repository.interface";
+import { mockData } from "~/infrastructure/mock-data";
 
 @injectable()
 export class MockSponsorsRepository implements ISponsorsRepository {
-  private _sponsors = new Map<number, Sponsor>();
-  private _nextSponsorId = 1;
-  private _sponsorReferences = new Map<number, number>(); // sponsorId -> reference count
+  private sponsors: Sponsor[] = mockData.sponsors;
+  private autoIncrementId: number =
+    this.sponsors.reduce((maxId, sponsor) => {
+      return sponsor.id > maxId ? sponsor.id : maxId;
+    }, 0) + 1;
 
-  constructor(private readonly addressRepository: IAddressesRepository) {}
+  private isSponsorReferenced(sponsorId: number): boolean {
+    return mockData.sponsorshipAgreements.some(
+      (sa) => sa.sponsorId === sponsorId,
+    );
+  }
 
-  /**
-   * Creates a new sponsor.
-   *
-   * @param sponsor The sponsor data to insert.
-   * @returns The created sponsor.
-   * @throws {SponsorAlreadyExistsError} If a sponsor with the same company name already exists.
-   * @throws {AddressNotFoundError} If the address ID is provided and the address is not found.
-   */
   async createSponsor(sponsor: SponsorInsert): Promise<Sponsor> {
-    if (sponsor.addressId) {
-      const address = await this.addressRepository.getAddressById(
-        sponsor.addressId,
-      );
-      if (!address) {
-        throw new AddressNotFoundError("Address not found");
+    return startSpan({ name: "MockSponsorsRepository > createSponsor" }, () => {
+      if (sponsor.addressId) {
+        const addressExists = mockData.addresses.some(
+          (a) => a.id === sponsor.addressId,
+        );
+        if (!addressExists) {
+          throw new AddressNotFoundError("Address not found");
+        }
       }
-    }
 
-    // Check for existing sponsor with the same company name
-    for (const existingSponsor of this._sponsors.values()) {
-      if (existingSponsor.companyName === sponsor.companyName) {
-        throw new SponsorAlreadyExistsError(
-          `Sponsor with company name ${sponsor.companyName} already exists`,
+      const existingSponsor = this.sponsors.find(
+        (s) =>
+          s.companyName.toLowerCase() === sponsor.companyName.toLowerCase(),
+      );
+      if (existingSponsor) {
+        throw new SponsorWithThatCompanyNameAlreadyExistsError(
+          "A sponsor with that company name already exists",
         );
       }
-    }
 
-    const newSponsor = {
-      ...sponsor,
-      id: this._nextSponsorId++,
-    };
-    this._sponsors.set(newSponsor.id, newSponsor);
-    this._sponsorReferences.set(newSponsor.id, 0); // Initialize reference count
-    return newSponsor;
+      const newSponsor: Sponsor = {
+        id: this.autoIncrementId++,
+        ...sponsor,
+      };
+      this.sponsors.push(newSponsor);
+      return newSponsor;
+    });
   }
 
-  /**
-   * Gets a sponsor by ID.
-   *
-   * @param id The ID of the sponsor.
-   * @returns The sponsor if found, undefined otherwise.
-   */
-  async getSponsor(id: number): Promise<Sponsor | undefined> {
-    return this._sponsors.get(id);
+  async getSponsorById(id: number): Promise<Sponsor | undefined> {
+    return startSpan(
+      { name: "MockSponsorsRepository > getSponsorById" },
+      () => {
+        return this.sponsors.find((s) => s.id === id);
+      },
+    );
   }
 
-  /**
-   * Gets a sponsor by company name.
-   *
-   * @param companyName The company name of the sponsor.
-   * @returns The sponsor if found, undefined otherwise.
-   */
   async getSponsorByCompanyName(
     companyName: string,
   ): Promise<Sponsor | undefined> {
-    for (const sponsor of this._sponsors.values()) {
-      if (sponsor.companyName === companyName) {
-        return sponsor;
-      }
-    }
-    return undefined;
+    return startSpan(
+      { name: "MockSponsorsRepository > getSponsorByCompanyName" },
+      () => {
+        return this.sponsors.find(
+          (s) => s.companyName.toLowerCase() === companyName.toLowerCase(),
+        );
+      },
+    );
   }
 
-  /**
-   * Gets all sponsors.
-   *
-   * @returns All sponsors.
-   */
-  async getSponsors(): Promise<Sponsor[]> {
-    return Array.from(this._sponsors.values());
+  async getAllSponsors(): Promise<Sponsor[]> {
+    return startSpan(
+      { name: "MockSponsorsRepository > getAllSponsors" },
+      () => {
+        return this.sponsors;
+      },
+    );
   }
 
-  /**
-   * Updates a sponsor.
-   *
-   * @param id The ID of the sponsor to update.
-   * @param sponsor The sponsor data to update.
-   * @returns The updated sponsor.
-   * @throws {SponsorNotFoundError} If the sponsor is not found.
-   * @throws {AddressNotFoundError} If a new address ID is provided and the address is not found.
-   */
   async updateSponsor(id: number, sponsor: SponsorUpdate): Promise<Sponsor> {
-    const existingSponsor = this._sponsors.get(id);
-    if (!existingSponsor) {
-      throw new SponsorNotFoundError("Sponsor not found");
-    }
-
-    if (sponsor.addressId && sponsor.addressId !== existingSponsor.addressId) {
-      const address = await this.addressRepository.getAddressById(
-        sponsor.addressId,
-      );
-      if (!address) {
-        throw new AddressNotFoundError("Address not found");
+    return startSpan({ name: "MockSponsorsRepository > updateSponsor" }, () => {
+      const sponsorIndex = this.sponsors.findIndex((s) => s.id === id);
+      if (sponsorIndex === -1) {
+        throw new SponsorNotFoundError("Sponsor not found");
       }
-    }
 
-    // If company name is being updated, check for uniqueness
-    if (
-      sponsor.companyName &&
-      sponsor.companyName !== existingSponsor.companyName
-    ) {
-      for (const otherSponsor of this._sponsors.values()) {
-        if (
-          otherSponsor.companyName === sponsor.companyName &&
-          otherSponsor.id !== id
-        ) {
-          throw new SponsorAlreadyExistsError(
-            `Sponsor with company name ${sponsor.companyName} already exists`,
-          );
+      if (sponsor.addressId) {
+        const addressExists = mockData.addresses.some(
+          (a) => a.id === sponsor.addressId,
+        );
+        if (!addressExists) {
+          throw new AddressNotFoundError("Address not found");
         }
       }
-    }
 
-    const updatedSponsor: Sponsor = {
-      ...existingSponsor,
-      ...sponsor,
-      companyOwnerName:
-        sponsor.companyOwnerName ?? existingSponsor.companyOwnerName,
-    };
-
-    this._sponsors.set(id, updatedSponsor);
-    return updatedSponsor;
-  }
-
-  /**
-   * Deletes a sponsor.
-   *
-   * @param id The ID of the sponsor to delete.
-   * @throws {SponsorNotFoundError} If the sponsor is not found.
-   * @throws {SponsorStillReferencedError} If the sponsor is still referenced by sponsorship agreements.
-   */
-  async deleteSponsor(id: number): Promise<void> {
-    const existingSponsor = this._sponsors.get(id);
-    if (!existingSponsor) {
-      throw new SponsorNotFoundError("Sponsor not found");
-    }
-
-    const referenceCount = this._sponsorReferences.get(id) ?? 0;
-    if (referenceCount > 0) {
-      throw new SponsorStillReferencedError(
-        "Sponsor is still referenced by sponsorship agreements",
+      const existingSponsorWithCompanyName = this.sponsors.find(
+        (s) =>
+          s.companyName.toLowerCase() === sponsor.companyName?.toLowerCase() &&
+          s.id !== id,
       );
-    }
+      if (existingSponsorWithCompanyName) {
+        throw new SponsorWithThatCompanyNameAlreadyExistsError(
+          "A sponsor with that company name already exists",
+        );
+      }
 
-    this._sponsors.delete(id);
-    this._sponsorReferences.delete(id);
+      let updatedCompanyOwnerName =
+        this.sponsors[sponsorIndex]!.companyOwnerName;
+      if (sponsor.companyOwnerName !== undefined) {
+        if (sponsor.companyOwnerName === null) {
+          updatedCompanyOwnerName = null;
+        } else {
+          updatedCompanyOwnerName = {
+            ...updatedCompanyOwnerName,
+            ...sponsor.companyOwnerName,
+          };
+        }
+      }
+
+      this.sponsors[sponsorIndex] = {
+        ...this.sponsors[sponsorIndex]!,
+        ...sponsor,
+        companyOwnerName: updatedCompanyOwnerName,
+      };
+
+      return this.sponsors[sponsorIndex];
+    });
   }
 
-  /**
-   * Increments the reference count for a sponsor.
-   *
-   * @param sponsorId The sponsor ID.
-   * @throws {SponsorNotFoundError} If the sponsor is not found.
-   */
-  async incrementReference(sponsorId: number): Promise<void> {
-    const sponsor = this._sponsors.get(sponsorId);
-    if (!sponsor) {
-      throw new SponsorNotFoundError(`Sponsor with ID ${sponsorId} not found`);
-    }
+  async deleteSponsor(id: number): Promise<void> {
+    return startSpan({ name: "MockSponsorsRepository > deleteSponsor" }, () => {
+      if (this.isSponsorReferenced(id)) {
+        throw new SponsorStillReferencedError("Sponsor still referenced");
+      }
 
-    const count = this._sponsorReferences.get(sponsorId) ?? 0;
-    this._sponsorReferences.set(sponsorId, count + 1);
+      const sponsorIndex = this.sponsors.findIndex((s) => s.id === id);
+      if (sponsorIndex === -1) {
+        throw new SponsorNotFoundError("Sponsor not found");
+      }
+      this.sponsors.splice(sponsorIndex, 1);
+    });
   }
 
-  /**
-   * Decrements the reference count for a sponsor.
-   *
-   * @param sponsorId The sponsor ID.
-   * @throws {SponsorNotFoundError} If the sponsor is not found.
-   */
-  async decrementReference(sponsorId: number): Promise<void> {
-    const sponsor = this._sponsors.get(sponsorId);
-    if (!sponsor) {
-      throw new SponsorNotFoundError(`Sponsor with ID ${sponsorId} not found`);
-    }
+  async deleteAllSponsors(): Promise<void> {
+    return startSpan(
+      { name: "MockSponsorsRepository > deleteAllSponsors" },
+      () => {
+        if (
+          this.sponsors.some((sponsor) => this.isSponsorReferenced(sponsor.id))
+        ) {
+          throw new SponsorStillReferencedError("Sponsor still referenced");
+        }
 
-    const count = this._sponsorReferences.get(sponsorId) ?? 0;
-    if (count > 0) {
-      this._sponsorReferences.set(sponsorId, count - 1);
-    }
+        this.sponsors = [];
+      },
+    );
   }
 }

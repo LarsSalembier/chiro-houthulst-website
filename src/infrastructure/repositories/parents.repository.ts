@@ -1,34 +1,32 @@
 import { captureException, startSpan } from "@sentry/nextjs";
-import { eq, and } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { injectable } from "inversify";
-import { type IParentsRepository } from "~/application/repositories/parents.repository.interface";
-import {
-  type ParentUpdate,
-  type Parent,
-  type ParentInsert,
-} from "~/domain/entities/parent";
+import { IParentsRepository } from "~/application/repositories/parents.repository.interface";
+import { Parent, ParentInsert, ParentUpdate } from "~/domain/entities/parent";
 import { db } from "drizzle";
-import { parents as parentsTable, membersParents } from "drizzle/schema";
+import {
+  membersParents as membersParentsTable,
+  parents as parentsTable,
+  UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT,
+} from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {
-  ParentAlreadyExistsError,
-  ParentAlreadyLinkedToMemberError,
   ParentNotFoundError,
-  ParentNotLinkedToMemberError,
   ParentStillReferencedError,
+  ParentWithThatEmailAddressAlreadyExistsError,
 } from "~/domain/errors/parents";
-import { MemberNotFoundError } from "~/domain/errors/members";
-import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
+import { DatabaseOperationError } from "~/domain/errors/common";
+import { AddressNotFoundError } from "~/domain/errors/addresses";
 
 @injectable()
 export class ParentsRepository implements IParentsRepository {
-  private mapToEntity(dbParent: typeof parentsTable.$inferSelect): Parent {
+  private mapToEntity(parent: typeof parentsTable.$inferSelect): Parent {
     return {
-      ...dbParent,
+      ...parent,
       name: {
-        firstName: dbParent.firstName,
-        lastName: dbParent.lastName,
+        firstName: parent.firstName,
+        lastName: parent.lastName,
       },
     };
   }
@@ -51,15 +49,6 @@ export class ParentsRepository implements IParentsRepository {
     ) as typeof parentsTable.$inferInsert;
   }
 
-  /**
-   * Creates a new parent.
-   *
-   * @param parent The parent data to insert.
-   * @returns The created parent.
-   * @throws {ParentAlreadyExistsError} If a parent with the same email already exists.
-   * @throws {AddressNotFoundError} If the address does not exist.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async createParent(parent: ParentInsert): Promise<Parent> {
     return await startSpan(
       { name: "ParentsRepository > createParent" },
@@ -87,16 +76,21 @@ export class ParentsRepository implements IParentsRepository {
         } catch (error) {
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation
+            error.code === PostgresErrorCode.UniqueViolation &&
+            error.constraint === UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT
           ) {
-            throw new ParentAlreadyExistsError(
-              "Parent with the same email already exists",
+            throw new ParentWithThatEmailAddressAlreadyExistsError(
+              "A parent with that email address already exists",
               { cause: error },
             );
           }
-
-          if (error instanceof NotFoundError) {
-            throw error;
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.ForeignKeyViolation
+          ) {
+            throw new AddressNotFoundError("Address not found", {
+              cause: error,
+            });
           }
 
           captureException(error, { data: parent });
@@ -108,23 +102,16 @@ export class ParentsRepository implements IParentsRepository {
     );
   }
 
-  /**
-   * Gets a parent by their ID.
-   *
-   * @param id The ID of the parent to get.
-   * @returns The parent if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getParent(id: number): Promise<Parent | undefined> {
+  async getParentById(id: number): Promise<Parent | undefined> {
     return await startSpan(
-      { name: "ParentsRepository > getParent" },
+      { name: "ParentsRepository > getParentById" },
       async () => {
         try {
           const query = db.query.parents.findFirst({
             where: eq(parentsTable.id, id),
           });
 
-          const dbParent = await startSpan(
+          const parent = await startSpan(
             {
               name: query.toSQL().sql,
               op: "db.query",
@@ -133,11 +120,7 @@ export class ParentsRepository implements IParentsRepository {
             () => query.execute(),
           );
 
-          if (!dbParent) {
-            return undefined;
-          }
-
-          return this.mapToEntity(dbParent);
+          return parent ? this.mapToEntity(parent) : undefined;
         } catch (error) {
           captureException(error, { data: { parentId: id } });
           throw new DatabaseOperationError("Failed to get parent", {
@@ -148,23 +131,18 @@ export class ParentsRepository implements IParentsRepository {
     );
   }
 
-  /**
-   * Gets a parent by their email.
-   *
-   * @param emailAddress The email of the parent to get.
-   * @returns The parent if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getParentByEmail(emailAddress: string): Promise<Parent | undefined> {
+  async getParentByEmailAddress(
+    emailAddress: string,
+  ): Promise<Parent | undefined> {
     return await startSpan(
-      { name: "ParentsRepository > getParentByEmail" },
+      { name: "ParentsRepository > getParentByEmailAddress" },
       async () => {
         try {
           const query = db.query.parents.findFirst({
             where: eq(parentsTable.emailAddress, emailAddress),
           });
 
-          const dbParent = await startSpan(
+          const parent = await startSpan(
             {
               name: query.toSQL().sql,
               op: "db.query",
@@ -173,14 +151,10 @@ export class ParentsRepository implements IParentsRepository {
             () => query.execute(),
           );
 
-          if (!dbParent) {
-            return undefined;
-          }
-
-          return this.mapToEntity(dbParent);
+          return parent ? this.mapToEntity(parent) : undefined;
         } catch (error) {
-          captureException(error, { data: { email: emailAddress } });
-          throw new DatabaseOperationError("Failed to get parent by email", {
+          captureException(error, { data: { emailAddress } });
+          throw new DatabaseOperationError("Failed to get parent", {
             cause: error,
           });
         }
@@ -188,17 +162,98 @@ export class ParentsRepository implements IParentsRepository {
     );
   }
 
-  /**
-   * Updates a parent.
-   *
-   * @param id The ID of the parent to update.
-   * @param parent The parent data to update.
-   * @returns The updated parent.
-   * @throws {ParentNotFoundError} If the parent is not found.
-   * @throws {ParentAlreadyExistsError} If a parent with the new email already exists.
-   * @throws {AddressNotFoundError} If the new address does not exist.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
+  async getAllParents(): Promise<Parent[]> {
+    return await startSpan(
+      { name: "ParentsRepository > getAllParents" },
+      async () => {
+        try {
+          const query = db.query.parents.findMany();
+
+          const allParents = await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+
+          return allParents.map((parent) => this.mapToEntity(parent));
+        } catch (error) {
+          captureException(error);
+          throw new DatabaseOperationError("Failed to get all parents", {
+            cause: error,
+          });
+        }
+      },
+    );
+  }
+
+  async getParentsForMember(memberId: number): Promise<
+    {
+      parent: Parent;
+      isPrimary: boolean;
+    }[]
+  > {
+    return await startSpan(
+      { name: "ParentsRepository > getParentsForMember" },
+      async () => {
+        try {
+          const parentMemberRelationshipsQuery =
+            db.query.membersParents.findMany({
+              where: eq(membersParentsTable.memberId, memberId),
+            });
+
+          const parentMemberRelationships = await startSpan(
+            {
+              name: parentMemberRelationshipsQuery.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => parentMemberRelationshipsQuery.execute(),
+          );
+
+          const parentIds = parentMemberRelationships.map(
+            (relationship) => relationship.parentId,
+          );
+
+          const parentsQuery = db.query.parents.findMany({
+            where: inArray(parentsTable.id, parentIds),
+          });
+
+          const parents = await startSpan(
+            {
+              name: parentsQuery.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => parentsQuery.execute(),
+          );
+
+          return parentMemberRelationships.map((relationship) => {
+            const parent = parents.find(
+              (parent) => parent.id === relationship.parentId,
+            );
+
+            if (!parent) {
+              throw new ParentNotFoundError("Parent not found");
+            }
+
+            return {
+              parent: this.mapToEntity(parent),
+              isPrimary: relationship.isPrimary,
+            };
+          });
+        } catch (error) {
+          captureException(error, { data: { memberId } });
+          throw new DatabaseOperationError("Failed to get parents for member", {
+            cause: error,
+          });
+        }
+      },
+    );
+  }
+
   async updateParent(id: number, parent: ParentUpdate): Promise<Parent> {
     return await startSpan(
       { name: "ParentsRepository > updateParent" },
@@ -225,21 +280,31 @@ export class ParentsRepository implements IParentsRepository {
 
           return this.mapToEntity(updatedParent);
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof ParentNotFoundError) {
             throw error;
           }
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation
+            error.code === PostgresErrorCode.UniqueViolation &&
+            error.constraint === UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT
           ) {
-            throw new ParentAlreadyExistsError(
-              "Parent with the new email already exists",
+            throw new ParentWithThatEmailAddressAlreadyExistsError(
+              "A parent with that email address already exists",
               { cause: error },
             );
           }
 
-          captureException(error, { data: { id, parent } });
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.ForeignKeyViolation
+          ) {
+            throw new AddressNotFoundError("Address not found", {
+              cause: error,
+            });
+          }
+
+          captureException(error, { data: { parentId: id, parent } });
           throw new DatabaseOperationError("Failed to update parent", {
             cause: error,
           });
@@ -248,14 +313,6 @@ export class ParentsRepository implements IParentsRepository {
     );
   }
 
-  /**
-   * Deletes a parent.
-   *
-   * @param id The ID of the parent to delete.
-   * @throws {ParentNotFoundError} If the parent is not found.
-   * @throws {ParentStillReferencedError} If the parent is still referenced by other entities.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async deleteParent(id: number): Promise<void> {
     return await startSpan(
       { name: "ParentsRepository > deleteParent" },
@@ -279,7 +336,7 @@ export class ParentsRepository implements IParentsRepository {
             throw new ParentNotFoundError("Parent not found");
           }
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof ParentNotFoundError) {
             throw error;
           }
 
@@ -287,13 +344,12 @@ export class ParentsRepository implements IParentsRepository {
             isDatabaseError(error) &&
             error.code === PostgresErrorCode.ForeignKeyViolation
           ) {
-            throw new ParentStillReferencedError(
-              "Parent is still referenced by other entities",
-              { cause: error },
-            );
+            throw new ParentStillReferencedError("Parent still referenced", {
+              cause: error,
+            });
           }
 
-          captureException(error, { data: { id } });
+          captureException(error, { data: { parentId: id } });
           throw new DatabaseOperationError("Failed to delete parent", {
             cause: error,
           });
@@ -302,31 +358,13 @@ export class ParentsRepository implements IParentsRepository {
     );
   }
 
-  /**
-   * Adds a member to a parent.
-   *
-   * @param parentId The ID of the parent.
-   * @param memberId The ID of the member.
-   * @param isPrimary Whether the parent is the primary parent.
-   * @throws {ParentNotFoundError} If the parent is not found.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {ParentAlreadyLinkedToMemberError} If the parent is already linked to the member.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async addMemberToParent(
-    parentId: number,
-    memberId: number,
-    isPrimary: boolean,
-  ): Promise<void> {
+  async deleteAllParents(): Promise<void> {
     return await startSpan(
-      { name: "ParentsRepository > addMemberToParent" },
+      { name: "ParentsRepository > deleteAllParents" },
       async () => {
         try {
-          const query = db.insert(membersParents).values({
-            parentId,
-            memberId,
-            isPrimary,
-          });
+          // eslint-disable-next-line drizzle/enforce-delete-with-where
+          const query = db.delete(parentsTable).returning();
 
           await startSpan(
             {
@@ -337,191 +375,19 @@ export class ParentsRepository implements IParentsRepository {
             () => query.execute(),
           );
         } catch (error) {
-          if (error instanceof NotFoundError) {
-            throw error;
-          }
-
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation
+            error.code === PostgresErrorCode.ForeignKeyViolation
           ) {
-            throw new ParentAlreadyLinkedToMemberError(
-              "Parent is already linked to the member",
-              { cause: error },
-            );
+            throw new ParentStillReferencedError("Parent still referenced", {
+              cause: error,
+            });
           }
 
-          captureException(error, { data: { parentId, memberId } });
-          throw new DatabaseOperationError("Failed to add member to parent", {
+          captureException(error);
+          throw new DatabaseOperationError("Failed to delete all parents", {
             cause: error,
           });
-        }
-      },
-    );
-  }
-
-  /**
-   * Removes a member from a parent.
-   *
-   * @param parentId The ID of the parent.
-   * @param memberId The ID of the member.
-   * @throws {ParentNotFoundError} If the parent is not found.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async removeMemberFromParent(
-    parentId: number,
-    memberId: number,
-  ): Promise<void> {
-    return await startSpan(
-      { name: "ParentsRepository > removeMemberFromParent" },
-      async () => {
-        try {
-          const parentExists = await this.getParent(parentId);
-
-          if (!parentExists) {
-            throw new ParentNotFoundError("Parent not found");
-          }
-
-          const query = db
-            .delete(membersParents)
-            .where(
-              and(
-                eq(membersParents.parentId, parentId),
-                eq(membersParents.memberId, memberId),
-              ),
-            )
-            .returning();
-
-          const [deletedLink] = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          if (!deletedLink) {
-            throw new ParentNotLinkedToMemberError(
-              "Parent is not linked to the member",
-            );
-          }
-        } catch (error) {
-          if (
-            error instanceof NotFoundError ||
-            error instanceof ParentNotLinkedToMemberError
-          ) {
-            throw error;
-          }
-
-          captureException(error, { data: { parentId, memberId } });
-          throw new DatabaseOperationError(
-            "Failed to remove member from parent",
-            {
-              cause: error,
-            },
-          );
-        }
-      },
-    );
-  }
-
-  /**
-   * Gets parents associated with a member.
-   *
-   * @param memberId The ID of the member.
-   * @returns An array of parents associated with the member.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getParentsForMember(memberId: number): Promise<Parent[]> {
-    return await startSpan(
-      { name: "ParentsRepository > getParentsForMember" },
-      async () => {
-        try {
-          const query = db.query.membersParents.findMany({
-            where: eq(membersParents.memberId, memberId),
-            with: {
-              parent: true,
-            },
-          });
-
-          const memberParentLinks = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          return memberParentLinks.map((link) => this.mapToEntity(link.parent));
-        } catch (error) {
-          if (error instanceof MemberNotFoundError) {
-            throw error;
-          }
-
-          captureException(error, { data: { memberId } });
-          throw new DatabaseOperationError("Failed to get parents for member", {
-            cause: error,
-          });
-        }
-      },
-    );
-  }
-
-  /**
-   * Gets the primary parent associated with a member.
-   *
-   * @param memberId The ID of the member.
-   * @returns The primary parent associated with the member if found, undefined otherwise.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getPrimaryParentForMember(
-    memberId: number,
-  ): Promise<Parent | undefined> {
-    return await startSpan(
-      { name: "ParentsRepository > getPrimaryParentForMember" },
-      async () => {
-        try {
-          const query = db.query.membersParents.findFirst({
-            where: and(
-              eq(membersParents.memberId, memberId),
-              eq(membersParents.isPrimary, true),
-            ),
-            with: {
-              parent: true,
-            },
-          });
-
-          const primaryParentLink = await startSpan(
-            {
-              name: query.toSQL().sql,
-              op: "db.query",
-              attributes: { "db.system": "postgresql" },
-            },
-            () => query.execute(),
-          );
-
-          if (!primaryParentLink) {
-            return undefined;
-          }
-
-          return this.mapToEntity(primaryParentLink.parent);
-        } catch (error) {
-          if (error instanceof MemberNotFoundError) {
-            throw error;
-          }
-
-          captureException(error, { data: { memberId } });
-          throw new DatabaseOperationError(
-            "Failed to get primary parent for member",
-            {
-              cause: error,
-            },
-          );
         }
       },
     );

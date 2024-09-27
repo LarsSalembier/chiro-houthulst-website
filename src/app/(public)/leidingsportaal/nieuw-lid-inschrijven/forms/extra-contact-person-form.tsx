@@ -1,11 +1,11 @@
 import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import FormFieldComponent from "../form-field";
-import { type RegistrationFormData } from "../schemas";
 import CardWrapper from "~/components/card-wrapper";
+import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
 
 interface ExtraContactPersonFormProps {
-  form: UseFormReturn<RegistrationFormData>;
+  form: UseFormReturn<RegisterMemberInput>;
 }
 
 export default function ExtraContactPersonForm({
@@ -20,24 +20,24 @@ export default function ExtraContactPersonForm({
         <div className="grid grid-cols-2 gap-4">
           <FormFieldComponent
             form={form}
-            name="extraContactPersonFirstName"
+            name="emergencyContact.name.firstName"
             label="Voornaam"
           />
           <FormFieldComponent
             form={form}
-            name="extraContactPersonLastName"
+            name="emergencyContact.name.lastName"
             label="Achternaam"
           />
         </div>
         <FormFieldComponent
           form={form}
-          name="extraContactPersonPhoneNumber"
+          name="emergencyContact.phoneNumber"
           label="GSM-nummer"
           type="tel"
         />
         <FormFieldComponent
           form={form}
-          name="extraContactPersonRelationship"
+          name="emergencyContact.relationship"
           label="Relatie tot uw kind"
           placeholder="Bv. grootouder, tante, nonkel"
         />

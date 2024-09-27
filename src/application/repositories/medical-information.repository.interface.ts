@@ -1,44 +1,57 @@
 import {
-  type MedicalInformationUpdate,
   type MedicalInformation,
   type MedicalInformationInsert,
+  type MedicalInformationUpdate,
 } from "~/domain/entities/medical-information";
 
+/**
+ * Repository interface for accessing and managing medical information.
+ */
 export interface IMedicalInformationRepository {
   /**
    * Creates new medical information for a member.
    *
    * @param medicalInformation The medical information data to insert.
    * @returns The created medical information.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MemberAlreadyHasMedicalInformationError} If the member already has medical information.
-   * @throws {DatabaseOperationError} If the operation fails.
+   *
+   * @throws {MemberAlreadyHasMedicalInformationError} If medical information for the given member already exists.
+   * @throws {MemberNotFoundError} If the member the medical information belongs to does not exist.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   createMedicalInformation(
     medicalInformation: MedicalInformationInsert,
   ): Promise<MedicalInformation>;
 
   /**
-   * Gets medical information for a member.
+   * Retrieves the medical information for a specific member.
    *
-   * @param memberId The ID of the member whose medical information to retrieve.
-   * @returns The medical information if found, undefined otherwise.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param memberId The ID of the member to retrieve medical information for.
+   * @returns The medical information for the specified member, or `undefined` if not found.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getMedicalInformation(
+  getMedicalInformationByMemberId(
     memberId: number,
   ): Promise<MedicalInformation | undefined>;
 
   /**
-   * Updates an existing medical information for a member.
+   * Retrieves all medical information records.
    *
-   * @param memberId The ID of the member whose medical information to update.
-   * @param medicalInformation The updated medical information data.
+   * @returns A list of all medical information records.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
+   */
+  getAllMedicalInformation(): Promise<MedicalInformation[]>;
+
+  /**
+   * Updates the medical information for a specific member.
+   *
+   * @param memberId The ID of the member whose medical information should be updated.
+   * @param medicalInformation The medical information data to apply as updates.
    * @returns The updated medical information.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MedicalInformationNotFoundError} If the medical information is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   *
+   * @throws {MedicalInformationNotFoundError} If no medical information is found for the specified member.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   updateMedicalInformation(
     memberId: number,
@@ -46,12 +59,19 @@ export interface IMedicalInformationRepository {
   ): Promise<MedicalInformation>;
 
   /**
-   * Deletes medical information for a member.
+   * Deletes the medical information for a specific member.
    *
-   * @param memberId The ID of the member whose medical information to delete.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MedicalInformationNotFoundError} If the medical information is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param memberId The ID of the member whose medical information should be deleted.
+   *
+   * @throws {MedicalInformationNotFoundError} If no medical information is found for the specified member.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   deleteMedicalInformation(memberId: number): Promise<void>;
+
+  /**
+   * Deletes all medical information records.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
+   */
+  deleteAllMedicalInformation(): Promise<void>;
 }

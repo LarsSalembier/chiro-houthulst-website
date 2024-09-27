@@ -1,54 +1,34 @@
-import { NotFoundError } from "./common";
-
-export class MemberAlreadyExistsError extends Error {
+export class MemberWithThatNameAndBirthDateAlreadyExistsError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
   }
 }
 
-export class MissingMedicalInformationError extends Error {
+export class MemberWithThatEmailAddressAlreadyExistsError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
   }
 }
 
-export class MemberNotFoundError extends NotFoundError {
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-  }
-}
-
-export class MemberNotEnrolledThisYearError extends Error {
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-  }
-}
-
-export class MemberAlreadyRegisteredError extends Error {
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-  }
-}
-
-export class MemberNotRegisteredError extends Error {
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-  }
-}
-
-export class MemberAlreadyPaidError extends Error {
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-  }
-}
-
-export class MemberNotInGroupError extends Error {
+export class MemberNotFoundError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
   }
 }
 
 export class MemberStillReferencedError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+  }
+}
+
+export class ParentIsNotLinkedToMemberError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+  }
+}
+
+export class ParentIsAlreadyLinkedToMemberError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
   }

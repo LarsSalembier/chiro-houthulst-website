@@ -1,18 +1,16 @@
-import { NotFoundError } from "./common";
-
-export class WorkyearAlreadyExistsError extends Error {
+export class WorkYearWithThatStartAndEndDateAlreadyExistsError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
   }
 }
 
-export class WorkyearStillReferencedError extends Error {
+export class WorkYearStillReferencedError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
   }
 }
 
-export class WorkyearNotFoundError extends NotFoundError {
+export class WorkYearNotFoundError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
   }

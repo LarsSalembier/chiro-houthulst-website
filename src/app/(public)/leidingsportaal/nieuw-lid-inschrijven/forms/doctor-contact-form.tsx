@@ -2,10 +2,10 @@ import React from "react";
 import { type UseFormReturn } from "react-hook-form";
 import CardWrapper from "~/components/card-wrapper";
 import FormFieldComponent from "../form-field";
-import { type RegistrationFormData } from "../schemas";
+import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
 
 interface DoctorContactFormProps {
-  form: UseFormReturn<RegistrationFormData>;
+  form: UseFormReturn<RegisterMemberInput>;
 }
 
 export default function DoctorContactForm({ form }: DoctorContactFormProps) {
@@ -15,18 +15,18 @@ export default function DoctorContactForm({ form }: DoctorContactFormProps) {
         <div className="grid grid-cols-2 gap-4">
           <FormFieldComponent
             form={form}
-            name="doctorFirstName"
+            name="medicalInformation.doctor.name.firstName"
             label="Voornaam"
           />
           <FormFieldComponent
             form={form}
-            name="doctorLastName"
+            name="medicalInformation.doctor.name.lastName"
             label="Achternaam"
           />
         </div>
         <FormFieldComponent
           form={form}
-          name="doctorPhoneNumber"
+          name="medicalInformation.doctor.phoneNumber"
           label="GSM-nummer"
           type="tel"
         />

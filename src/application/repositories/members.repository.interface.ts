@@ -1,46 +1,44 @@
 import {
-  type MemberUpdate,
   type Member,
   type MemberInsert,
+  type MemberUpdate,
 } from "~/domain/entities/member";
 
+/**
+ * Repository interface for accessing and managing members.
+ */
 export interface IMembersRepository {
   /**
    * Creates a new member.
    *
-   * @param member The member data to insert.
+   * @param member - The member data to insert.
    * @returns The created member.
-   * @throws {MemberAlreadyExistsError} If a member with the same details already exists.
-   * @throws {DatabaseOperationError} If the operation fails.
+   *
+   * @throws {MemberWithThatNameAndBirthDateAlreadyExistsError} If a member with the same name and date of birth already exists.
+   * @throws {MemberWithThatEmailAddressAlreadyExistsError} If a member with the same email address already exists.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   createMember(member: MemberInsert): Promise<Member>;
 
   /**
-   * Gets a member by their ID.
+   * Retrieves a member by their unique identifier.
    *
-   * @param id The ID of the member to retrieve.
-   * @returns The member if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param id - The ID of the member to retrieve.
+   * @returns The member matching the given ID, or `undefined` if not found.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getMember(id: number): Promise<Member | undefined>;
+  getMemberById(id: number): Promise<Member | undefined>;
 
   /**
-   * Gets a member by their email address.
+   * Retrieves a member by their first name, last name, and date of birth.
    *
-   * @param emailAddress The email address of the member to retrieve.
-   * @returns The member if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getMemberByEmail(emailAddress: string): Promise<Member | undefined>;
-
-  /**
-   * Gets a member by their first name, last name and date of birth.
+   * @param firstName - The first name of the member.
+   * @param lastName - The last name of the member.
+   * @param dateOfBirth - The date of birth of the member.
+   * @returns The member matching the given information, or `undefined` if not found.
    *
-   * @param firstName The first name of the member to retrieve.
-   * @param lastName The last name of the member to retrieve.
-   * @param dateOfBirth The date of birth of the member to retrieve.
-   * @returns The member if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
   getMemberByNameAndDateOfBirth(
     firstName: string,
@@ -49,77 +47,78 @@ export interface IMembersRepository {
   ): Promise<Member | undefined>;
 
   /**
-   * Gets all members.
+   * Retrieves a member by their unique email address.
    *
-   * @returns An array of all members.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param emailAddress - The email address of the member.
+   * @returns The member matching the given email address, or `undefined` if not found.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
-  getMembers(): Promise<Member[]>;
+  getMemberByEmailAddress(emailAddress: string): Promise<Member | undefined>;
 
   /**
-   * Gets members associated with a parent.
+   * Retrieves all members.
    *
-   * @param parentId The ID of the parent.
-   * @returns An array of members associated with the parent.
-   * @throws {ParentNotFoundError} If the parent is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @returns A list of all members.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
+   */
+  getAllMembers(): Promise<Member[]>;
+
+  /**
+   * Retrieves all members linked to a parent.
+   *
+   * @param parentId - The ID of the parent to retrieve members for.
+   * @returns A list of all members linked to the parent.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
    */
   getMembersForParent(parentId: number): Promise<Member[]>;
 
   /**
-   * Gets members by group and work year.
+   * Updates an existing member.
    *
-   * @param groupId The ID of the group.
-   * @param workYearId The ID of the work year.
-   * @returns An array of members in the specified group and work year.
-   * @throws {GroupNotFoundError} If the group is not found.
-   * @throws {WorkyearNotFoundError} If the work year is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getMembersByGroup(groupId: number, workYearId: number): Promise<Member[]>;
-
-  /**
-   * Gets members for a specific work year.
-   *
-   * @param workYearId The ID of the work year.
-   * @returns An array of members for the specified work year.
-   * @throws {WorkyearNotFoundError} If the work year is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  getMembersForWorkYear(workYearId: number): Promise<Member[]>;
-
-  /**
-   * Updates a member.
-   *
-   * @param id The ID of the member to update.
-   * @param member The member data to update.
+   * @param id - The ID of the member to update.
+   * @param member - The member data to apply as updates.
    * @returns The updated member.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MemberAlreadyExistsError} If a member with the same email already exists.
-   * @throws {DatabaseOperationError} If the operation fails.
+   *
+   * @throws {MemberNotFoundError} If no member with the given ID exists.
+   * @throws {MemberWithThatNameAndBirthDateAlreadyExistsError} If a member with the same name and date of birth already exists.
+   * @throws {MemberWithThatEmailAddressAlreadyExistsError} If a member with the same email address already exists.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   updateMember(id: number, member: MemberUpdate): Promise<Member>;
 
   /**
-   * Deletes a member.
+   * Deletes a member by their unique identifier.
    *
-   * @param id The ID of the member to delete.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MemberStillReferencedError} If the member is still referenced by other entities.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param id - The ID of the member to delete.
+   *
+   * @throws {MemberNotFoundError} If no member with the given ID exists.
+   * @throws {MemberStillReferencedError} If the member is still referenced by other entities and cannot be deleted.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   deleteMember(id: number): Promise<void>;
 
   /**
+   * Deletes all members.
+   *
+   * @throws {MemberStillReferencedError} If any member is still referenced by other entities and cannot be deleted.
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
+   */
+  deleteAllMembers(): Promise<void>;
+
+  /**
    * Adds a parent to a member.
    *
-   * @param memberId The ID of the member.
-   * @param parentId The ID of the parent.
-   * @param isPrimary Whether the parent is the primary parent.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {ParentNotFoundError} If the parent is not found.
-   * @throws {ParentAlreadyLinkedToMemberError} If the parent is already linked to the member.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param memberId - The ID of the member to add the parent to.
+   * @param parentId - The ID of the parent to add to the member.
+   * @param isPrimary - Whether the parent is the primary parent of the member.
+   *
+   * @throws {MemberNotFoundError} If no member with the given ID exists.
+   * @throws {ParentNotFoundError} If no parent with the given ID exists.
+   * @throws {ParentIsAlreadyLinkedToMemberError} If the parent is already linked to the member.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   addParentToMember(
     memberId: number,
@@ -130,11 +129,27 @@ export interface IMembersRepository {
   /**
    * Removes a parent from a member.
    *
-   * @param memberId The ID of the member.
-   * @param parentId The ID of the parent.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {ParentNotFoundError} If the parent is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
+   * @param memberId - The ID of the member to remove the parent from.
+   * @param parentId - The ID of the parent to remove from the member.
+   *
+   * @throws {ParentIsNotLinkedToMemberError} If the parent is not linked to the member.
+   * @throws {DatabaseOperationError} If the operation fails for any other reason.
    */
   removeParentFromMember(memberId: number, parentId: number): Promise<void>;
+
+  /**
+   * Removes all parents from a member.
+   *
+   * @param memberId - The ID of the member to remove all parents from.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
+   */
+  removeAllParentsFromMember(memberId: number): Promise<void>;
+
+  /**
+   * Removes all parents from all members.
+   *
+   * @throws {DatabaseOperationError} If the operation fails for any reason.
+   */
+  removeAllParentsFromAllMembers(): Promise<void>;
 }

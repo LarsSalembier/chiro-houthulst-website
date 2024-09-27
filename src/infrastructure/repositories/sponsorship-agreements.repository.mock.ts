@@ -1,260 +1,152 @@
+import { startSpan } from "@sentry/nextjs";
 import { injectable } from "inversify";
-import { type ISponsorshipAgreementsRepository } from "~/application/repositories/sponsorship-agreements.repository.interface";
+import { ISponsorshipAgreementsRepository } from "~/application/repositories/sponsorship-agreements.repository.interface";
 import {
-  type SponsorshipAgreement,
-  type SponsorshipAgreementInsert,
-  type SponsorshipAgreementUpdate,
+  SponsorshipAgreement,
+  SponsorshipAgreementInsert,
+  SponsorshipAgreementUpdate,
 } from "~/domain/entities/sponsorship-agreement";
 import {
-  SponsorshipAgreementAlreadyExistsError,
+  SponsorAlreadyHasSponsorshipAgreementForWorkYearError,
   SponsorshipAgreementNotFoundError,
 } from "~/domain/errors/sponsorship-agreements";
-import { WorkyearNotFoundError } from "~/domain/errors/workyears";
 import { SponsorNotFoundError } from "~/domain/errors/sponsors";
-import { type IWorkyearsRepository } from "~/application/repositories/workyears.repository.interface";
-import { type MockSponsorsRepository } from "./sponsors.repository.mock";
+import { WorkYearNotFoundError } from "~/domain/errors/work-years";
+import { mockData } from "~/infrastructure/mock-data";
 
 @injectable()
 export class MockSponsorshipAgreementsRepository
   implements ISponsorshipAgreementsRepository
 {
-  private _sponsorshipAgreements: SponsorshipAgreement[] = [];
+  private sponsorshipAgreements: SponsorshipAgreement[] =
+    mockData.sponsorshipAgreements;
 
-  constructor(
-    private readonly sponsorsRepository: MockSponsorsRepository,
-    private readonly workyearsRepository: IWorkyearsRepository,
-  ) {}
-
-  /**
-   * Creates a new sponsorship agreement.
-   *
-   * @param sponsorshipAgreement The sponsorship agreement data to insert.
-   * @returns The created sponsorship agreement.
-   * @throws {SponsorshipAgreementAlreadyExistsError} If the agreement already exists.
-   * @throws {SponsorNotFoundError} If the sponsor does not exist.
-   * @throws {WorkyearNotFoundError} If the work year does not exist.
-   */
   async createSponsorshipAgreement(
     sponsorshipAgreement: SponsorshipAgreementInsert,
   ): Promise<SponsorshipAgreement> {
-    const sponsorExists = await this.sponsorsRepository.getSponsor(
-      sponsorshipAgreement.sponsorId,
+    return startSpan(
+      {
+        name: "MockSponsorshipAgreementsRepository > createSponsorshipAgreement",
+      },
+      () => {
+        const sponsor = mockData.sponsors.find(
+          (s) => s.id === sponsorshipAgreement.sponsorId,
+        );
+        if (!sponsor) {
+          throw new SponsorNotFoundError("Sponsor not found");
+        }
+
+        const workYear = mockData.workYears.find(
+          (wy) => wy.id === sponsorshipAgreement.workYearId,
+        );
+        if (!workYear) {
+          throw new WorkYearNotFoundError("Work year not found");
+        }
+
+        const existingAgreement = this.sponsorshipAgreements.find(
+          (sa) =>
+            sa.sponsorId === sponsorshipAgreement.sponsorId &&
+            sa.workYearId === sponsorshipAgreement.workYearId,
+        );
+        if (existingAgreement) {
+          throw new SponsorAlreadyHasSponsorshipAgreementForWorkYearError(
+            "Sponsor already has a sponsorship agreement for this work year",
+          );
+        }
+
+        this.sponsorshipAgreements.push(sponsorshipAgreement);
+        return sponsorshipAgreement;
+      },
     );
-
-    if (!sponsorExists) {
-      throw new SponsorNotFoundError("Sponsor not found");
-    }
-
-    const workYearExists = await this.workyearsRepository.getWorkyear(
-      sponsorshipAgreement.workYearId,
-    );
-
-    if (!workYearExists) {
-      throw new WorkyearNotFoundError("Work year not found");
-    }
-
-    // Check if the agreement already exists
-    const existingAgreement = this._sponsorshipAgreements.find(
-      (agreement) =>
-        agreement.sponsorId === sponsorshipAgreement.sponsorId &&
-        agreement.workYearId === sponsorshipAgreement.workYearId,
-    );
-
-    if (existingAgreement) {
-      throw new SponsorshipAgreementAlreadyExistsError(
-        "Sponsorship agreement already exists",
-      );
-    }
-
-    this._sponsorshipAgreements.push(sponsorshipAgreement);
-
-    // Increment sponsor reference count
-    await this.sponsorsRepository.incrementReference(
-      sponsorshipAgreement.sponsorId,
-    );
-
-    return sponsorshipAgreement;
   }
 
-  /**
-   * Gets a sponsorship agreement by sponsor ID and work year ID.
-   *
-   * @param sponsorId The ID of the sponsor.
-   * @param workYearId The ID of the work year.
-   * @returns The sponsorship agreement if found, undefined otherwise.
-   */
-  async getSponsorshipAgreement(
+  async getSponsorshipAgreementByIds(
     sponsorId: number,
     workYearId: number,
   ): Promise<SponsorshipAgreement | undefined> {
-    return this._sponsorshipAgreements.find(
-      (agreement) =>
-        agreement.sponsorId === sponsorId &&
-        agreement.workYearId === workYearId,
+    return startSpan(
+      {
+        name: "MockSponsorshipAgreementsRepository > getSponsorshipAgreementByIds",
+      },
+      () => {
+        const sponsorshipAgreement = this.sponsorshipAgreements.find(
+          (sa) => sa.sponsorId === sponsorId && sa.workYearId === workYearId,
+        );
+        return sponsorshipAgreement;
+      },
     );
   }
 
-  /**
-   * Gets all sponsorship agreements.
-   *
-   * @returns An array of sponsorship agreements.
-   */
-  async getSponsorshipAgreements(): Promise<SponsorshipAgreement[]> {
-    return [...this._sponsorshipAgreements];
-  }
-
-  /**
-   * Gets sponsorship agreements for a specific work year.
-   *
-   * @param workYearId The ID of the work year.
-   * @returns An array of sponsorship agreements.
-   * @throws {WorkyearNotFoundError} If the work year is not found.
-   */
-  async getSponsorshipAgreementsForWorkYear(
-    workYearId: number,
-  ): Promise<SponsorshipAgreement[]> {
-    const workYearExists =
-      await this.workyearsRepository.getWorkyear(workYearId);
-
-    if (!workYearExists) {
-      throw new WorkyearNotFoundError("Work year not found");
-    }
-
-    return this._sponsorshipAgreements.filter(
-      (agreement) => agreement.workYearId === workYearId,
+  async getAllSponsorshipAgreements(): Promise<SponsorshipAgreement[]> {
+    return startSpan(
+      {
+        name: "MockSponsorshipAgreementsRepository > getAllSponsorshipAgreements",
+      },
+      () => {
+        return this.sponsorshipAgreements;
+      },
     );
   }
 
-  /**
-   * Gets sponsorship agreements for a specific sponsor.
-   *
-   * @param sponsorId The ID of the sponsor.
-   * @returns An array of sponsorship agreements.
-   * @throws {SponsorNotFoundError} If the sponsor is not found.
-   */
-  async getSponsorshipAgreementsForSponsor(
-    sponsorId: number,
-  ): Promise<SponsorshipAgreement[]> {
-    const sponsorExists = await this.sponsorsRepository.getSponsor(sponsorId);
-
-    if (!sponsorExists) {
-      throw new SponsorNotFoundError("Sponsor not found");
-    }
-
-    return this._sponsorshipAgreements.filter(
-      (agreement) => agreement.sponsorId === sponsorId,
-    );
-  }
-
-  /**
-   * Updates a sponsorship agreement.
-   *
-   * @param sponsorId The ID of the sponsor.
-   * @param workYearId The ID of the work year.
-   * @param input The data to update.
-   * @returns The updated sponsorship agreement.
-   * @throws {SponsorshipAgreementNotFoundError} If the agreement is not found.
-   */
   async updateSponsorshipAgreement(
     sponsorId: number,
     workYearId: number,
-    input: SponsorshipAgreementUpdate,
+    sponsorshipAgreement: SponsorshipAgreementUpdate,
   ): Promise<SponsorshipAgreement> {
-    const index = this._sponsorshipAgreements.findIndex(
-      (agreement) =>
-        agreement.sponsorId === sponsorId &&
-        agreement.workYearId === workYearId,
+    return startSpan(
+      {
+        name: "MockSponsorshipAgreementsRepository > updateSponsorshipAgreement",
+      },
+      () => {
+        const agreementIndex = this.sponsorshipAgreements.findIndex(
+          (sa) => sa.sponsorId === sponsorId && sa.workYearId === workYearId,
+        );
+        if (agreementIndex === -1) {
+          throw new SponsorshipAgreementNotFoundError(
+            "Sponsorship agreement not found",
+          );
+        }
+
+        this.sponsorshipAgreements[agreementIndex] = {
+          ...this.sponsorshipAgreements[agreementIndex]!,
+          ...sponsorshipAgreement,
+        };
+        return this.sponsorshipAgreements[agreementIndex];
+      },
     );
-
-    if (index === -1) {
-      throw new SponsorshipAgreementNotFoundError(
-        "Sponsorship agreement not found",
-      );
-    }
-
-    const existingAgreement = this._sponsorshipAgreements[index];
-    const updatedAgreement: SponsorshipAgreement = {
-      ...existingAgreement!,
-      ...input,
-    };
-
-    this._sponsorshipAgreements[index] = updatedAgreement;
-
-    return updatedAgreement;
   }
 
-  /**
-   * Deletes a sponsorship agreement.
-   *
-   * @param sponsorId The ID of the sponsor.
-   * @param workYearId The ID of the work year.
-   * @throws {SponsorshipAgreementNotFoundError} If the agreement is not found.
-   */
   async deleteSponsorshipAgreement(
     sponsorId: number,
     workYearId: number,
   ): Promise<void> {
-    const index = this._sponsorshipAgreements.findIndex(
-      (agreement) =>
-        agreement.sponsorId === sponsorId &&
-        agreement.workYearId === workYearId,
-    );
+    return startSpan(
+      {
+        name: "MockSponsorshipAgreementsRepository > deleteSponsorshipAgreement",
+      },
+      () => {
+        const agreementIndex = this.sponsorshipAgreements.findIndex(
+          (sa) => sa.sponsorId === sponsorId && sa.workYearId === workYearId,
+        );
+        if (agreementIndex === -1) {
+          throw new SponsorshipAgreementNotFoundError(
+            "Sponsorship agreement not found",
+          );
+        }
 
-    if (index === -1) {
-      throw new SponsorshipAgreementNotFoundError(
-        "Sponsorship agreement not found",
-      );
-    }
-
-    this._sponsorshipAgreements.splice(index, 1);
-
-    // Decrement sponsor reference count
-    await this.sponsorsRepository.decrementReference(sponsorId);
-  }
-
-  /**
-   * Gets unpaid sponsorship agreements for a specific work year.
-   *
-   * @param workYearId The ID of the work year.
-   * @returns An array of unpaid sponsorship agreements.
-   * @throws {WorkyearNotFoundError} If the work year is not found.
-   */
-  async getUnpaidSponsorshipAgreementsForWorkYear(
-    workYearId: number,
-  ): Promise<SponsorshipAgreement[]> {
-    const workYearExists =
-      await this.workyearsRepository.getWorkyear(workYearId);
-
-    if (!workYearExists) {
-      throw new WorkyearNotFoundError("Work year not found");
-    }
-
-    return this._sponsorshipAgreements.filter(
-      (agreement) =>
-        agreement.workYearId === workYearId && !agreement.paymentReceived,
+        this.sponsorshipAgreements.splice(agreementIndex, 1);
+      },
     );
   }
 
-  /**
-   * Gets paid sponsorship agreements for a specific work year.
-   *
-   * @param workYearId The ID of the work year.
-   * @returns An array of paid sponsorship agreements.
-   * @throws {WorkyearNotFoundError} If the work year is not found.
-   */
-  async getPaidSponsorshipAgreementsForWorkYear(
-    workYearId: number,
-  ): Promise<SponsorshipAgreement[]> {
-    const workYearExists =
-      await this.workyearsRepository.getWorkyear(workYearId);
-
-    if (!workYearExists) {
-      throw new WorkyearNotFoundError("Work year not found");
-    }
-
-    return this._sponsorshipAgreements.filter(
-      (agreement) =>
-        agreement.workYearId === workYearId && agreement.paymentReceived,
+  async deleteAllSponsorshipAgreements(): Promise<void> {
+    return startSpan(
+      {
+        name: "MockSponsorshipAgreementsRepository > deleteAllSponsorshipAgreements",
+      },
+      () => {
+        this.sponsorshipAgreements = [];
+      },
     );
   }
 }

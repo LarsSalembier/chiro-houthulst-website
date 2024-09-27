@@ -1,11 +1,11 @@
 import { captureException, startSpan } from "@sentry/nextjs";
 import { eq } from "drizzle-orm";
 import { injectable } from "inversify";
-import { type IMedicalInformationRepository } from "~/application/repositories/medical-information.repository.interface";
+import { IMedicalInformationRepository } from "~/application/repositories/medical-information.repository.interface";
 import {
-  type MedicalInformationUpdate,
-  type MedicalInformation,
-  type MedicalInformationInsert,
+  MedicalInformationUpdate,
+  MedicalInformation,
+  MedicalInformationInsert,
 } from "~/domain/entities/medical-information";
 import { db } from "drizzle";
 import { medicalInformation as medicalInformationTable } from "drizzle/schema";
@@ -15,59 +15,60 @@ import {
   MedicalInformationNotFoundError,
   MemberAlreadyHasMedicalInformationError,
 } from "~/domain/errors/medical-information";
-import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
+import { DatabaseOperationError } from "~/domain/errors/common";
+import { MemberNotFoundError } from "~/domain/errors/members";
 
 @injectable()
 export class MedicalInformationRepository
   implements IMedicalInformationRepository
 {
   private mapToEntity(
-    dbMedicalInfo: typeof medicalInformationTable.$inferSelect,
+    medicalInformation: typeof medicalInformationTable.$inferSelect,
   ): MedicalInformation {
     return {
-      ...dbMedicalInfo,
+      ...medicalInformation,
       asthma: {
-        hasCondition: dbMedicalInfo.asthma,
-        info: dbMedicalInfo.asthmaInformation,
+        hasCondition: medicalInformation.asthma,
+        info: medicalInformation.asthmaInformation,
       },
       bedwetting: {
-        hasCondition: dbMedicalInfo.bedwetting,
-        info: dbMedicalInfo.bedwettingInformation,
+        hasCondition: medicalInformation.bedwetting,
+        info: medicalInformation.bedwettingInformation,
       },
       epilepsy: {
-        hasCondition: dbMedicalInfo.epilepsy,
-        info: dbMedicalInfo.epilepsyInformation,
+        hasCondition: medicalInformation.epilepsy,
+        info: medicalInformation.epilepsyInformation,
       },
       heartCondition: {
-        hasCondition: dbMedicalInfo.heartCondition,
-        info: dbMedicalInfo.heartConditionInformation,
+        hasCondition: medicalInformation.heartCondition,
+        info: medicalInformation.heartConditionInformation,
       },
       hayFever: {
-        hasCondition: dbMedicalInfo.hayFever,
-        info: dbMedicalInfo.hayFeverInformation,
+        hasCondition: medicalInformation.hayFever,
+        info: medicalInformation.hayFeverInformation,
       },
       skinCondition: {
-        hasCondition: dbMedicalInfo.skinCondition,
-        info: dbMedicalInfo.skinConditionInformation,
+        hasCondition: medicalInformation.skinCondition,
+        info: medicalInformation.skinConditionInformation,
       },
       rheumatism: {
-        hasCondition: dbMedicalInfo.rheumatism,
-        info: dbMedicalInfo.rheumatismInformation,
+        hasCondition: medicalInformation.rheumatism,
+        info: medicalInformation.rheumatismInformation,
       },
       sleepwalking: {
-        hasCondition: dbMedicalInfo.sleepwalking,
-        info: dbMedicalInfo.sleepwalkingInformation,
+        hasCondition: medicalInformation.sleepwalking,
+        info: medicalInformation.sleepwalkingInformation,
       },
       diabetes: {
-        hasCondition: dbMedicalInfo.diabetes,
-        info: dbMedicalInfo.diabetesInformation,
+        hasCondition: medicalInformation.diabetes,
+        info: medicalInformation.diabetesInformation,
       },
       doctor: {
         name: {
-          firstName: dbMedicalInfo.doctorFirstName,
-          lastName: dbMedicalInfo.doctorLastName,
+          firstName: medicalInformation.doctorFirstName,
+          lastName: medicalInformation.doctorLastName,
         },
-        phoneNumber: dbMedicalInfo.doctorPhoneNumber,
+        phoneNumber: medicalInformation.doctorPhoneNumber,
       },
     };
   }
@@ -109,27 +110,18 @@ export class MedicalInformationRepository
     ) as typeof medicalInformationTable.$inferInsert;
   }
 
-  /**
-   * Creates new medical information for a member.
-   *
-   * @param medicalInformation The medical information data to insert.
-   * @returns The created medical information.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MemberAlreadyHasMedicalInformationError} If the member already has medical information.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async createMedicalInformation(
     medicalInformation: MedicalInformationInsert,
   ): Promise<MedicalInformation> {
     return await startSpan(
-      { name: "MedicalInformationRepository > createMedicalInformation" },
+      {
+        name: "MedicalInformationRepository > createMedicalInformation",
+      },
       async () => {
         try {
-          const dbMedicalInformation = this.mapToDbFields(medicalInformation);
-
           const query = db
             .insert(medicalInformationTable)
-            .values(dbMedicalInformation)
+            .values(this.mapToDbFields(medicalInformation))
             .returning();
 
           const [createdMedicalInformation] = await startSpan(
@@ -149,18 +141,20 @@ export class MedicalInformationRepository
 
           return this.mapToEntity(createdMedicalInformation);
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof DatabaseOperationError) {
             throw error;
           }
 
-          if (
-            isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation
-          ) {
-            throw new MemberAlreadyHasMedicalInformationError(
-              "Member already has medical information",
-              { cause: error },
-            );
+          if (isDatabaseError(error)) {
+            if (error.code === PostgresErrorCode.UniqueViolation) {
+              throw new MemberAlreadyHasMedicalInformationError(
+                "Member already has medical information",
+              );
+            }
+
+            if (error.code === PostgresErrorCode.ForeignKeyViolation) {
+              throw new MemberNotFoundError("Member not found");
+            }
           }
 
           captureException(error, { data: medicalInformation });
@@ -175,26 +169,20 @@ export class MedicalInformationRepository
     );
   }
 
-  /**
-   * Gets medical information for a member.
-   *
-   * @param memberId The ID of the member whose medical information to retrieve.
-   * @returns The medical information if found, undefined otherwise.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getMedicalInformation(
+  async getMedicalInformationByMemberId(
     memberId: number,
   ): Promise<MedicalInformation | undefined> {
     return await startSpan(
-      { name: "MedicalInformationRepository > getMedicalInformation" },
+      {
+        name: "MedicalInformationRepository > getMedicalInformationByMemberId",
+      },
       async () => {
         try {
           const query = db.query.medicalInformation.findFirst({
             where: eq(medicalInformationTable.memberId, memberId),
           });
 
-          const medicalInfo = await startSpan(
+          const foundMedicalInformation = await startSpan(
             {
               name: query.toSQL().sql,
               op: "db.query",
@@ -203,16 +191,10 @@ export class MedicalInformationRepository
             () => query.execute(),
           );
 
-          if (!medicalInfo) {
-            return undefined;
-          }
-
-          return this.mapToEntity(medicalInfo);
+          return foundMedicalInformation
+            ? this.mapToEntity(foundMedicalInformation)
+            : undefined;
         } catch (error) {
-          if (error instanceof NotFoundError) {
-            throw error;
-          }
-
           captureException(error, { data: { memberId } });
           throw new DatabaseOperationError(
             "Failed to get medical information",
@@ -225,32 +207,53 @@ export class MedicalInformationRepository
     );
   }
 
-  /**
-   * Updates an existing medical information for a member.
-   *
-   * @param memberId The ID of the member whose medical information to update.
-   * @param medicalInformation The updated medical information data.
-   * @returns The updated medical information.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MedicalInformationNotFoundError} If the medical information is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
+  async getAllMedicalInformation(): Promise<MedicalInformation[]> {
+    return await startSpan(
+      {
+        name: "MedicalInformationRepository > getAllMedicalInformation",
+      },
+      async () => {
+        try {
+          const query = db.query.medicalInformation.findMany();
+
+          const allMedicalInformation = await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+
+          return allMedicalInformation.map((medicalInformation) =>
+            this.mapToEntity(medicalInformation),
+          );
+        } catch (error) {
+          captureException(error);
+          throw new DatabaseOperationError(
+            "Failed to get all medical information",
+            {
+              cause: error,
+            },
+          );
+        }
+      },
+    );
+  }
+
   async updateMedicalInformation(
     memberId: number,
     medicalInformation: MedicalInformationUpdate,
   ): Promise<MedicalInformation> {
     return await startSpan(
-      { name: "MedicalInformationRepository > updateMedicalInformation" },
+      {
+        name: "MedicalInformationRepository > updateMedicalInformation",
+      },
       async () => {
         try {
-          const dbMedicalInformationUpdate =
-            this.mapToDbFieldsPartial(medicalInformation);
-
-          dbMedicalInformationUpdate.updatedAt = new Date();
-
           const query = db
             .update(medicalInformationTable)
-            .set(dbMedicalInformationUpdate)
+            .set(this.mapToDbFieldsPartial(medicalInformation))
             .where(eq(medicalInformationTable.memberId, memberId))
             .returning();
 
@@ -271,11 +274,13 @@ export class MedicalInformationRepository
 
           return this.mapToEntity(updatedMedicalInformation);
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof MedicalInformationNotFoundError) {
             throw error;
           }
 
-          captureException(error, { data: { memberId, medicalInformation } });
+          captureException(error, {
+            data: { memberId, medicalInformation },
+          });
           throw new DatabaseOperationError(
             "Failed to update medical information",
             {
@@ -287,17 +292,11 @@ export class MedicalInformationRepository
     );
   }
 
-  /**
-   * Deletes medical information for a member.
-   *
-   * @param memberId The ID of the member whose medical information to delete.
-   * @throws {MemberNotFoundError} If the member is not found.
-   * @throws {MedicalInformationNotFoundError} If the medical information is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async deleteMedicalInformation(memberId: number): Promise<void> {
     return await startSpan(
-      { name: "MedicalInformationRepository > deleteMedicalInformation" },
+      {
+        name: "MedicalInformationRepository > deleteMedicalInformation",
+      },
       async () => {
         try {
           const query = db
@@ -320,13 +319,44 @@ export class MedicalInformationRepository
             );
           }
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof MedicalInformationNotFoundError) {
             throw error;
           }
 
           captureException(error, { data: { memberId } });
           throw new DatabaseOperationError(
             "Failed to delete medical information",
+            {
+              cause: error,
+            },
+          );
+        }
+      },
+    );
+  }
+
+  async deleteAllMedicalInformation(): Promise<void> {
+    return await startSpan(
+      {
+        name: "MedicalInformationRepository > deleteAllMedicalInformation",
+      },
+      async () => {
+        try {
+          // eslint-disable-next-line drizzle/enforce-delete-with-where
+          const query = db.delete(medicalInformationTable).returning();
+
+          await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+        } catch (error) {
+          captureException(error);
+          throw new DatabaseOperationError(
+            "Failed to delete all medical information",
             {
               cause: error,
             },

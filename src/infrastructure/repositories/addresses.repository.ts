@@ -1,35 +1,30 @@
 import { captureException, startSpan } from "@sentry/nextjs";
 import { and, eq, isNull } from "drizzle-orm";
 import { injectable } from "inversify";
-import { type IAddressesRepository } from "~/application/repositories/addresses.repository.interface";
-import { type Address, type AddressInsert } from "~/domain/entities/address";
+import { IAddressesRepository } from "~/application/repositories/addresses.repository.interface";
+import { Address, AddressInsert } from "~/domain/entities/address";
+import { DatabaseOperationError } from "~/domain/errors/common";
+import { db } from "drizzle";
+import {
+  addresses as addressesTable,
+  UNIQUE_ADDRESS_CONSTRAINT,
+} from "drizzle/schema";
+import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {
   AddressAlreadyExistsError,
   AddressNotFoundError,
   AddressStillReferencedError,
 } from "~/domain/errors/addresses";
-import { DatabaseOperationError, NotFoundError } from "~/domain/errors/common";
-import { isDatabaseError } from "~/domain/errors/database-error";
-import { db } from "drizzle";
-import { addresses } from "drizzle/schema";
 
 @injectable()
 export class AddressesRepository implements IAddressesRepository {
-  /**
-   * Creates a new address.
-   *
-   * @param address - The address data to insert.
-   * @returns The created address.
-   * @throws {AddressAlreadyExistsError} If an address with the same details already exists.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async createAddress(address: AddressInsert): Promise<Address> {
     return await startSpan(
       { name: "AddressesRepository > createAddress" },
       async () => {
         try {
-          const query = db.insert(addresses).values(address).returning();
+          const query = db.insert(addressesTable).values(address).returning();
 
           const [createdAddress] = await startSpan(
             {
@@ -46,14 +41,18 @@ export class AddressesRepository implements IAddressesRepository {
 
           return createdAddress;
         } catch (error) {
+          if (error instanceof DatabaseOperationError) {
+            throw error;
+          }
+
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation
+            error.code === PostgresErrorCode.UniqueViolation &&
+            error.constraint === UNIQUE_ADDRESS_CONSTRAINT
           ) {
-            throw new AddressAlreadyExistsError(
-              "Address with the same details already exists",
-              { cause: error },
-            );
+            throw new AddressAlreadyExistsError("Address already exists", {
+              cause: error,
+            });
           }
 
           captureException(error, { data: address });
@@ -65,20 +64,13 @@ export class AddressesRepository implements IAddressesRepository {
     );
   }
 
-  /**
-   * Gets an address by its ID.
-   *
-   * @param id The ID of the address to retrieve.
-   * @returns The address if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
   async getAddressById(id: number): Promise<Address | undefined> {
     return await startSpan(
       { name: "AddressesRepository > getAddressById" },
       async () => {
         try {
           const query = db.query.addresses.findFirst({
-            where: eq(addresses.id, id),
+            where: eq(addressesTable.id, id),
           });
 
           const address = await startSpan(
@@ -101,18 +93,7 @@ export class AddressesRepository implements IAddressesRepository {
     );
   }
 
-  /**
-   * Gets an address by its details.
-   *
-   * @param street The street of the address.
-   * @param houseNumber The house number of the address.
-   * @param box The box of the address.
-   * @param municipality The municipality of the address.
-   * @param postalCode The postal code of the address.
-   * @returns The address if found, undefined otherwise.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
-  async getAddress(
+  async getAddressByDetails(
     street: string,
     houseNumber: string,
     box: string | null,
@@ -120,16 +101,18 @@ export class AddressesRepository implements IAddressesRepository {
     postalCode: number,
   ): Promise<Address | undefined> {
     return await startSpan(
-      { name: "AddressesRepository > getAddress" },
+      { name: "AddressesRepository > getAddressByDetails" },
       async () => {
         try {
           const query = db.query.addresses.findFirst({
             where: and(
-              eq(addresses.street, street),
-              eq(addresses.houseNumber, houseNumber),
-              box === null ? isNull(addresses.box) : eq(addresses.box, box),
-              eq(addresses.municipality, municipality),
-              eq(addresses.postalCode, postalCode),
+              eq(addressesTable.street, street),
+              eq(addressesTable.houseNumber, houseNumber),
+              box === null
+                ? isNull(addressesTable.box)
+                : eq(addressesTable.box, box),
+              eq(addressesTable.municipality, municipality),
+              eq(addressesTable.postalCode, postalCode),
             ),
           });
 
@@ -155,21 +138,41 @@ export class AddressesRepository implements IAddressesRepository {
     );
   }
 
-  /**
-   * Deletes an address by its ID.
-   *
-   * @param id The ID of the address to delete.
-   * @throws {AddressNotFoundError} If the address is not found.
-   * @throws {DatabaseOperationError} If the operation fails.
-   */
+  async getAllAddresses(): Promise<Address[]> {
+    return await startSpan(
+      { name: "AddressesRepository > getAllAddresses" },
+      async () => {
+        try {
+          const query = db.query.addresses.findMany();
+
+          const allAddresses = await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+
+          return allAddresses;
+        } catch (error) {
+          captureException(error);
+          throw new DatabaseOperationError("Failed to get all addresses", {
+            cause: error,
+          });
+        }
+      },
+    );
+  }
+
   async deleteAddress(id: number): Promise<void> {
     return await startSpan(
       { name: "AddressesRepository > deleteAddress" },
       async () => {
         try {
           const query = db
-            .delete(addresses)
-            .where(eq(addresses.id, id))
+            .delete(addressesTable)
+            .where(eq(addressesTable.id, id))
             .returning();
 
           const [deletedAddress] = await startSpan(
@@ -185,7 +188,7 @@ export class AddressesRepository implements IAddressesRepository {
             throw new AddressNotFoundError("Address not found");
           }
         } catch (error) {
-          if (error instanceof NotFoundError) {
+          if (error instanceof AddressNotFoundError) {
             throw error;
           }
 
@@ -193,14 +196,48 @@ export class AddressesRepository implements IAddressesRepository {
             isDatabaseError(error) &&
             error.code === PostgresErrorCode.ForeignKeyViolation
           ) {
-            throw new AddressStillReferencedError(
-              "Address is still referenced by other entities",
-              { cause: error },
-            );
+            throw new AddressStillReferencedError("Address still referenced", {
+              cause: error,
+            });
           }
 
           captureException(error, { data: { addressId: id } });
           throw new DatabaseOperationError("Failed to delete address", {
+            cause: error,
+          });
+        }
+      },
+    );
+  }
+
+  async deleteAllAddresses(): Promise<void> {
+    return await startSpan(
+      { name: "AddressesRepository > deleteAllAddresses" },
+      async () => {
+        try {
+          // eslint-disable-next-line drizzle/enforce-delete-with-where
+          const query = db.delete(addressesTable).returning();
+
+          await startSpan(
+            {
+              name: query.toSQL().sql,
+              op: "db.query",
+              attributes: { "db.system": "postgresql" },
+            },
+            () => query.execute(),
+          );
+        } catch (error) {
+          if (
+            isDatabaseError(error) &&
+            error.code === PostgresErrorCode.ForeignKeyViolation
+          ) {
+            throw new AddressStillReferencedError("Address still referenced", {
+              cause: error,
+            });
+          }
+
+          captureException(error);
+          throw new DatabaseOperationError("Failed to delete all addresses", {
             cause: error,
           });
         }

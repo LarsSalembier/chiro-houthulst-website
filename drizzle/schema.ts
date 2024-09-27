@@ -120,6 +120,8 @@ export const auditActionEnum = pgEnum("audit_action", auditActionEnumValues);
  */
 export const tableNameEnum = pgEnum("table_name", tableNamesArray);
 
+export const UNIQUE_ADDRESS_CONSTRAINT = "unique_address";
+
 /**
  * Adressen van leden, ouders en sponsors.
  */
@@ -142,7 +144,7 @@ export const addresses = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    uniqueAddress: unique("unique_address").on(
+    uniqueAddress: unique(UNIQUE_ADDRESS_CONSTRAINT).on(
       t.street,
       t.houseNumber,
       t.box,
@@ -153,15 +155,17 @@ export const addresses = createTable(
 );
 
 export const addressesRelations = relations(addresses, ({ many }) => ({
-  members: many(members),
   parents: many(parents),
   sponsors: many(sponsors),
 }));
 
+export const UNIQUE_START_END_DATE_FOR_WORK_YEAR_CONSTRAINT =
+  "unique_work_year";
+
 /**
  * Werkjaren waarvoor leden kunnen inschrijven.
  */
-export const workyears = createTable(
+export const workYears = createTable(
   tableNames.workYears,
   {
     id: serial("id").primaryKey(),
@@ -174,21 +178,28 @@ export const workyears = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    uniqueWorkYear: unique("unique_work_year").on(t.startDate, t.endDate),
+    uniqueWorkYear: unique(UNIQUE_START_END_DATE_FOR_WORK_YEAR_CONSTRAINT).on(
+      t.startDate,
+      t.endDate,
+    ),
   }),
 );
 
-export const workYearsRelations = relations(workyears, ({ many }) => ({
+export const workYearsRelations = relations(workYears, ({ many }) => ({
   yearlyMemberships: many(yearlyMemberships),
   sponsorshipAgreements: many(sponsorshipAgreements),
 }));
+
+export const UNIQUE_NAME_FOR_GROUP_CONSTRAINT = "unique_group_name";
 
 /**
  * Chirogroepen, bijvoorbeeld "Ribbels", "Speelclub", etc.
  */
 export const groups = createTable(tableNames.groups, {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: MAX_GROUP_NAME_LENGTH }).unique().notNull(),
+  name: varchar("name", { length: MAX_GROUP_NAME_LENGTH })
+    .unique(UNIQUE_NAME_FOR_GROUP_CONSTRAINT)
+    .notNull(),
   color: varchar("color", { length: MAX_GROUP_COLOR_LENGTH }),
   description: text("description"),
   minimumAgeInDays: integer("minimum_age_in_days").notNull(),
@@ -208,6 +219,12 @@ export const groupsRelations = relations(groups, ({ many }) => ({
   eventGroups: many(eventGroups),
 }));
 
+export const UNIQUE_NAME_AND_DATE_OF_BIRTH_FOR_MEMBER_CONSTRAINT =
+  "unique_member_name_and_date_of_birth";
+
+export const UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT =
+  "unique_email_address";
+
 /**
  * Leden van de Chiro.
  */
@@ -221,7 +238,7 @@ export const members = createTable(
     dateOfBirth: date("date_of_birth", { mode: "date" }).notNull(),
     emailAddress: varchar("email_address", {
       length: MAX_EMAIL_ADDRESS_LENGTH,
-    }).unique(),
+    }).unique(UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT),
     phoneNumber: varchar("phone_number", { length: MAX_PHONE_NUMBER_LENGTH }),
     // GDPR: toestemming om foto's te publiceren van het lid
     gdprPermissionToPublishPhotos: boolean("gdpr_permission_to_publish_photos")
@@ -233,11 +250,9 @@ export const members = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    uniqueMember: unique("unique_member").on(
-      t.firstName,
-      t.lastName,
-      t.dateOfBirth,
-    ),
+    uniqueMember: unique(
+      UNIQUE_NAME_AND_DATE_OF_BIRTH_FOR_MEMBER_CONSTRAINT,
+    ).on(t.firstName, t.lastName, t.dateOfBirth),
   }),
 );
 
@@ -348,13 +363,16 @@ export const medicalInformationRelations = relations(
   }),
 );
 
+export const UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT =
+  "unique_email_address";
+
 /**
  * Ouders/verzorgers van leden.
  */
 export const parents = createTable(tableNames.parents, {
   id: serial("id").primaryKey(),
   emailAddress: varchar("email_address", { length: MAX_EMAIL_ADDRESS_LENGTH })
-    .unique()
+    .unique(UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT)
     .notNull(),
   relationship: parentRelationshipEnum("relationship").notNull(),
   firstName: varchar("first_name", { length: MAX_NAME_LENGTH }).notNull(),
@@ -423,7 +441,7 @@ export const yearlyMemberships = createTable(
       .references(() => members.id),
     workYearId: integer("work_year_id")
       .notNull()
-      .references(() => workyears.id),
+      .references(() => workYears.id),
     groupId: integer("group_id")
       .notNull()
       .references(() => groups.id),
@@ -454,9 +472,9 @@ export const yearlyMembershipsRelations = relations(
       fields: [yearlyMemberships.groupId],
       references: [groups.id],
     }),
-    workYear: one(workyears, {
+    workYear: one(workYears, {
       fields: [yearlyMemberships.workYearId],
-      references: [workyears.id],
+      references: [workYears.id],
     }),
   }),
 );
@@ -565,13 +583,15 @@ export const eventRegistrationsRelations = relations(
   }),
 );
 
+export const UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT = "unique_company_name";
+
 /**
  * Sponsors van de Chiro.
  */
 export const sponsors = createTable(tableNames.sponsors, {
   id: serial("id").primaryKey(),
   companyName: varchar("company_name", { length: MAX_COMPANY_NAME_LENGTH })
-    .unique()
+    .unique(UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT)
     .notNull(),
   companyOwnerFirstName: varchar("company_owner_first_name", {
     length: MAX_NAME_LENGTH,
@@ -609,7 +629,7 @@ export const sponsorshipAgreements = createTable(
       .references(() => sponsors.id),
     workYearId: integer("work_year_id")
       .notNull()
-      .references(() => workyears.id),
+      .references(() => workYears.id),
     amount: doublePrecision("amount").notNull(),
     paymentReceived: boolean("payment_received").default(false).notNull(),
     paymentMethod: paymentMethodEnum("payment_method"),
@@ -634,9 +654,9 @@ export const sponsorshipAgreementsRelations = relations(
       fields: [sponsorshipAgreements.sponsorId],
       references: [sponsors.id],
     }),
-    workYear: one(workyears, {
+    workYear: one(workYears, {
       fields: [sponsorshipAgreements.workYearId],
-      references: [workyears.id],
+      references: [workYears.id],
     }),
   }),
 );
