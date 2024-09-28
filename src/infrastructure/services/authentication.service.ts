@@ -1,8 +1,10 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { injectable } from "inversify";
 import { type Role } from "types/globals";
 import { type IAuthenticationService } from "~/application/services/authentication.service.interface";
 import { type CreateUser, type User } from "~/domain/entities/user";
 
+@injectable()
 export class AuthenticationService implements IAuthenticationService {
   async createUser(user: CreateUser): Promise<void> {
     await clerkClient.users.createUser({

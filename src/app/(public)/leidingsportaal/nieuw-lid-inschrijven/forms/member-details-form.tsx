@@ -30,8 +30,8 @@ export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
     if (memberDateOfBirth) {
       const age = calculateAge(memberDateOfBirth);
       if (age < 11) {
-        form.setValue("memberData.emailAddress", null);
-        form.setValue("memberData.phoneNumber", null);
+        form.setValue("memberData.emailAddress", "");
+        form.setValue("memberData.phoneNumber", "");
       }
     }
   }, [memberDateOfBirth, form]);

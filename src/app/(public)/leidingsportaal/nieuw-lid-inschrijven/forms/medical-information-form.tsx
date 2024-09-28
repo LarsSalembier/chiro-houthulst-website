@@ -11,8 +11,8 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
-import CheckboxField from "~/components/forms/checkbox-field";
 import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
+import RadioGroupField from "~/components/forms/radio-group-field";
 
 interface MedicalInformationFormProps {
   form: UseFormReturn<RegisterMemberInput>;
@@ -58,9 +58,13 @@ export function MedicalInformationForm({ form }: MedicalInformationFormProps) {
             </FormItem>
           )}
         />
-        <CheckboxField
+        <RadioGroupField
           form={form}
           name="medicalInformation.tetanusVaccination"
+          options={[
+            { value: "YES", label: "Ja" },
+            { value: "NO", label: "Nee" },
+          ]}
           label="Is uw kind gevaccineerd tegen tetanus?"
         />
         {form.watch("medicalInformation.tetanusVaccination") && (

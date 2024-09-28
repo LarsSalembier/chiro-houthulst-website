@@ -26,7 +26,6 @@ import {
   registerMemberSchema,
   type RegisterMemberInput,
 } from "~/interface-adapters/controllers/members/schema";
-import CheckboxField from "~/components/forms/checkbox-field";
 import RadioGroupField from "~/components/forms/radio-group-field";
 import { useEffect } from "react";
 
@@ -67,6 +66,10 @@ export default function RegistrationForm() {
 
   const paymentMethod = form.watch("yearlyMembership.paymentMethod");
   const paid = form.watch("yearlyMembership.paymentReceived");
+
+  useEffect(() => {
+    console.log("Form Errors:", form.formState.errors);
+  }, [form.formState.errors]);
 
   useEffect(() => {
     if (paymentMethod || paid) {
@@ -189,15 +192,20 @@ export default function RegistrationForm() {
             </CardWrapper>
             <CardWrapper title="Betaling">
               <div className="flex flex-col gap-4">
-                <CheckboxField
+                <RadioGroupField
                   form={form}
                   name="yearlyMembership.paymentReceived"
-                  label="Betaling ontvangen?"
+                  options={[
+                    { value: "YES", label: "Ja" },
+                    { value: "NO", label: "Nee" },
+                  ]}
+                  label="Werd het lidgeld betaald?"
                 />
                 <RadioGroupField
                   form={form}
                   name="yearlyMembership.paymentMethod"
                   options={paymentMethodOptions}
+                  label="Betaalmethode"
                 />
               </div>
             </CardWrapper>

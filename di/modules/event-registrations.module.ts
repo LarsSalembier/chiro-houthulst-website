@@ -7,11 +7,11 @@ import { EventRegistrationsRepository } from "~/infrastructure/repositories/even
 const initializeModule = (bind: interfaces.Bind) => {
   if (process.env.NODE_ENV === "test") {
     bind<IEventRegistrationsRepository>(
-      DI_SYMBOLS.IEmergencyContactsRepository,
+      DI_SYMBOLS.IEventRegistrationsRepository,
     ).to(MockEventRegistrationsRepository);
   } else {
     bind<IEventRegistrationsRepository>(
-      DI_SYMBOLS.IEmergencyContactsRepository,
+      DI_SYMBOLS.IEventRegistrationsRepository,
     ).to(EventRegistrationsRepository);
   }
 };

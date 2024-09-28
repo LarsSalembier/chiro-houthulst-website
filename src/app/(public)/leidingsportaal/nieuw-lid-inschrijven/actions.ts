@@ -75,6 +75,7 @@ export async function registerMember(formData: RegisterMemberInput) {
         }
 
         captureException(error, { data: formData });
+        console.error("Error registering member", error);
         return {
           error:
             "Er is een onverwachte fout opgetreden. De administrator is op de hoogte gebracht en zal dit zo snel mogelijk oplossen.",

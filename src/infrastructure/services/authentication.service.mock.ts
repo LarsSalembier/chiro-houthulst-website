@@ -1,7 +1,9 @@
+import { injectable } from "inversify";
 import { type Role } from "types/globals";
 import { type IAuthenticationService } from "~/application/services/authentication.service.interface";
 import { type CreateUser, type User } from "~/domain/entities/user";
 
+@injectable()
 export class MockAuthenticationService implements IAuthenticationService {
   mockUsers: User[] = [];
 
