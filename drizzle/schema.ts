@@ -190,7 +190,8 @@ export const workYearsRelations = relations(workYears, ({ many }) => ({
   sponsorshipAgreements: many(sponsorshipAgreements),
 }));
 
-export const UNIQUE_NAME_FOR_GROUP_CONSTRAINT = "unique_group_name";
+export const UNIQUE_NAME_FOR_GROUP_CONSTRAINT =
+  "chirohouthulst-website_groups_name_unique";
 
 /**
  * Chirogroepen, bijvoorbeeld "Ribbels", "Speelclub", etc.
@@ -220,10 +221,10 @@ export const groupsRelations = relations(groups, ({ many }) => ({
 }));
 
 export const UNIQUE_NAME_AND_DATE_OF_BIRTH_FOR_MEMBER_CONSTRAINT =
-  "unique_member_name_and_date_of_birth";
+  "unique_member";
 
 export const UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT =
-  "unique_email_address";
+  "chirohouthulst-website_members_email_address_unique";
 
 /**
  * Leden van de Chiro.
@@ -364,7 +365,7 @@ export const medicalInformationRelations = relations(
 );
 
 export const UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT =
-  "unique_email_address";
+  "chirohouthulst-website_parents_email_address_unique";
 
 /**
  * Ouders/verzorgers van leden.
@@ -583,7 +584,8 @@ export const eventRegistrationsRelations = relations(
   }),
 );
 
-export const UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT = "unique_company_name";
+export const UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT =
+  "chirohouthulst-website_sponsors_company_name_unique";
 
 /**
  * Sponsors van de Chiro.

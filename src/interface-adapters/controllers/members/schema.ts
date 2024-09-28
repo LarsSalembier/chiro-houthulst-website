@@ -289,7 +289,7 @@ export const registerMemberSchema = z
         tetanusVaccination: decisionEnumSchema.transform((value) =>
           value === "YES" ? true : false,
         ),
-        tetanusVaccinationYear: z
+        tetanusVaccinationYear: z.coerce
           .number()
           .int()
           .min(1900, {

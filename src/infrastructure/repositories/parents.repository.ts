@@ -7,7 +7,6 @@ import { db } from "drizzle";
 import {
   membersParents as membersParentsTable,
   parents as parentsTable,
-  UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT,
 } from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
@@ -76,8 +75,7 @@ export class ParentsRepository implements IParentsRepository {
         } catch (error) {
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation &&
-            error.constraint === UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT
+            error.code === PostgresErrorCode.UniqueViolation
           ) {
             throw new ParentWithThatEmailAddressAlreadyExistsError(
               "A parent with that email address already exists",
@@ -286,8 +284,7 @@ export class ParentsRepository implements IParentsRepository {
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation &&
-            error.constraint === UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT
+            error.code === PostgresErrorCode.UniqueViolation
           ) {
             throw new ParentWithThatEmailAddressAlreadyExistsError(
               "A parent with that email address already exists",

@@ -8,7 +8,6 @@ import { db } from "drizzle";
 import {
   eventGroups as eventGroupsTable,
   groups as groupsTable,
-  UNIQUE_NAME_FOR_GROUP_CONSTRAINT,
 } from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
@@ -48,8 +47,7 @@ export class GroupsRepository implements IGroupsRepository {
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation &&
-            error.constraint === UNIQUE_NAME_FOR_GROUP_CONSTRAINT
+            error.code === PostgresErrorCode.UniqueViolation
           ) {
             throw new GroupWithThatNameAlreadyExistsError(
               "Group already exists",
@@ -220,8 +218,7 @@ export class GroupsRepository implements IGroupsRepository {
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation &&
-            error.constraint === UNIQUE_NAME_FOR_GROUP_CONSTRAINT
+            error.code === PostgresErrorCode.UniqueViolation
           ) {
             throw new GroupWithThatNameAlreadyExistsError(
               "Group already exists",

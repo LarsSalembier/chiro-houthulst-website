@@ -9,10 +9,7 @@ import {
 } from "~/domain/entities/sponsor";
 import { DatabaseOperationError } from "~/domain/errors/common";
 import { db } from "drizzle";
-import {
-  sponsors as sponsorsTable,
-  UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT,
-} from "drizzle/schema";
+import { sponsors as sponsorsTable } from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {
@@ -87,8 +84,7 @@ export class SponsorsRepository implements ISponsorsRepository {
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation &&
-            error.constraint === UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT
+            error.code === PostgresErrorCode.UniqueViolation
           ) {
             throw new SponsorWithThatCompanyNameAlreadyExistsError(
               "A sponsor with that company name already exists",
@@ -233,8 +229,7 @@ export class SponsorsRepository implements ISponsorsRepository {
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation &&
-            error.constraint === UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT
+            error.code === PostgresErrorCode.UniqueViolation
           ) {
             throw new SponsorWithThatCompanyNameAlreadyExistsError(
               "A sponsor with that company name already exists",

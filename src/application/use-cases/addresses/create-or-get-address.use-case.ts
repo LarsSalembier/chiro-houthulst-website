@@ -1,7 +1,6 @@
 import { startSpan } from "@sentry/nextjs";
 import { getInjection } from "di/container";
 import { type Address, type AddressInsert } from "~/domain/entities/address";
-import { AddressAlreadyExistsError } from "~/domain/errors/addresses";
 
 /**
  * Create or get an address. If the address already exists, return the existing address. If the address does not exist, create it and return the new address.
@@ -19,23 +18,21 @@ export async function createOrGetAddressUseCase(
     async () => {
       const addressesRepository = getInjection("IAddressesRepository");
 
-      try {
-        const newAddress = await addressesRepository.createAddress(address);
+      // Check if address already exists
+      const existingAddress = await addressesRepository.getAddressByDetails(
+        address.street,
+        address.houseNumber,
+        address.box,
+        address.municipality,
+        address.postalCode,
+      );
 
-        return newAddress;
-      } catch (error) {
-        if (error instanceof AddressAlreadyExistsError) {
-          return (await addressesRepository.getAddressByDetails(
-            address.street,
-            address.houseNumber,
-            address.box,
-            address.municipality,
-            address.postalCode,
-          ))!;
-        }
-
-        throw error;
+      if (existingAddress) {
+        return existingAddress;
       }
+
+      // Create address
+      return addressesRepository.createAddress(address);
     },
   );
 }

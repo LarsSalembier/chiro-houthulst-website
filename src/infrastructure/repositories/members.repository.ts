@@ -91,7 +91,7 @@ export class MembersRepository implements IMembersRepository {
             error.code === PostgresErrorCode.UniqueViolation
           ) {
             if (
-              error.constraint ===
+              error.constraint_name ===
               UNIQUE_NAME_AND_DATE_OF_BIRTH_FOR_MEMBER_CONSTRAINT
             ) {
               throw new MemberWithThatNameAndBirthDateAlreadyExistsError(
@@ -101,7 +101,8 @@ export class MembersRepository implements IMembersRepository {
             }
 
             if (
-              error.constraint === UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT
+              error.constraint_name ===
+              UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT
             ) {
               throw new MemberWithThatEmailAddressAlreadyExistsError(
                 "A member with the same email address already exists",
@@ -315,7 +316,7 @@ export class MembersRepository implements IMembersRepository {
             error.code === PostgresErrorCode.UniqueViolation
           ) {
             if (
-              error.constraint ===
+              error.constraint_name ===
               UNIQUE_NAME_AND_DATE_OF_BIRTH_FOR_MEMBER_CONSTRAINT
             ) {
               throw new MemberWithThatNameAndBirthDateAlreadyExistsError(
@@ -325,7 +326,8 @@ export class MembersRepository implements IMembersRepository {
             }
 
             if (
-              error.constraint === UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT
+              error.constraint_name ===
+              UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT
             ) {
               throw new MemberWithThatEmailAddressAlreadyExistsError(
                 "A member with the same email address already exists",
@@ -454,13 +456,13 @@ export class MembersRepository implements IMembersRepository {
             isDatabaseError(error) &&
             error.code === PostgresErrorCode.ForeignKeyViolation
           ) {
-            if (error.column === "member_id") {
+            if (error.column_name === "member_id") {
               throw new MemberNotFoundError("Member not found", {
                 cause: error,
               });
             }
 
-            if (error.column === "parent_id") {
+            if (error.column_name === "parent_id") {
               throw new ParentNotFoundError("Parent not found", {
                 cause: error,
               });

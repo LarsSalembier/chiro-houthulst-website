@@ -35,7 +35,12 @@ export default function FormFieldComponent<TFieldValues extends FieldValues>({
         <FormItem className="flex flex-col">
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            <Input {...field} type={type} placeholder={placeholder} />
+            <Input
+              {...field}
+              value={field.value ?? ""}
+              type={type}
+              placeholder={placeholder}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

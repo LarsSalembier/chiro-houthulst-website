@@ -5,10 +5,7 @@ import { IAddressesRepository } from "~/application/repositories/addresses.repos
 import { Address, AddressInsert } from "~/domain/entities/address";
 import { DatabaseOperationError } from "~/domain/errors/common";
 import { db } from "drizzle";
-import {
-  addresses as addressesTable,
-  UNIQUE_ADDRESS_CONSTRAINT,
-} from "drizzle/schema";
+import { addresses as addressesTable } from "drizzle/schema";
 import { isDatabaseError } from "~/domain/errors/database-error";
 import { PostgresErrorCode } from "~/domain/enums/postgres-error-code";
 import {
@@ -47,8 +44,7 @@ export class AddressesRepository implements IAddressesRepository {
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation &&
-            error.constraint === UNIQUE_ADDRESS_CONSTRAINT
+            error.code === PostgresErrorCode.UniqueViolation
           ) {
             throw new AddressAlreadyExistsError("Address already exists", {
               cause: error,

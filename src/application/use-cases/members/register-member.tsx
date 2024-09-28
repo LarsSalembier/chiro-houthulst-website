@@ -8,6 +8,7 @@ import { type ParentInsert } from "~/domain/entities/parent";
 import { type YearlyMembershipInsert } from "~/domain/entities/yearly-membership";
 import { getCurrentWorkYearUseCase } from "../work-years/get-current-work-year.use-case";
 import { createOrUpdateParentUseCase } from "../parents/create-or-update-parent.use-case";
+import { ParentIsAlreadyLinkedToMemberError } from "~/domain/errors/members";
 
 /**
  * Register a new member.
@@ -55,7 +56,37 @@ export async function registerMemberUseCase(
 
       const currentWorkYear = await getCurrentWorkYearUseCase();
 
-      const member = await membersRepository.createMember(memberData);
+      let member;
+
+      // First check if the member already exists
+      if (memberData.emailAddress) {
+        const existingMember = await membersRepository.getMemberByEmailAddress(
+          memberData.emailAddress,
+        );
+
+        if (existingMember) {
+          member = await membersRepository.updateMember(
+            existingMember.id,
+            memberData,
+          );
+        }
+      }
+
+      const existingMemberByNameAndDateOfBirth =
+        await membersRepository.getMemberByNameAndDateOfBirth(
+          memberData.name.firstName,
+          memberData.name.lastName,
+          memberData.dateOfBirth,
+        );
+
+      if (existingMemberByNameAndDateOfBirth) {
+        member = await membersRepository.updateMember(
+          existingMemberByNameAndDateOfBirth.id,
+          memberData,
+        );
+      } else {
+        member = await membersRepository.createMember(memberData);
+      }
 
       for (let i = 0; i < parentsWithAddresses.length; i++) {
         const { parent, address } = parentsWithAddresses[i]!;
@@ -65,29 +96,76 @@ export async function registerMemberUseCase(
           address,
         );
 
-        await membersRepository.addParentToMember(
-          member.id,
-          createdOrUpdatedParent.id,
-          i === 0,
-        );
+        try {
+          await membersRepository.addParentToMember(
+            member.id,
+            createdOrUpdatedParent.id,
+            i === 0,
+          );
+        } catch (error) {
+          if (!(error instanceof ParentIsAlreadyLinkedToMemberError)) {
+            throw error;
+          }
+        }
       }
 
-      await emergencyContactsRepository.createEmergencyContact({
-        ...emergencyContact,
-        memberId: member.id,
-      });
+      // Check if emergency contact already exists
+      const existingEmergencyContact =
+        await emergencyContactsRepository.getEmergencyContactByMemberId(
+          member.id,
+        );
 
-      await medicalInformationRepository.createMedicalInformation({
-        ...medicalInformation,
-        memberId: member.id,
-      });
+      if (existingEmergencyContact) {
+        await emergencyContactsRepository.updateEmergencyContact(
+          existingEmergencyContact.memberId,
+          emergencyContact,
+        );
+      } else {
+        await emergencyContactsRepository.createEmergencyContact({
+          ...emergencyContact,
+          memberId: member.id,
+        });
+      }
 
-      await yearlyMembershipsRepository.createYearlyMembership({
-        ...yearlyMembership,
-        memberId: member.id,
-        groupId,
-        workYearId: currentWorkYear.id,
-      });
+      // Check if medical information already exists
+      const existingMedicalInformation =
+        await medicalInformationRepository.getMedicalInformationByMemberId(
+          member.id,
+        );
+
+      if (existingMedicalInformation) {
+        await medicalInformationRepository.updateMedicalInformation(
+          existingMedicalInformation.memberId,
+          medicalInformation,
+        );
+      } else {
+        await medicalInformationRepository.createMedicalInformation({
+          ...medicalInformation,
+          memberId: member.id,
+        });
+      }
+
+      // Check if yearly membership already exists
+      const existingYearlyMembership =
+        await yearlyMembershipsRepository.getYearlyMembershipByIds(
+          member.id,
+          currentWorkYear.id,
+        );
+
+      if (existingYearlyMembership) {
+        await yearlyMembershipsRepository.updateYearlyMembership(
+          existingYearlyMembership.memberId,
+          existingYearlyMembership.workYearId,
+          yearlyMembership,
+        );
+      } else {
+        await yearlyMembershipsRepository.createYearlyMembership({
+          ...yearlyMembership,
+          memberId: member.id,
+          groupId,
+          workYearId: currentWorkYear.id,
+        });
+      }
 
       return member;
     },

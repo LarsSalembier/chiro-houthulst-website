@@ -68,19 +68,19 @@ export class YearlyMembershipsRepository
             }
 
             if (error.code === PostgresErrorCode.ForeignKeyViolation) {
-              if (error.column === "member_id") {
+              if (error.column_name === "member_id") {
                 throw new MemberNotFoundError("Member not found", {
                   cause: error,
                 });
               }
 
-              if (error.column === "work_year_id") {
+              if (error.column_name === "work_year_id") {
                 throw new WorkYearNotFoundError("Work year not found", {
                   cause: error,
                 });
               }
 
-              if (error.column === "group_id") {
+              if (error.column_name === "group_id") {
                 throw new GroupNotFoundError("Group not found", {
                   cause: error,
                 });
@@ -208,8 +208,7 @@ export class YearlyMembershipsRepository
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.ForeignKeyViolation &&
-            error.table === "group_id"
+            error.code === PostgresErrorCode.ForeignKeyViolation
           ) {
             throw new GroupNotFoundError("Group not found", {
               cause: error,

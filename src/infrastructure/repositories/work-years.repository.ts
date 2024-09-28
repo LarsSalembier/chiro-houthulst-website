@@ -17,7 +17,6 @@ import {
   WorkYearNotFoundError,
   WorkYearStillReferencedError,
 } from "~/domain/errors/work-years";
-import { UNIQUE_START_END_DATE_FOR_WORK_YEAR_CONSTRAINT } from "drizzle/schema";
 
 @injectable()
 export class WorkYearsRepository implements IWorkYearsRepository {
@@ -49,8 +48,7 @@ export class WorkYearsRepository implements IWorkYearsRepository {
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation &&
-            error.constraint === UNIQUE_START_END_DATE_FOR_WORK_YEAR_CONSTRAINT
+            error.code === PostgresErrorCode.UniqueViolation
           ) {
             throw new WorkYearWithThatStartAndEndDateAlreadyExistsError(
               "Work year already exists",
@@ -195,8 +193,7 @@ export class WorkYearsRepository implements IWorkYearsRepository {
 
           if (
             isDatabaseError(error) &&
-            error.code === PostgresErrorCode.UniqueViolation &&
-            error.constraint === UNIQUE_START_END_DATE_FOR_WORK_YEAR_CONSTRAINT
+            error.code === PostgresErrorCode.UniqueViolation
           ) {
             throw new WorkYearWithThatStartAndEndDateAlreadyExistsError(
               "Work year already exists",
