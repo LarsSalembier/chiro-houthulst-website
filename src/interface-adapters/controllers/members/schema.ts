@@ -56,11 +56,7 @@ const phoneNumberSchema = z
   })
   .max(MAX_PHONE_NUMBER_LENGTH, {
     message: `Het telefoonnummer mag maximaal ${MAX_PHONE_NUMBER_LENGTH} karakters lang zijn`,
-  })
-  .regex(
-    /^\d{3,4} \d{2} \d{2} \d{2}$/,
-    "Geef een geldig telefoonnummer op in de vorm '1234 56 78 90' of '123 45 67 89'",
-  );
+  });
 
 const nameSchema = z
   .object({
@@ -354,7 +350,11 @@ export const registerMemberSchema = z
         ),
         doctor: z.object({
           name: nameSchema,
-          phoneNumber: phoneNumberSchema.trim(),
+          phoneNumber: phoneNumberSchema
+            .trim()
+            .transform((v) => v ?? null)
+            .optional()
+            .transform((v) => v ?? "reeds gekend"),
         }),
       })
       .required(),
