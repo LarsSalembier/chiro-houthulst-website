@@ -65,12 +65,12 @@ export class EventRegistrationsRepository
             }
 
             if (error.code === PostgresErrorCode.ForeignKeyViolation) {
-              if (error.column === "event_id") {
+              if (error.column_name === "event_id") {
                 throw new EventNotFoundError("Event not found", {
                   cause: error,
                 });
               }
-              if (error.column === "member_id") {
+              if (error.column_name === "member_id") {
                 throw new MemberNotFoundError("Member not found", {
                   cause: error,
                 });

@@ -54,6 +54,7 @@ async function GroupCard({ group }: { group: Group }) {
               <TableHead>Geboortedatum</TableHead>
               <TableHead>Naam ouder</TableHead>
               <TableHead>Telefoonnummer ouder</TableHead>
+              <TableHead>Acties</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -71,6 +72,13 @@ async function GroupCard({ group }: { group: Group }) {
                   {member.parent.firstName} {member.parent.lastName}
                 </TableCell>
                 <TableCell>{member.parent.phoneNumber}</TableCell>
+                <TableCell>
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={`/leidingsportaal/leden/${member.member.id}`}>
+                      Gegevens inzien
+                    </Link>
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

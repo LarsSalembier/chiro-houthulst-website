@@ -318,13 +318,13 @@ export class EventsRepository implements IEventsRepository {
             isDatabaseError(error) &&
             error.code === PostgresErrorCode.ForeignKeyViolation
           ) {
-            if (error.column === "event_id") {
+            if (error.column_name === "event_id") {
               throw new EventNotFoundError("Event not found", {
                 cause: error,
               });
             }
 
-            if (error.column === "group_id") {
+            if (error.column_name === "group_id") {
               throw new GroupNotFoundError("Group not found", {
                 cause: error,
               });
