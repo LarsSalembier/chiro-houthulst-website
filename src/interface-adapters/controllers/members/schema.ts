@@ -51,9 +51,6 @@ const phoneNumberSchema = z
     required_error: "Geef een telefoonnummer op",
   })
   .trim()
-  .min(2, {
-    message: "Het telefoonnummer moet minstens 2 karakters lang zijn",
-  })
   .max(MAX_PHONE_NUMBER_LENGTH, {
     message: `Het telefoonnummer mag maximaal ${MAX_PHONE_NUMBER_LENGTH} karakters lang zijn`,
   });
