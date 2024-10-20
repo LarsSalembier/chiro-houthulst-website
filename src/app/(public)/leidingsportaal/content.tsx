@@ -51,8 +51,9 @@ async function GroupCard({ group }: { group: Group }) {
           <TableHeader>
             <TableRow>
               <TableHead>Naam</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Geboortedatum</TableHead>
+              <TableHead>Naam ouder</TableHead>
+              <TableHead>Telefoonnummer ouder</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -61,12 +62,15 @@ async function GroupCard({ group }: { group: Group }) {
                 <TableCell>
                   {member.member.name.firstName} {member.member.name.lastName}
                 </TableCell>
-                <TableCell>{member.member.emailAddress ?? "Geen"}</TableCell>
                 <TableCell>
                   {new Date(member.member.dateOfBirth).toLocaleDateString(
                     "nl-BE",
                   )}
                 </TableCell>
+                <TableCell>
+                  {member.parent.firstName} {member.parent.lastName}
+                </TableCell>
+                <TableCell>{member.parent.phoneNumber}</TableCell>
               </TableRow>
             ))}
           </TableBody>

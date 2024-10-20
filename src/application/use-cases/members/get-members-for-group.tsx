@@ -16,6 +16,11 @@ import { getCurrentWorkYearUseCase } from "../work-years/get-current-work-year.u
 export async function getMembersForGroupUseCase(groupId: number): Promise<
   {
     member: Member;
+    parent: {
+      firstName: string;
+      lastName: string;
+      phoneNumber: string;
+    };
     yearlyMembership: Omit<
       YearlyMembership,
       "memberId" | "groupId" | "workYearId"
@@ -50,6 +55,27 @@ export async function getMembersForGroupUseCase(groupId: number): Promise<
         memberIds.map((memberId) => membersRepository.getMemberById(memberId)),
       );
 
+      const parentsRepository = getInjection("IParentsRepository");
+
+      const firstParentForEachMember = await Promise.all(
+        memberIds.map((memberId) =>
+          parentsRepository.getParentsForMember(memberId).then((parents) => {
+            const firstParent = parents[0];
+
+            if (!firstParent) {
+              return null;
+            }
+
+            return {
+              memberId,
+              firstName: firstParent.parent.name.firstName,
+              lastName: firstParent.parent.name.lastName,
+              phoneNumber: firstParent.parent.phoneNumber,
+            };
+          }),
+        ),
+      );
+
       return yearlyMembershipsForGroup
         .map((yearlyMembership) => {
           const member = members.find(
@@ -60,9 +86,22 @@ export async function getMembersForGroupUseCase(groupId: number): Promise<
             return null;
           }
 
+          const parent = firstParentForEachMember.find(
+            (parent) => parent?.memberId === member.id,
+          );
+
+          if (!parent) {
+            return null;
+          }
+
           return {
             member,
             yearlyMembership,
+            parent: {
+              firstName: parent.firstName,
+              lastName: parent.lastName,
+              phoneNumber: parent.phoneNumber,
+            },
           };
         })
         .filter((result) => result !== null);
