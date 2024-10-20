@@ -9,10 +9,8 @@ import {
   Check,
   X,
   Syringe,
-  AlertTriangle,
   Info,
   Activity,
-  Droplet,
 } from "lucide-react";
 import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/nextjs";
 import { isLeiding } from "~/lib/auth";
