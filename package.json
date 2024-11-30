@@ -70,7 +70,6 @@
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "tsx": "^4.19.1",
     "uploadthing": "^6.13.2",
     "zod": "^3.23.8"
   },
@@ -90,6 +89,7 @@
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.5",
     "tailwindcss": "^3.4.7",
+    "tsx": "^4.19.1",
     "typescript": "^5.5.4"
   },
   "ct3aMetadata": {

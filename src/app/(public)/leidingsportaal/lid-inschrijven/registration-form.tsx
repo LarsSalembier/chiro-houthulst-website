@@ -8,20 +8,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "~/components/ui/form";
 import { PlusIcon } from "lucide-react";
 import { type Metadata } from "next";
-import MemberDetailsForm from "./forms/member-details-form";
-import { ParentForm } from "./forms/parent-form";
-import { AllergiesForm } from "./forms/allergies-form";
-import DoctorContactForm from "./forms/doctor-contact-form";
-import ExtraContactPersonForm from "./forms/extra-contact-person-form";
-import MedicalConditionsForm from "./forms/medical-conditions-form";
-import { MedicalInformationForm } from "./forms/medical-information-form";
-import PrivacyForm from "./forms/privacy-form";
-import SportsAndActivitiesForm from "./forms/sports-and-activities-form";
-import FormFieldComponent from "./form-field";
+import MemberDetailsForm from "../nieuw-lid-inschrijven/forms/member-details-form";
+import { ParentForm } from "../nieuw-lid-inschrijven/forms/parent-form";
+import { AllergiesForm } from "../nieuw-lid-inschrijven/forms/allergies-form";
+import DoctorContactForm from "../nieuw-lid-inschrijven/forms/doctor-contact-form";
+import ExtraContactPersonForm from "../nieuw-lid-inschrijven/forms/extra-contact-person-form";
+import MedicalConditionsForm from "../nieuw-lid-inschrijven/forms/medical-conditions-form";
+import { MedicalInformationForm } from "../nieuw-lid-inschrijven/forms/medical-information-form";
+import PrivacyForm from "../nieuw-lid-inschrijven/forms/privacy-form";
+import SportsAndActivitiesForm from "../nieuw-lid-inschrijven/forms/sports-and-activities-form";
+import FormFieldComponent from "../nieuw-lid-inschrijven/form-field";
 import CardWrapper from "../../../../components/card-wrapper";
-import MedicationPermissionForm from "./forms/medication-permission-form";
+import MedicationPermissionForm from "../nieuw-lid-inschrijven/forms/medication-permission-form";
 import { Section, SectionContent, SectionTitle } from "~/components/section";
-import { registerMember } from "./actions";
+import { registerMember } from "../nieuw-lid-inschrijven/actions";
 import {
   registerMemberSchema,
   type RegisterMemberInput,
@@ -86,13 +86,13 @@ export default function RegistrationForm() {
 
   const onSubmit = async (data: RegisterMemberInput) => {
     try {
-      const result = await registerMember(data);
+      await registerMember(data);
 
-      if ("error" in result) {
-        toast.error(result.error);
-      } else {
-        toast.success(`${data.memberData.name.firstName} is ingeschreven.`);
-      }
+      // if ("error" in result) {
+      //   toast.error(result.error);
+      // } else {
+      //   toast.success(`${data.memberData.name.firstName} is ingeschreven.`);
+      // }
     } catch (error) {
       handleError(error);
     }

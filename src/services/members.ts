@@ -57,3 +57,24 @@ export function getCurrentYearlyMembership(member: MemberWithAllRelevantData) {
 
   return undefined;
 }
+
+export async function getMemberByNameAndDateOfBirth(
+  firstName: string,
+  lastName: string,
+  dateOfBirth: Date,
+) {
+  const member = await db.query.members.findFirst({
+    where: (members, { and, eq }) =>
+      and(
+        eq(members.firstName, firstName),
+        eq(members.lastName, lastName),
+        eq(members.dateOfBirth, dateOfBirth),
+      ),
+  });
+
+  if (!member) {
+    return undefined;
+  }
+
+  return member;
+}

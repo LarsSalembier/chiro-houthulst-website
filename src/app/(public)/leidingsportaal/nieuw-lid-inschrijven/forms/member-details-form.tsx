@@ -6,7 +6,6 @@ import { calculateAge } from "../calculate-age";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { FormDescription } from "~/components/ui/form";
 import FormFieldComponent from "../form-field";
-import DatePicker from "~/components/forms/date-picker";
 import RadioGroupField from "~/components/forms/radio-group-field";
 import GroupSelection from "./group-selection-form";
 import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
@@ -19,7 +18,9 @@ interface MemberDetailsFormProps {
 export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
   const memberDateOfBirth = form.watch("memberData.dateOfBirth");
   const memberGender = form.watch("memberData.gender");
-  const age = memberDateOfBirth ? calculateAge(memberDateOfBirth) : null;
+  const age = memberDateOfBirth
+    ? calculateAge(new Date(memberDateOfBirth))
+    : null;
 
   const genderOptions = [
     { value: "M", label: "Man" },
@@ -29,7 +30,7 @@ export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
 
   useEffect(() => {
     if (memberDateOfBirth) {
-      const age = calculateAge(memberDateOfBirth);
+      const age = calculateAge(new Date(memberDateOfBirth));
       if (age < 11) {
         form.setValue("memberData.emailAddress", "");
         form.setValue("memberData.phoneNumber", "");
@@ -282,10 +283,11 @@ export default function MemberDetailsForm({ form }: MemberDetailsFormProps) {
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <DatePicker
+          <FormFieldComponent
             form={form}
             name="memberData.dateOfBirth"
             label="Geboortedatum"
+            type="date"
           />
           <RadioGroupField
             form={form}

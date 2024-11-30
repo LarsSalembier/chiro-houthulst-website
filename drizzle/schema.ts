@@ -144,7 +144,7 @@ export const addresses = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    uniqueAddress: unique(UNIQUE_ADDRESS_CONSTRAINT).on(
+    uniqueAddress: unique().on(
       t.street,
       t.houseNumber,
       t.box,
@@ -178,10 +178,7 @@ export const workYears = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    uniqueWorkYear: unique(UNIQUE_START_END_DATE_FOR_WORK_YEAR_CONSTRAINT).on(
-      t.startDate,
-      t.endDate,
-    ),
+    uniqueWorkYear: unique().on(t.startDate, t.endDate),
   }),
 );
 
@@ -239,7 +236,7 @@ export const members = createTable(
     dateOfBirth: date("date_of_birth", { mode: "date" }).notNull(),
     emailAddress: varchar("email_address", {
       length: MAX_EMAIL_ADDRESS_LENGTH,
-    }).unique(UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT),
+    }),
     phoneNumber: varchar("phone_number", { length: MAX_PHONE_NUMBER_LENGTH }),
     // GDPR: toestemming om foto's te publiceren van het lid
     gdprPermissionToPublishPhotos: boolean("gdpr_permission_to_publish_photos")
@@ -251,9 +248,7 @@ export const members = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }),
   },
   (t) => ({
-    uniqueMember: unique(
-      UNIQUE_NAME_AND_DATE_OF_BIRTH_FOR_MEMBER_CONSTRAINT,
-    ).on(t.firstName, t.lastName, t.dateOfBirth),
+    uniqueMember: unique().on(t.firstName, t.lastName, t.dateOfBirth),
   }),
 );
 
@@ -370,25 +365,31 @@ export const UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT =
 /**
  * Ouders/verzorgers van leden.
  */
-export const parents = createTable(tableNames.parents, {
-  id: serial("id").primaryKey(),
-  emailAddress: varchar("email_address", { length: MAX_EMAIL_ADDRESS_LENGTH })
-    .unique(UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT)
-    .notNull(),
-  relationship: parentRelationshipEnum("relationship").notNull(),
-  firstName: varchar("first_name", { length: MAX_NAME_LENGTH }).notNull(),
-  lastName: varchar("last_name", { length: MAX_NAME_LENGTH }).notNull(),
-  phoneNumber: varchar("phone_number", {
-    length: MAX_PHONE_NUMBER_LENGTH,
-  }).notNull(),
-  addressId: integer("address_id")
-    .notNull()
-    .references(() => addresses.id),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }),
-});
+export const parents = createTable(
+  tableNames.parents,
+  {
+    id: serial("id").primaryKey(),
+    emailAddress: varchar("email_address", {
+      length: MAX_EMAIL_ADDRESS_LENGTH,
+    }).notNull(),
+    relationship: parentRelationshipEnum("relationship").notNull(),
+    firstName: varchar("first_name", { length: MAX_NAME_LENGTH }).notNull(),
+    lastName: varchar("last_name", { length: MAX_NAME_LENGTH }).notNull(),
+    phoneNumber: varchar("phone_number", {
+      length: MAX_PHONE_NUMBER_LENGTH,
+    }).notNull(),
+    addressId: integer("address_id")
+      .notNull()
+      .references(() => addresses.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }),
+  },
+  (t) => ({
+    uniqueParent: unique().on(t.firstName, t.lastName, t.addressId),
+  }),
+);
 
 export const parentsRelations = relations(parents, ({ many, one }) => ({
   membersParents: many(membersParents),

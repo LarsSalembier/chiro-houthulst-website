@@ -19,10 +19,7 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from "~/components/page-header";
-import {
-  getCurrentYearlyMembership,
-  getMemberById,
-} from "~/app/services/members";
+import { getCurrentYearlyMembership, getMemberById } from "~/services/members";
 
 function formatDate(date: Date) {
   return Intl.DateTimeFormat("nl-BE", {
