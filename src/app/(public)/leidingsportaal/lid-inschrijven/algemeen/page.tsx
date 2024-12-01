@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useRegistrationFormContext } from "../registration-form-context";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -8,23 +8,17 @@ import {
   registrationFormInputDataSchema,
 } from "../registration-form-input-data";
 import { useRouter } from "next/navigation";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
-import FormFieldComponent from "../../nieuw-lid-inschrijven/form-field";
-import RadioGroupField from "~/components/forms/radio-group-field";
 import { Button } from "~/components/ui/button";
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
 } from "~/components/page-header";
+import { useEffect, useState } from "react";
+import { DatePicker, Input, Radio, RadioGroup } from "@nextui-org/react";
+import { CalendarDate, getLocalTimeZone } from "@internationalized/date";
+import { type Group } from "~/domain/entities/group";
+import { getGroups } from "./../actions";
 
 const genderOptions = [
   { value: "M", label: "Man" },
@@ -33,6 +27,8 @@ const genderOptions = [
 ];
 
 export function calculateAge(birthday: Date) {
+  // console.log(birthday);
+
   const ageDifMs = Date.now() - birthday.getTime();
   const ageDate = new Date(ageDifMs);
   return Math.abs(ageDate.getUTCFullYear() - 1970);
@@ -43,6 +39,7 @@ export default function GeneralInfoPage() {
   const router = useRouter();
 
   const form = useForm({
+    mode: "onBlur",
     resolver: zodResolver(
       registrationFormInputDataSchema
         .pick({
@@ -52,6 +49,7 @@ export default function GeneralInfoPage() {
           memberDateOfBirth: true,
           memberEmailAddress: true,
           memberPhoneNumber: true,
+          groupId: true,
         })
         .refine(
           (data) => {
@@ -82,101 +80,212 @@ export default function GeneralInfoPage() {
       memberDateOfBirth: formData.memberDateOfBirth,
       memberEmailAddress: formData.memberEmailAddress,
       memberPhoneNumber: formData.memberPhoneNumber,
+      groupId: formData.groupId,
     },
   });
 
   function onSubmit(data: Partial<RegistrationFormInputData>) {
     updateFormData(data);
-    router.push("/form/step2");
+    router.push("/leidingsportaal/lid-inschrijven/ouders");
   }
 
   const memberDateOfBirth = form.watch("memberDateOfBirth");
-  // const memberGender = form.watch("memberGender");
+  const memberGender = form.watch("memberGender");
   const age = memberDateOfBirth ? calculateAge(memberDateOfBirth) : null;
+
+  useEffect(() => {
+    if (memberDateOfBirth) {
+      const age = calculateAge(memberDateOfBirth);
+      if (age < 11) {
+        form.setValue("memberEmailAddress", undefined);
+        form.setValue("memberPhoneNumber", undefined);
+      }
+    }
+  }, [memberDateOfBirth, form]);
+
+  useEffect(() => {
+    async function fetchGroups() {
+      if (memberDateOfBirth && memberGender) {
+        setIsLoading(true);
+        const groups = await getGroups(memberDateOfBirth, memberGender);
+
+        setGroups(groups);
+        if (groups.length === 1) {
+          form.setValue("groupId", groups[0]!.id);
+        }
+
+        setIsLoading(false);
+      }
+    }
+
+    void fetchGroups();
+  }, [memberDateOfBirth, memberGender, form]);
+
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <>
       <PageHeader>
-        <PageHeaderHeading>Inschrijvingsformulier</PageHeaderHeading>
+        <PageHeaderHeading>Algemene gegevens</PageHeaderHeading>
         <PageHeaderDescription>
-          Vul onderstaand formulier in om je kind of jezelf in te schrijven.
+          Geef hier de gegevens van het lid in om het inschrijvingsproces te
+          starten.
         </PageHeaderDescription>
       </PageHeader>
 
-      <div className="p-4 pb-8 md:pb-12 lg:pb-12">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormFieldComponent
-                form={form}
-                name="memberFirstName"
-                label="Voornaam"
-              />
-              <FormFieldComponent
-                form={form}
-                name="memberLastName"
-                label="Achternaam"
-              />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField
+      <div className="px-4 pb-12 md:pb-16 lg:pb-16">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col items-start gap-4"
+        >
+          <div className="flex w-full flex-col gap-4 md:flex-row">
+            <Controller
+              name="memberFirstName"
+              control={form.control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Voornaam"
+                  variant="faded"
+                  value={value}
+                  onBlur={onBlur}
+                  onChange={onChange}
+                  onClear={() => form.setValue("memberFirstName", "")}
+                  errorMessage={form.formState.errors.memberFirstName?.message}
+                  isInvalid={!!form.formState.errors.memberFirstName}
+                  isRequired
+                />
+              )}
+            />
+
+            <Controller
+              name="memberLastName"
+              control={form.control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Achternaam"
+                  variant="faded"
+                  value={value}
+                  onBlur={onBlur}
+                  onChange={onChange}
+                  onClear={() => form.setValue("memberLastName", "")}
+                  errorMessage={form.formState.errors.memberLastName?.message}
+                  isInvalid={!!form.formState.errors.memberLastName}
+                  isRequired
+                />
+              )}
+            />
+          </div>
+
+          <div className="flex w-full flex-col gap-4 md:flex-row">
+            <Controller
+              name="memberGender"
+              control={form.control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <RadioGroup
+                  className="w-full"
+                  label="Geslacht"
+                  value={value}
+                  onValueChange={onChange}
+                  onBlur={onBlur}
+                  errorMessage={form.formState.errors.memberGender?.message}
+                  isInvalid={!!form.formState.errors.memberGender}
+                  isRequired
+                  orientation="horizontal"
+                >
+                  {genderOptions.map((option) => (
+                    <Radio key={option.value} value={option.value}>
+                      {option.label}
+                    </Radio>
+                  ))}
+                </RadioGroup>
+              )}
+            />
+
+            <Controller
+              name="memberDateOfBirth"
+              control={form.control}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <DatePicker
+                  className="w-full"
+                  label="Geboortedatum"
+                  variant="faded"
+                  value={
+                    value
+                      ? new CalendarDate(
+                          value.getFullYear(),
+                          value.getMonth() + 1,
+                          value.getDate(),
+                        )
+                      : undefined
+                  }
+                  onBlur={onBlur}
+                  onChange={(date) => {
+                    if (date instanceof CalendarDate) {
+                      onChange(date.toDate(getLocalTimeZone()));
+                    } else {
+                      onChange(undefined);
+                    }
+                  }}
+                  errorMessage={
+                    form.formState.errors.memberDateOfBirth?.message
+                  }
+                  isInvalid={!!form.formState.errors.memberDateOfBirth}
+                  isRequired
+                  showMonthAndYearPickers
+                />
+              )}
+            />
+          </div>
+
+          {age && age > 11 ? (
+            <div className="flex w-full flex-col gap-4 md:flex-row">
+              <Controller
+                name="memberEmailAddress"
                 control={form.control}
-                name="memberDateOfBirth"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Geboortedatum</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        placeholder="Geboortedatum"
-                        {...field}
-                        value={
-                          field.value
-                            ? new Date(field.value).toISOString().split("T")[0]
-                            : ""
-                        }
-                        onChange={(e) =>
-                          field.onChange(new Date(e.target.value))
-                        }
-                      />
-                    </FormControl>
-                  </FormItem>
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label="E-mailadres"
+                    description="Het e-mailadres van het lid zelf."
+                    variant="faded"
+                    value={value ?? undefined}
+                    onBlur={onBlur}
+                    onChange={onChange}
+                    onClear={() => form.setValue("memberEmailAddress", "")}
+                    errorMessage={
+                      form.formState.errors.memberEmailAddress?.message
+                    }
+                    isInvalid={!!form.formState.errors.memberEmailAddress}
+                    isRequired={age ? age >= 15 : false}
+                  />
                 )}
               />
-              <RadioGroupField
-                form={form}
-                name="memberGender"
-                label="Geslacht"
-                options={genderOptions}
+
+              <Controller
+                name="memberPhoneNumber"
+                control={form.control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label="GSM-nummer"
+                    description="Het GSM-nummer van het lid zelf."
+                    variant="faded"
+                    value={value ?? undefined}
+                    onBlur={onBlur}
+                    onChange={onChange}
+                    onClear={() => form.setValue("memberPhoneNumber", "")}
+                    errorMessage={
+                      form.formState.errors.memberPhoneNumber?.message
+                    }
+                    isInvalid={!!form.formState.errors.memberPhoneNumber}
+                    isRequired={age ? age >= 15 : false}
+                  />
+                )}
               />
             </div>
-            {/* {memberDateOfBirth && memberGender && <GroupSelection form={form} />} */}
-            {age !== null && age >= 11 && (
-              <>
-                <FormFieldComponent
-                  form={form}
-                  name="memberEmailAddress"
-                  label={`E-mailadres ${age >= 15 ? "(verplicht)" : "(optioneel)"}`}
-                  type="email"
-                  placeholder="E-mailadres van lid zelf"
-                />
-                <FormDescription>
-                  Heb je een e-mailadres van uw kind? Top! Zo blijft hij/zij op
-                  de hoogte van het laatste nieuws en kan hij/zij zelf deze
-                  gegevens raadplegen.
-                </FormDescription>
-                <FormFieldComponent
-                  form={form}
-                  name="memberPhoneNumber"
-                  label={`GSM-nummer ${age >= 15 ? "(verplicht)" : "(optioneel)"}`}
-                  type="tel"
-                  placeholder="GSM-nummer van lid zelf"
-                />
-              </>
-            )}
-            <Button type="submit">Volgende</Button>
-          </form>
-        </Form>
+          ) : null}
+
+          <Button type="submit">Volgende</Button>
+        </form>
       </div>
     </>
   );

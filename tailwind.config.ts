@@ -1,14 +1,15 @@
 import type { Config } from "tailwindcss";
 import { withUt } from "uploadthing/tw";
-import tailwindcssAnimate from "tailwindcss-animate";
+import { nextui } from "@nextui-org/react";
 
 const config = withUt({
-  darkMode: ["class"],
+  darkMode: "class",
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   prefix: "",
   theme: {
@@ -75,15 +76,9 @@ const config = withUt({
           },
         },
       },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        scroll:
-          "scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite",
-      },
     },
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [nextui()],
 }) satisfies Config;
 
 export default config;

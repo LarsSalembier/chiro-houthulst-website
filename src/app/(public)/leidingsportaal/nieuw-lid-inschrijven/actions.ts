@@ -8,10 +8,10 @@ import { getAllMemberDataUseCase } from "~/application/use-cases/members/get-all
 import { type Gender } from "~/domain/enums/gender";
 import { getGroupsForBirthDateAndGenderController } from "~/interface-adapters/controllers/groups/get-groups-for-birth-date-and-gender.controller";
 import { type RegisterMemberInput } from "~/interface-adapters/controllers/members/schema";
-import { registerMember as registerMemberFunction } from "~/services/registration";
+import { registerMemberOld } from "~/services/registration";
 
 export async function registerMember(formData: RegisterMemberInput) {
-  return await registerMemberFunction(formData);
+  return await registerMemberOld(formData);
 }
 
 export async function getGroupsForBirthDateAndGender(

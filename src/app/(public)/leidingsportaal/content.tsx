@@ -8,14 +8,12 @@ import {
   TableBody,
   TableCell,
 } from "~/components/ui/table";
-import { type Group } from "~/domain/entities/group";
 import Link from "next/link";
 import { Section, SectionContent, SectionTitle } from "~/components/section";
-import { getMembersForGroupUseCase } from "~/application/use-cases/members/get-members-for-group";
-import { getGroupsUseCase } from "~/application/use-cases/groups/get-groups.use-case";
+import { getGroupsWithMembers } from "~/services/groups";
 
 export default async function LeidingsportaalContent() {
-  const groups = await getGroupsUseCase();
+  const groups = await getGroupsWithMembers();
 
   return (
     <div className="space-y-6">
@@ -36,11 +34,11 @@ export default async function LeidingsportaalContent() {
   );
 }
 
-async function GroupCard({ group }: { group: Group }) {
-  const members = await getMembersForGroupUseCase(group.id);
-
-  console.log(members);
-
+async function GroupCard({
+  group,
+}: {
+  group: Awaited<ReturnType<typeof getGroupsWithMembers>>[number];
+}) {
   return (
     <Card>
       <CardHeader>
@@ -58,23 +56,32 @@ async function GroupCard({ group }: { group: Group }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {members.map((member) => (
-              <TableRow key={member.member.id}>
+            {group.yearlyMemberships.map((yearlyMembership) => (
+              <TableRow key={yearlyMembership.member.id}>
                 <TableCell>
-                  {member.member.name.firstName} {member.member.name.lastName}
+                  {yearlyMembership.member.firstName}{" "}
+                  {yearlyMembership.member.lastName}
                 </TableCell>
                 <TableCell>
-                  {new Date(member.member.dateOfBirth).toLocaleDateString(
-                    "nl-BE",
-                  )}
+                  {new Date(
+                    yearlyMembership.member.dateOfBirth,
+                  ).toLocaleDateString("nl-BE")}
                 </TableCell>
                 <TableCell>
-                  {member.parent.firstName} {member.parent.lastName}
+                  {yearlyMembership.member.membersParents[0]?.parent.firstName}{" "}
+                  {yearlyMembership.member.membersParents[0]?.parent.lastName}
                 </TableCell>
-                <TableCell>{member.parent.phoneNumber}</TableCell>
+                <TableCell>
+                  {
+                    yearlyMembership.member.membersParents[0]?.parent
+                      .phoneNumber
+                  }
+                </TableCell>
                 <TableCell>
                   <Button asChild size="sm" variant="outline">
-                    <Link href={`/leidingsportaal/leden/${member.member.id}`}>
+                    <Link
+                      href={`/leidingsportaal/leden/${yearlyMembership.member.id}`}
+                    >
                       Gegevens inzien
                     </Link>
                   </Button>
