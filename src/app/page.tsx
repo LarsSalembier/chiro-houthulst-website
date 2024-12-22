@@ -1,3 +1,10 @@
+import Navigation from "./navigation";
+
 export default function Home() {
-  return(<p>Chiro Houthulst</p>);
+  return (
+    <>
+      <Navigation />
+      <p>Chiro Houthulst</p>
+    </>
+  );
 }
