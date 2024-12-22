@@ -1,29 +1,50 @@
-# Create T3 App
+# Chiro Houthulst Website
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+This is the repository for the website of Chiro Houthulst. The website is built with Next.js and is hosted on Vercel. The website is available at [https://chirohouthulst.be](https://chirohouthulst.be).
 
-## What's next? How do I make an app with this?
+## Features
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- [ ] Homepage
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## TODO
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- [ ] Scaffold basic UI with mock data
+- [ ] Actually set up database (w/ Vercel Postgres)
+- [ ] Add authentication (w/ Clerk)
+- [ ] Attach DB to UI (w/ tRPC)
+- [ ] Add error management (w/ Sentry)
+- [ ] Add analytics (w/ Posthog)
+- [ ] Add ratelimiting (w/ Upstash)
 
-## Learn More
+## Development
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+To run the website locally, you need to have Node.js installed. You can install the dependencies by running:
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+```bash
+npm install
+```
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+After that, you can start the development server by running:
 
-## How do I deploy this?
+```bash
+npm run dev
+```
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+The website will be available at [http://localhost:3000](http://localhost:3000).
+
+## Deployment
+
+The website is automatically deployed to Vercel when changes are pushed to the `main` branch.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Author
+
+This project was created and is maintained by [Lars Salembier](mailto:lars.salembier@gmail.com).
+
+## Acknowledgements
+
+- [Next.js](https://nextjs.org/)
+- [Vercel](https://vercel.com/)
