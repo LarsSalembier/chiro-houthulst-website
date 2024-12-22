@@ -270,32 +270,26 @@ export const registrationFormInputDataSchema = z.object({
   permissionMedication: decisionEnumSchema.transform((value) =>
     value === "YES" ? true : false,
   ),
-  doctor: z.object({
-    firstName: getNameSchema("voornaam"),
-    lastName: getNameSchema("achternaam"),
-    phoneNumber: phoneNumberSchema,
-  }),
+  doctorFirstName: getNameSchema("voornaam"),
+  doctorLastName: getNameSchema("achternaam"),
+  doctorPhoneNumber: phoneNumberSchema,
   groupId: z.number().int().positive(),
-  yearlyMembership: z
-    .object({
-      paymentReceived: decisionEnumSchema.transform((value) =>
-        value === "YES" ? true : false,
-      ),
-      paymentMethod: paymentMethodEnumSchema
-        .optional()
-        .transform((value) => value ?? null),
-      paymentDate: z
-        .date({
-          required_error: "Geef een betalingsdatum op",
-          invalid_type_error: "Geef een geldige betalingsdatum op",
-        })
-        .min(new Date(1970, 0, 1), {
-          message: "De betalingsdatum moet na 01/01/1970 liggen",
-        })
-        .optional()
-        .transform((value) => value ?? null),
+  yearlyMembershipPaymentReceived: decisionEnumSchema.transform((value) =>
+    value === "YES" ? true : false,
+  ),
+  yearlyMembershipPaymentMethod: paymentMethodEnumSchema
+    .optional()
+    .transform((value) => value ?? null),
+  yearlyMembershipPaymentDate: z
+    .date({
+      required_error: "Geef een betalingsdatum op",
+      invalid_type_error: "Geef een geldige betalingsdatum op",
     })
-    .required(),
+    .min(new Date(1970, 0, 1), {
+      message: "De betalingsdatum moet na 01/01/1970 liggen",
+    })
+    .optional()
+    .transform((value) => value ?? null),
 });
 
 export type RegistrationFormInputData = z.infer<

@@ -12,12 +12,16 @@ const RegistrationFormContext = createContext<
   RegistrationFormContextType | undefined
 >(undefined);
 
-const STORAGE_KEY = "multistep_form_data";
+const STORAGE_KEY = "registration_form_data";
 
 function mergeParentsWithAddresses(
   current: RecursivePartial<RegistrationFormInputData["parentsWithAddresses"]>,
   updated: RecursivePartial<RegistrationFormInputData["parentsWithAddresses"]>,
 ) {
+  if (!updated) {
+    return current;
+  }
+
   return updated.map((parentWithAddress, index) => {
     return {
       ...current[index],
@@ -32,7 +36,6 @@ export default function MultistepFormContextProvider({
   children: React.ReactNode;
 }) {
   const initialFormData: RecursivePartial<RegistrationFormInputData> = {
-    memberDateOfBirth: new Date(),
     parentsWithAddresses: [
       {
         postalCode: 8650,
@@ -45,9 +48,21 @@ export default function MultistepFormContextProvider({
     RecursivePartial<RegistrationFormInputData>
   >(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved
+    const result = saved
       ? (JSON.parse(saved) as RecursivePartial<RegistrationFormInputData>)
       : initialFormData;
+
+    return {
+      ...result,
+      memberDateOfBirth: result.memberDateOfBirth
+        ? new Date(Date.parse(result.memberDateOfBirth as unknown as string))
+        : undefined,
+      yearlyMembershipPaymentDate: result.yearlyMembershipPaymentDate
+        ? new Date(
+            Date.parse(result.yearlyMembershipPaymentDate as unknown as string),
+          )
+        : undefined,
+    };
   });
 
   const updateFormData = (
@@ -97,8 +112,9 @@ export default function MultistepFormContextProvider({
         ...data.diabetes,
       },
     };
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-    setFormData(updatedData);
+    setFormData(updatedData as RecursivePartial<RegistrationFormInputData>);
   };
 
   const clearFormData = () => {

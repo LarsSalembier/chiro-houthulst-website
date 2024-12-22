@@ -27,10 +27,9 @@ const genderOptions = [
 ];
 
 export function calculateAge(birthday: Date) {
-  // console.log(birthday);
-
   const ageDifMs = Date.now() - birthday.getTime();
   const ageDate = new Date(ageDifMs);
+
   return Math.abs(ageDate.getUTCFullYear() - 1970);
 }
 
