@@ -1,7 +1,7 @@
 import { type IconProps } from "./icons.types";
 
 export default function Logo({
-  fill = "none",
+  fill = "currentColor",
   size = 24,
   height,
   width,
@@ -17,7 +17,7 @@ export default function Logo({
       {...props}
     >
       <g
-        fill="None"
+        fill={fill}
         fillOpacity="0.0"
         stroke="#000000"
         strokeOpacity="0.00"
@@ -1779,7 +1779,7 @@ C 1039.56 506.05 1049.32 504.22 1050.00 496.00
 C 1053.39 494.66 1073.83 488.25 1072.99 496.01 C 1072.15 503.77 1080.79 514.34 1072.92 518.92 C 1065.05 523.50 1052.39 515.06 1045.00 515.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="1.00" stroke="None">
+      <g fill={fill} fillOpacity="1.00" stroke="None">
         <path
           d="
 M 712.00 34.00 
@@ -2197,7 +2197,7 @@ M 714.00 211.00
 C 719.90 204.57 709.48 203.86 714.00 211.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="1.00" stroke="None">
+      <g fill={fill} fillOpacity="1.00" stroke="None">
         <path
           d="
 M 622.00 321.00 
@@ -2206,7 +2206,7 @@ C 613.15 327.87 615.90 328.60 616.00 331.00
 C 621.35 331.75 627.85 324.03 622.00 321.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="0.01" stroke="None">
+      <g fill={fill} fillOpacity="0.01" stroke="None">
         <path
           d="
 M 1092.00 325.00 
@@ -2230,14 +2230,14 @@ C 680.55 350.23 678.27 355.74 669.00 356.00 C 659.73 356.26 659.03 346.81 666.00
 C 660.25 344.24 655.29 336.81 656.00 331.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="1.00" stroke="None">
+      <g fill={fill} fillOpacity="1.00" stroke="None">
         <path
           d="
 M 826.00 343.00 
 C 829.72 343.93 837.79 344.33 835.29 338.71 C 832.80 333.08 823.03 337.05 826.00 343.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="1.00" stroke="None">
+      <g fill={fill} fillOpacity="1.00" stroke="None">
         <path
           d="
 M 744.00 345.00 
@@ -2245,7 +2245,7 @@ C 744.28 341.93 744.44 337.54 740.00 339.00
 C 739.39 341.70 740.96 345.07 744.00 345.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="1.00" stroke="None">
+      <g fill={fill} fillOpacity="1.00" stroke="None">
         <path
           d="
 M 913.00 344.00 
@@ -2281,21 +2281,21 @@ C 464.38 441.02 467.37 450.86 475.00 449.00
 C 476.05 438.62 484.52 431.99 486.00 422.00 C 487.48 412.01 477.63 402.33 486.00 393.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="1.00" stroke="None">
+      <g fill={fill} fillOpacity="1.00" stroke="None">
         <path
           d="
 M 958.00 407.00 
 C 959.41 402.82 957.33 393.79 952.78 398.78 C 948.23 403.76 952.43 408.69 958.00 407.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="1.00" stroke="None">
+      <g fill={fill} fillOpacity="1.00" stroke="None">
         <path
           d="
 M 979.00 422.00 
 C 983.64 425.29 994.96 430.24 1000.24 424.25 C 1005.52 418.26 1004.14 409.66 996.74 406.26 C 989.35 402.85 982.01 401.84 973.08 405.08 C 964.15 408.32 978.16 419.34 979.00 422.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="1.00" stroke="None">
+      <g fill={fill} fillOpacity="1.00" stroke="None">
         <path
           d="
 M 1012.00 420.00 
@@ -2314,7 +2314,7 @@ C 438.05 450.00 437.61 453.28 438.00 456.00
 C 453.46 456.70 452.15 439.88 458.00 431.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="1.00" stroke="None">
+      <g fill={fill} fillOpacity="1.00" stroke="None">
         <path
           d="
 M 1043.00 448.00 
@@ -2334,7 +2334,7 @@ C 373.98 492.85 377.43 494.99 382.00 494.00
 C 379.79 490.94 377.28 487.83 377.00 484.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="1.00" stroke="None">
+      <g fill={fill} fillOpacity="1.00" stroke="None">
         <path
           d="
 M 1045.00 515.00 
@@ -2703,7 +2703,7 @@ M 576.00 1150.00
 C 575.18 1149.18 576.74 1150.74 576.00 1150.00 Z"
         />
       </g>
-      <g fill="#FFFFFF" fillOpacity="0.00" stroke="None">
+      <g fill={fill} fillOpacity="0.00" stroke="None">
         <path
           d="
 M 1196.00 1200.00 

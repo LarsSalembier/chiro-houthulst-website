@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Navbar,
+  Navbar as NextUiNavbar,
   NavbarBrand,
   NavbarContent,
   Link,
@@ -17,13 +17,19 @@ import SearchIcon from "~/components/icons/search-icon";
 import FacebookIcon from "~/components/icons/facebook-icon";
 import InstagramIcon from "~/components/icons/instagram-icon";
 
-export default function Navigation() {
+export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const menuItems = ["Home"];
 
   return (
-    <Navbar onMenuOpenChange={setIsMenuOpen}>
+    <NextUiNavbar
+      onMenuOpenChange={setIsMenuOpen}
+      classNames={{
+        base: "container mx-auto px-4 sm:px-8 md:px-16 lg:px-32",
+        wrapper: "px-0 max-w-none",
+      }}
+    >
       <NavbarContent>
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -36,7 +42,7 @@ export default function Navigation() {
             role="presentation"
           />
           <p className="hidden font-semibold text-inherit sm:flex">
-            Chiro Houthulst
+            Chiro Sint-Jan Houthulst
           </p>
         </NavbarBrand>
       </NavbarContent>
@@ -112,6 +118,6 @@ export default function Navigation() {
           </NavbarMenuItem>
         ))}
       </NavbarMenu>
-    </Navbar>
+    </NextUiNavbar>
   );
 }
