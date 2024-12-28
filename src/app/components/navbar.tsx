@@ -11,7 +11,7 @@ import {
   NavbarMenuItem,
   Input,
 } from "@nextui-org/react";
-import ChiroHouthulstIcon from "../components/icons/chiro-houthulst-icon";
+import ChiroHouthulstIcon from "../../components/icons/chiro-houthulst-icon";
 import { useState } from "react";
 import SearchIcon from "~/components/icons/search-icon";
 import FacebookIcon from "~/components/icons/facebook-icon";
@@ -101,18 +101,7 @@ export default function Navbar() {
       <NavbarMenu>
         {menuItems.map((item, index) => (
           <NavbarMenuItem key={`${item}-${index}`}>
-            <Link
-              className="w-full"
-              color={
-                index === 2
-                  ? "primary"
-                  : index === menuItems.length - 1
-                    ? "danger"
-                    : "foreground"
-              }
-              href="#"
-              size="lg"
-            >
+            <Link className="w-full" href="/" size="lg">
               {item}
             </Link>
           </NavbarMenuItem>

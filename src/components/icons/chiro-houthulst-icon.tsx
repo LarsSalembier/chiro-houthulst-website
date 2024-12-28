@@ -1,6 +1,6 @@
 import { type IconProps } from "./icons.types";
 
-export default function Logo({
+export default function ChiroHouthulstIcon({
   fill = "currentColor",
   size = 24,
   height,

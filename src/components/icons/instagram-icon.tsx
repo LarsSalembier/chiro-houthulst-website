@@ -1,6 +1,6 @@
 import { type IconProps } from "./icons.types";
 
-export default function SearchIcon({
+export default function InstagramIcon({
   fill = "currentColor",
   size = 24,
   height,

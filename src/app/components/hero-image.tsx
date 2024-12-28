@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
-interface CardProps {
+interface HeroImageProps {
   src: string;
   alt: string;
   width: number;
@@ -13,15 +13,15 @@ interface CardProps {
   initialTransform?: string;
 }
 
-export default function Card({
+export default function HeroImage({
   src,
   alt,
   width,
   height,
-  className = "",
+  className,
   isVisible = false,
   initialTransform = "",
-}: CardProps) {
+}: HeroImageProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [style, setStyle] = useState({});
 
@@ -50,7 +50,7 @@ export default function Card({
 
   return (
     <div
-      className={`absolute overflow-hidden rounded-[1.5rem] border border-[#e4839b]/20 shadow-[0_15px_50px_rgba(160,54,83,0.1)] sm:rounded-3xl ${className}`}
+      className={`absolute overflow-hidden rounded-[1.5rem] border border-[#000]/20 shadow-[0_15px_50px_rgba(0,0,0,0.1)] sm:rounded-3xl ${className}`}
       style={style}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
