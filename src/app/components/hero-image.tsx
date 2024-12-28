@@ -55,7 +55,7 @@ export default function HeroImage({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Image src={src} alt={alt} layout="fill" objectFit="cover" />
+      <Image src={src} alt={alt} className="object-cover" fill />
     </div>
   );
 }
