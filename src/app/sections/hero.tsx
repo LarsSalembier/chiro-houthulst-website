@@ -15,8 +15,8 @@ export default function Hero() {
   }, []);
 
   return (
-    <>
-      <section className="w-full lg:max-w-[50%]">
+    <section className="flex w-full flex-col items-center justify-between lg:flex-row">
+      <div className="w-full lg:max-w-[50%]">
         <BlurFade delay={0.15}>
           <h1 className="mb-4 text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
             Welkom bij Chiro Houthulst
@@ -53,7 +53,7 @@ export default function Hero() {
             </p>
           </section>
         </BlurFade>
-      </section>
+      </div>
 
       <aside className="relative mt-8 flex min-h-[400px] w-full justify-center sm:min-h-[500px] md:min-h-[650px] lg:min-h-[600px] lg:justify-end xl:min-h-[600px]">
         <HeroImage
@@ -84,6 +84,6 @@ export default function Hero() {
           initialTransform="translate(-25%, 10%) rotate(16deg)"
         />
       </aside>
-    </>
+    </section>
   );
 }

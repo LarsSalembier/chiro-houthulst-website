@@ -15,7 +15,7 @@ export default function RootLayout({
           <div className="min-h-screen w-full">
             <Navbar />
             <DotPattern className="[mask-image:radial-gradient(50vw_circle_at_center,white,transparent)]" />
-            <main className="container mx-auto flex flex-col items-center justify-between px-4 pb-8 pt-12 sm:px-8 sm:pb-8 md:px-16 md:pt-16 lg:flex-row lg:px-32 lg:pt-0">
+            <main className="container mx-auto w-full px-4 pb-8 pt-12 sm:px-8 sm:pb-8 md:px-16 md:pt-16 lg:px-32 lg:pt-0">
               {children}
             </main>
           </div>
