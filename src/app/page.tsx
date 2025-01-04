@@ -1,7 +1,7 @@
 "use client";
 
 import Chirozondagen from "./sections/chirozondagen";
-import { EventsCarousel } from "./sections/events-carousel";
+import Events from "./sections/events";
 import Hero from "./sections/hero";
 import Locatie from "./sections/locatie";
 
@@ -10,7 +10,7 @@ export default function Home() {
     <>
       <Hero />
       <Chirozondagen />
-      <EventsCarousel />
+      <Events />
       <Locatie />
     </>
   );
