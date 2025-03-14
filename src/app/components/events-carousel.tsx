@@ -9,7 +9,7 @@ import React, {
 import { motion } from "framer-motion";
 import Image, { type ImageProps } from "next/image";
 import {
-  Card as NextUICard,
+  Card as HeroUICard,
   CardHeader,
   CardFooter,
   Button,
@@ -20,8 +20,8 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@nextui-org/react";
-import ArrowLeftIcon from "../../components/icons/arrow-left-icon";
-import ArrowRightIcon from "../../components/icons/arrow-right-icon";
+import ArrowLeftIcon from "~/components/icons/arrow-left-icon";
+import ArrowRightIcon from "~/components/icons/arrow-right-icon";
 
 interface CarouselProps {
   events: ChiroEvent[];
@@ -200,29 +200,29 @@ export const Card = ({
           </ModalBody>
         </ModalContent>
       </Modal>
-      <NextUICard
+      <HeroUICard
         isPressable
         onPress={onOpen}
-        className="relative flex h-80 w-56 flex-col justify-between rounded-3xl p-6 md:h-[40rem] md:w-96"
+        className="relative flex h-80 w-56 flex-col justify-between rounded-3xl p-6 md:h-[30rem] md:w-80"
       >
         <div className="absolute inset-x-0 top-0 z-10 h-1/2 bg-gradient-to-b from-black/70 via-black/30 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 z-10 h-1/2 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-        <CardHeader className="z-20 text-balance rounded-none p-0 text-left text-xl font-semibold text-white md:text-3xl">
-          {event.title}
+        <CardHeader className="prose z-20 rounded-none p-0 text-start md:prose-xl">
+          <h3 className="text-white">{event.title}</h3>
         </CardHeader>
 
         <CardFooter className="z-20 rounded-none p-0">
           <div className="flex flex-col items-start">
             <motion.p
               layoutId={layout ? `date-${formatDate(event.date)}` : undefined}
-              className="text-left font-sans text-base font-medium text-white md:text-lg"
+              className="text-left text-base font-medium text-white md:text-lg"
             >
               {formatDate(event.date)}
             </motion.p>
             <motion.p
               layoutId={layout ? `location-${event.location}` : undefined}
-              className="mt-1 text-left font-sans text-sm text-white/80"
+              className="mt-1 text-left text-sm text-white/80 md:text-base"
             >
               {event.location}
             </motion.p>
@@ -235,7 +235,7 @@ export const Card = ({
           fill
           className="absolute inset-0 object-cover"
         />
-      </NextUICard>
+      </HeroUICard>
     </>
   );
 };

@@ -4,10 +4,10 @@ import { EventsCarousel } from "~/app/components/events-carousel";
 
 export default function Events() {
   return (
-    <section className="w-full pb-16">
-      <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
-        Activiteiten
-      </h2>
+    <section className="w-full">
+      <div className="prose md:prose-xl mb-8">
+        <h2>Volgende Activiteiten</h2>
+      </div>
       <EventsCarousel events={events} />
     </section>
   );
