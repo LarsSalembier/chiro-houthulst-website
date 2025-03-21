@@ -1,6 +1,6 @@
 "use client";
-import { useCallback, useContext, useState } from "react";
-import Image, { type ImageProps } from "next/image";
+import { useCallback, useContext } from "react";
+import Image from "next/image";
 import {
   Card,
   CardHeader,
@@ -10,7 +10,6 @@ import {
   ModalContent,
   ModalHeader,
   useDisclosure,
-  cn,
 } from "@nextui-org/react";
 import { CarouselContext } from "./carousel";
 
