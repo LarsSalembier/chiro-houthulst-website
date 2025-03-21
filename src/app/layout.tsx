@@ -1,104 +1,100 @@
 import "~/styles/globals.css";
-
-import { ThemeProvider } from "~/providers/theme-provider";
-import { ClerkProvider } from "@clerk/nextjs";
-import CSPostHogProvider from "~/providers/analytics/analytics-provider";
-import dynamic from "next/dynamic";
-import { Toaster } from "~/components/ui/sonner";
-import { type Metadata, type Viewport } from "next";
-import { siteConfig } from "~/config/site";
-import { fontSans } from "~/lib/fonts";
-import { cn } from "~/lib/utils";
-import "reflect-metadata";
-import { NextUIProvider } from "@nextui-org/react";
+import Navbar from "./navbar";
+import DotPattern from "~/components/ui/dot-pattern";
+import { Providers } from "./providers";
+import { type Metadata } from "next";
+import { Footer } from "./footer";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://chirohouthulst.be"),
   title: {
-    default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
+    default: "Chiro Sint-Jan Houthulst",
+    template: "%s | Chiro Houthulst",
   },
-  metadataBase: new URL(siteConfig.url),
-  description: siteConfig.description,
-  keywords: siteConfig.keywords,
-  authors: [
-    {
-      name: siteConfig.author,
-      url: siteConfig.authorUrl,
-    },
+  description:
+    "De Chiro is een jeugdbeweging voor jongens en meisjes van 6 tot 18 jaar in Houthulst. Elke zondag van 14u tot 17u is er Chiro.",
+  keywords: [
+    "Chiro",
+    "Houthulst",
+    "jeugdbeweging",
+    "jeugdvereniging",
+    "jeugd",
+    "spel",
+    "activiteiten",
   ],
-  creator: siteConfig.author,
+  authors: [
+    { name: "Chiro Houthulst", url: "https://chirohouthulst.be" },
+    { name: "Lars Salembier", url: "https://github.com/larssalembier" },
+  ],
+  creator: "Chiro Houthulst",
+  publisher: "Chiro Houthulst",
+  formatDetection: {
+    email: true,
+    address: true,
+    telephone: true,
+  },
   openGraph: {
     type: "website",
     locale: "nl_BE",
-    url: siteConfig.url,
-    title: siteConfig.name,
-    description: siteConfig.description,
-    siteName: siteConfig.name,
+    url: "https://chirohouthulst.be",
+    siteName: "Chiro Houthulst",
+    title: "Chiro Houthulst",
+    description:
+      "De Chiro is een jeugdbeweging voor jongens en meisjes van 6 tot 18 jaar in Houthulst.",
     images: [
       {
-        url: siteConfig.ogImage,
-        width: 1200,
-        height: 630,
-        alt: siteConfig.name,
+        url: "https://utfs.io/f/9igZHUjyeBOxaBH6J4oXDhskiH8OxmF37l2ceQIw5LuRqYWZ",
+        width: 500,
+        height: 250,
+        alt: "De openingsformatie bij Chiro Houthulst",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: siteConfig.name,
-    description: siteConfig.description,
-    images: [siteConfig.ogImage],
-    site: siteConfig.authorTwitterHandle,
+    title: "Chiro Houthulst",
+    description:
+      "De Chiro is een jeugdbeweging voor jongens en meisjes van 6 tot 18 jaar in Houthulst.",
+    images: [
+      "https://utfs.io/f/9igZHUjyeBOxaBH6J4oXDhskiH8OxmF37l2ceQIw5LuRqYWZ",
+    ],
   },
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
-  manifest: `${siteConfig.url}/site.webmanifest`,
+  // TODO: get Google verification
+  // verification: {
+  //   google: "your-google-site-verification", // You'll need to replace this with your actual Google verification code
+  // },
 };
 
-export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
-  ],
-};
-
-const PostHogPageView = dynamic(
-  () => import("~/providers/analytics/posthog-page-view"),
-  {
-    ssr: false,
-  },
-);
-
-interface RootLayoutProps {
+export default function RootLayout({
+  children,
+}: {
   children: React.ReactNode;
-}
-
-export default function RootLayout({ children }: RootLayoutProps) {
+}) {
   return (
-    <ClerkProvider>
-      <CSPostHogProvider>
-        <html lang="nl">
-          <body
-            className={cn(
-              "min-h-screen bg-background font-sans antialiased",
-              fontSans.className,
-            )}
-          >
-            <PostHogPageView />
-            <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-              <NextUIProvider locale="nl-BE">
-                <div className="relative flex min-h-screen flex-col bg-background">
-                  {children}
-                </div>
-                <Toaster />
-              </NextUIProvider>
-            </ThemeProvider>
-          </body>
-        </html>
-      </CSPostHogProvider>
-    </ClerkProvider>
+    <html lang="en" className="light">
+      <body>
+        <Providers>
+          <div className="min-h-screen w-full">
+            <Navbar />
+            <DotPattern className="[mask-image:radial-gradient(50vw_circle_at_center,white,transparent)]" />
+            <main className="container mx-auto w-full px-4 pb-8 pt-12 sm:pb-8 md:px-16 md:pt-16 lg:pt-0 xl:px-32">
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </Providers>
+      </body>
+    </html>
   );
 }
