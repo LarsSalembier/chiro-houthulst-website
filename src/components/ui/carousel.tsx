@@ -120,7 +120,12 @@ export function Carousel<T>({
           </div>
         </div>
         <div className="flex justify-end gap-2">
-          <Button isIconOnly onPress={scrollLeft} isDisabled={!canScrollLeft}>
+          <Button
+            isIconOnly
+            onPress={scrollLeft}
+            isDisabled={!canScrollLeft}
+            id="chirozondagen"
+          >
             <ArrowLeftIcon className="h-6 w-6" />
           </Button>
           <Button isIconOnly onPress={scrollRight} isDisabled={!canScrollRight}>

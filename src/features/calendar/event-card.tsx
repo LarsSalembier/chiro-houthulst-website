@@ -1,13 +1,7 @@
 import { motion } from "framer-motion";
 import { ImageCard } from "~/components/ui/image-card";
 import { formatDate } from "~/lib/date-utils";
-
-interface Event {
-  src: string;
-  title: string;
-  date: Date;
-  location: string;
-}
+import { Event } from "./event";
 
 interface EventCardProps {
   event: Event;

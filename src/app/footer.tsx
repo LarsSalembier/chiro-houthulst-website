@@ -14,7 +14,7 @@ export function Footer() {
     >
       <div className="grid w-full grid-cols-1 md:grid-cols-2 md:gap-16 lg:gap-32">
         <BlogText>
-          <h2>Contact</h2>
+          <h2 id="contact">Contact</h2>
           <h3>Chiro Sint-Jan Houthulst</h3>
           <Address
             addressLine1="Jonkershovestraat 101S"

@@ -17,52 +17,80 @@ const LEADER_COUNT = 26;
 
 const events: Event[] = [
   {
-    title: "Afdelingsweekend Speelclub",
-    date: new Date("2024-02-16"),
-    location: "Jeugdverblijf De Karmel, Brugge",
-    src: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&q=80",
+    title: "Chironamiddag",
+    date: new Date("2025-03-23"),
+    location: "Chiroheem",
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxWcz6EUKtCqYzi3O4MHg1EXoT5U9vkldDnSej",
   },
   {
-    title: "Startdag Chiro",
-    date: new Date("2024-09-15"),
-    location: "Chirolokaal & Speelplein",
-    src: "https://images.unsplash.com/photo-1472162072942-cd5147eb3902?auto=format&fit=crop&q=80",
+    title: "Chironamiddag",
+    date: new Date("2025-03-30"),
+    location: "Chiroheem",
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxtWwOaA4pCQiSz4dKhcN86bWYIM7Fn2Au9lvD",
   },
   {
-    title: "Spaghettiavond",
-    date: new Date("2024-03-23"),
-    location: "Parochiezaal",
-    src: "https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?auto=format&fit=crop&q=80",
+    title: "Chironamiddag",
+    date: new Date("2025-04-06"),
+    location: "Chiroheem",
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxRHsihiRMwjXNhILV7B2sObk6Qv8MtegdHZxm",
   },
   {
-    title: "Chirokamp 2024",
-    date: new Date("2024-07-21"),
-    location: "Kampplaats Westouter",
-    src: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&q=80",
+    title: "Chironamiddag",
+    date: new Date("2025-04-27"),
+    location: "Chiroheem",
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxV99l7dZRdA0O8vCVJBplHYafngu5DrWQjSq6",
   },
   {
-    title: "Leidingsweekend",
-    date: new Date("2024-04-19"),
-    location: "De Hoge Rielen, Kasterlee",
-    src: "https://images.unsplash.com/photo-1517164850305-99a3e65bb47e?auto=format&fit=crop&q=80",
+    title: "Voetbalcompetitie",
+    date: new Date("2025-05-01"),
+    location: "Vrijetijdscampus Houthulst",
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxkma0GmeG3xVfnFN2ULq8KbrpuCIhaBwX5v6t",
   },
   {
-    title: "Groepsfeest",
-    date: new Date("2024-05-25"),
-    location: "Sporthal",
-    src: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80",
+    title: "Chironamiddag",
+    date: new Date("2025-05-04"),
+    location: "Chiroheem",
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxeZW8o6STBf9tzw1Y8AXr75mbV0Olok3EcGxd",
   },
   {
-    title: "Aspiweekend",
-    date: new Date("2024-03-08"),
-    location: "Jeugdverblijf Hoogstade",
-    src: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&q=80",
+    title: "Chironamiddag",
+    date: new Date("2025-05-18"),
+    location: "Chiroheem",
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxJg8MIXEVk2XoiFmSbQ9WCwBvZfs6YH4hPl3R",
   },
   {
-    title: "Dia-avond Kamp",
-    date: new Date("2024-09-28"),
-    location: "Chirolokaal",
-    src: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&q=80",
+    title: "Chironamiddag",
+    date: new Date("2025-05-25"),
+    location: "Chiroheem",
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOx6pLe0TfYEVRTYsWdzytQDUr1jawq7mnNLI2C",
+  },
+  {
+    title: "Chirocafé en kip met frietjes",
+    date: new Date("2025-05-29"),
+    location: "Markt Houthulst",
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxkma0GmeG3xVfnFN2ULq8KbrpuCIhaBwX5v6t",
+  },
+  {
+    title: "Chironamiddag",
+    date: new Date("2025-06-15"),
+    location: "Chiroheem",
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOx6pf3r8PYEVRTYsWdzytQDUr1jawq7mnNLI2C",
+  },
+  {
+    title: "Chironamiddag",
+    date: new Date("2025-06-22"),
+    location: "Chiroheem",
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxRFAwh7MwjXNhILV7B2sObk6Qv8MtegdHZxmR",
+  },
+  {
+    title: "Groepsuitstap",
+    date: new Date("2025-06-29"),
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxZV0BvNWcs7NMztbL2UP6yoa8wfTeguH3lmCn",
+  },
+  {
+    title: "Vertrek KAMP!",
+    date: new Date("2025-07-20"),
+    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxxYCc1kwdCYVMAq9142X6cluvFs7kPGpI8jDZ",
   },
 ];
 
@@ -70,6 +98,7 @@ export default function Home() {
   return (
     <>
       <HeroSection
+        id="welkom"
         title="Welkom bij Chiro Houthulst"
         subtitle="De Chiro is een jeugdbeweging voor jongens en meisjes van 6 tot 18 jaar. Elke zondag van 14u tot 17u is er Chiro in Houthulst. Kom zeker eens langs!"
         stats={{
@@ -77,7 +106,7 @@ export default function Home() {
           leiding: LEADER_COUNT,
         }}
       />
-      <Section title="Komende evenementen">
+      <Section title="Kalender" id="kalender">
         <Carousel
           items={events}
           renderItem={(event, index) => (
@@ -104,7 +133,7 @@ export default function Home() {
             staat altijd klaar om de leukste activiteiten te organiseren,
             aangepast aan de verschillende leeftijden.
           </p>
-          <p>
+          <p id="kamp">
             Ben je nieuwsgierig en wil je eens proeven van de Chiro? Kom gerust
             een kijkje nemen op zondag. Iedereen is welkom, of je nu voor de
             eerste keer komt of al jaren meedraait!
@@ -114,7 +143,7 @@ export default function Home() {
       <SplitSection>
         <BlogText>
           <h2>Kamp</h2>
-          <p>
+          <p id="inschrijven">
             Elk jaar gaan we op kamp van 20 t.e.m. 30 juli. Als je mee wil op
             kamp, vragen we je om tijdens het jaar minstens vijf keer naar de
             Chiro te komen (en liefst zo vaak mogelijk). Zo kunnen de leiding en
@@ -141,7 +170,7 @@ export default function Home() {
         />
         <BlogText>
           <h2>Inschrijven</h2>
-          <p>
+          <p id="uniform">
             Inschrijven in de Chiro kost €40 en kan elke zondag bij de leiding.
             Zo zijn jullie ook verzekerd. Je kan altijd eens de Chiro komen
             uittesten, inschrijven is niet verplicht vanaf de eerste zondag!

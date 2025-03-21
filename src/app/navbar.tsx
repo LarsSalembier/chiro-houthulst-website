@@ -10,6 +10,7 @@ import {
   NavbarMenu,
   NavbarMenuItem,
   Input,
+  NavbarItem,
 } from "@nextui-org/react";
 import { useState } from "react";
 import SearchIcon from "~/components/icons/search-icon";
@@ -21,20 +22,33 @@ import NextLink from "next/link";
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const menuItems = ["Home"];
+  const menuItems = [
+    { name: "Welkom", href: "/" },
+    { name: "Kalender", href: "/#kalender" },
+    { name: "Chirozondagen", href: "/#chirozondagen" },
+    { name: "Kamp", href: "/#kamp" },
+    { name: "Inschrijven", href: "/#inschrijven" },
+    { name: "Uniform", href: "/#uniform" },
+    { name: "Verzekering", href: "/verzekeringen" },
+    { name: "Contact", href: "#contact" },
+    { name: "Privacyverklaring", href: "/privacyverklaring" },
+    { name: "Cookie Policy", href: "/cookie-policy" },
+    { name: "Leidingsportaal", href: "/leidingsportaal" },
+  ];
 
   return (
     <NextUiNavbar
+      isMenuOpen={isMenuOpen}
       onMenuOpenChange={setIsMenuOpen}
       classNames={{
-        base: "container mx-auto px-4 sm:px-8 md:px-16 lg:px-32",
+        base: "container mx-auto px-4 sm:px-8 md:px-16 xl:px-32",
         wrapper: "px-0 max-w-none",
       }}
     >
-      <NavbarContent>
+      <NavbarContent className="flex gap-6">
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          className="sm:hidden"
+          className="lg:hidden"
         />
         <NextLink href="/">
           <NavbarBrand className="flex gap-2">
@@ -44,15 +58,40 @@ export default function Navbar() {
               role="presentation"
             />
             <p className="hidden font-semibold text-inherit sm:flex">
-              Chiro Sint-Jan Houthulst
+              Sint-Jan Houthulst
             </p>
           </NavbarBrand>
         </NextLink>
+        <NavbarItem className="hidden lg:flex">
+          <Link href="/#kalender" color="foreground">
+            Kalender
+          </Link>
+        </NavbarItem>
+        <NavbarItem className="hidden lg:flex">
+          <Link href="/#inschrijven" color="foreground">
+            Inschrijven
+          </Link>
+        </NavbarItem>
+        <NavbarItem className="hidden lg:flex">
+          <Link href="/verzekeringen" color="foreground">
+            Verzekering
+          </Link>
+        </NavbarItem>
+        <NavbarItem className="hidden xl:flex">
+          <Link href="/#chirozondagen" color="foreground">
+            Zondag
+          </Link>
+        </NavbarItem>
+        <NavbarItem className="hidden xl:flex">
+          <Link href="/#kamp" color="foreground">
+            Kamp
+          </Link>
+        </NavbarItem>
       </NavbarContent>
 
       <NavbarContent as="div" justify="end" className="flex w-full gap-4">
         <Input
-          className="hidden sm:flex"
+          className="hidden max-w-64 sm:flex"
           placeholder="Zoek op de website..."
           startContent={
             <SearchIcon
@@ -102,10 +141,15 @@ export default function Navbar() {
         </div>
       </NavbarContent>
       <NavbarMenu>
-        {menuItems.map((item, index) => (
-          <NavbarMenuItem key={`${item}-${index}`}>
-            <Link className="w-full" href="/" size="lg">
-              {item}
+        {menuItems.map((item) => (
+          <NavbarMenuItem key={item.href}>
+            <Link
+              className="w-full"
+              href={item.href}
+              size="lg"
+              onPress={() => setIsMenuOpen(false)}
+            >
+              {item.name}
             </Link>
           </NavbarMenuItem>
         ))}

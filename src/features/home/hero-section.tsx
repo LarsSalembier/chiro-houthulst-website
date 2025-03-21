@@ -1,12 +1,13 @@
 "use client";
 
-import { Button } from "@nextui-org/react";
+import { Button, Link } from "@nextui-org/react";
 import { type ReactNode } from "react";
 import BlurFade from "~/components/animation/blur-fade";
 import AnimatedImage from "~/components/ui/animated-image";
 import SplitSection from "~/components/ui/split-section";
 
 interface HeroSectionProps {
+  id?: string;
   title: string;
   subtitle: string;
   stats: Record<string, number>;
@@ -14,6 +15,7 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({
+  id,
   title,
   subtitle,
   stats,
@@ -23,7 +25,10 @@ export default function HeroSection({
     <SplitSection>
       <div className="w-full lg:max-w-[50%]">
         <BlurFade delay={0.15}>
-          <h1 className="mb-4 text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+          <h1
+            className="mb-4 text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
+            id={id}
+          >
             {title}
           </h1>
         </BlurFade>
@@ -35,7 +40,13 @@ export default function HeroSection({
         </BlurFade>
 
         <BlurFade delay={0.25}>
-          <Button size="lg" color="primary" className="mb-8">
+          <Button
+            size="lg"
+            color="primary"
+            className="mb-8"
+            as={Link}
+            href="/#inschrijven"
+          >
             Inschrijven
           </Button>
         </BlurFade>
