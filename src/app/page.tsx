@@ -195,7 +195,6 @@ export default function Home() {
           <Button
             as={Link}
             variant="solid"
-            color="primary"
             showAnchorIcon
             className="not-prose"
             size="lg"

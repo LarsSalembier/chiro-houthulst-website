@@ -9,7 +9,7 @@ interface BlogTextProps {
 
 export default function BlogText({ className, children }: BlogTextProps) {
   return (
-    <div className={cn("prose w-full self-start md:prose-xl", className)}>
+    <div className={cn("prose w-full self-start md:prose-lg", className)}>
       <BlurFade delay={0.15}>{children}</BlurFade>
     </div>
   );

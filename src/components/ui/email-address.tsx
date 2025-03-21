@@ -15,8 +15,8 @@ export default function EmailAddress({
   return (
     <Link
       href={`mailto:${address}`}
+      className={cn("inline-flex gap-1 text-base md:text-lg", className)}
       {...props}
-      className={cn("flex items-center gap-1", className)}
     >
       <MailIcon size={20} />
       {address}

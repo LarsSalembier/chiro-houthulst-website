@@ -16,7 +16,7 @@ export default function PhoneNumber({
     <Link
       href={`tel:${number}`}
       {...props}
-      className={cn("flex items-center gap-1", className)}
+      className={cn("flex items-center gap-1 text-base md:text-lg", className)}
     >
       <PhoneIcon size={18} />
       {number}

@@ -18,7 +18,10 @@ export default function Address({
   ...props
 }: AddressProps) {
   return (
-    <address {...props} className={cn("leading-none", className)}>
+    <address
+      {...props}
+      className={cn("font-semibold not-italic leading-none", className)}
+    >
       {addressLine1 && <p>{addressLine1}</p>}
       {addressLine2 && <p>{addressLine2}</p>}
       {city && postalCode && (

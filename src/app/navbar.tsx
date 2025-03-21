@@ -16,6 +16,7 @@ import SearchIcon from "~/components/icons/search-icon";
 import FacebookIcon from "~/components/icons/facebook-icon";
 import InstagramIcon from "~/components/icons/instagram-icon";
 import ChiroHouthulstIcon from "~/components/icons/chiro-houthulst-icon";
+import NextLink from "next/link";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -35,16 +36,18 @@ export default function Navbar() {
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="sm:hidden"
         />
-        <NavbarBrand className="flex gap-2">
-          <ChiroHouthulstIcon
-            aria-hidden="true"
-            focusable="false"
-            role="presentation"
-          />
-          <p className="hidden font-semibold text-inherit sm:flex">
-            Chiro Sint-Jan Houthulst
-          </p>
-        </NavbarBrand>
+        <NextLink href="/">
+          <NavbarBrand className="flex gap-2">
+            <ChiroHouthulstIcon
+              aria-hidden="true"
+              focusable="false"
+              role="presentation"
+            />
+            <p className="hidden font-semibold text-inherit sm:flex">
+              Chiro Sint-Jan Houthulst
+            </p>
+          </NavbarBrand>
+        </NextLink>
       </NavbarContent>
 
       <NavbarContent as="div" justify="end" className="flex w-full gap-4">
