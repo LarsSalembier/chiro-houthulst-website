@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@nextui-org/react";
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import BlurFade from "~/components/animation/blur-fade";
 import AnimatedImage from "~/components/ui/animated-image";
 import SplitSection from "~/components/ui/split-section";

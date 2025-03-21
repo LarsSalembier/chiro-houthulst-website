@@ -7,7 +7,7 @@ import { type Metadata } from "next";
 export const metadata: Metadata = {
   metadataBase: new URL("https://chirohouthulst.be"),
   title: {
-    default: "Chiro Houthulst",
+    default: "Chiro Sint-Jan Houthulst",
     template: "%s | Chiro Houthulst",
   },
   description:
@@ -28,9 +28,9 @@ export const metadata: Metadata = {
   creator: "Chiro Houthulst",
   publisher: "Chiro Houthulst",
   formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
+    email: true,
+    address: true,
+    telephone: true,
   },
   openGraph: {
     type: "website",
@@ -42,10 +42,10 @@ export const metadata: Metadata = {
       "De Chiro is een jeugdbeweging voor jongens en meisjes van 6 tot 18 jaar in Houthulst.",
     images: [
       {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Chiro Houthulst",
+        url: "https://utfs.io/f/9igZHUjyeBOxaBH6J4oXDhskiH8OxmF37l2ceQIw5LuRqYWZ",
+        width: 500,
+        height: 250,
+        alt: "De openingsformatie bij Chiro Houthulst",
       },
     ],
   },
@@ -54,7 +54,9 @@ export const metadata: Metadata = {
     title: "Chiro Houthulst",
     description:
       "De Chiro is een jeugdbeweging voor jongens en meisjes van 6 tot 18 jaar in Houthulst.",
-    images: ["/og-image.jpg"],
+    images: [
+      "https://utfs.io/f/9igZHUjyeBOxaBH6J4oXDhskiH8OxmF37l2ceQIw5LuRqYWZ",
+    ],
   },
   robots: {
     index: true,
