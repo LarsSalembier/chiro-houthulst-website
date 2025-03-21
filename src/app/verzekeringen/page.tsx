@@ -3,7 +3,6 @@ import { type Metadata } from "next";
 import DownloadIcon from "~/components/icons/download-icon";
 import MailIcon from "~/components/icons/mail-icon";
 import BlogText from "~/components/ui/blog-text";
-import EmailAddress from "~/components/ui/email-address";
 
 export const metadata: Metadata = {
   title: "Verzekeringen",
