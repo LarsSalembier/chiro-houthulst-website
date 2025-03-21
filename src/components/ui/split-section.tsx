@@ -13,7 +13,7 @@ export default function SplitSection({
   return (
     <section
       className={cn(
-        "flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-8",
+        "flex w-full flex-col items-center justify-between gap-4 lg:flex-row lg:gap-8 lg:py-8",
         className,
       )}
     >

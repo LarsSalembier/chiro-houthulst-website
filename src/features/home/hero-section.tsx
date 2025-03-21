@@ -57,7 +57,7 @@ export default function HeroSection({
 
       <aside className="relative mt-8 flex min-h-[450px] w-full justify-center sm:min-h-[500px] md:min-h-[650px] lg:min-h-[600px] lg:justify-end xl:min-h-[600px]">
         <AnimatedImage
-          src="https://utfs.io/f/9igZHUjyeBOxaBH6J4oXDhskiH8OxmF37l2ceQIw5LuRqYWZ"
+          src="https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxaBH6J4oXDhskiH8OxmF37l2ceQIw5LuRqYWZ"
           alt="Openingsformatie van de Chiro"
           width={490}
           height={259}
@@ -65,15 +65,15 @@ export default function HeroSection({
           initialTransform="translate(-50%, -120%) rotate(8deg)"
         />
         <AnimatedImage
-          src="https://utfs.io/f/9igZHUjyeBOxOHjQYQDLdrcJxV1NFnGgOwqp5MHQKjo39f8E"
-          alt="Groepsfoto op zondag"
+          src="https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxfzT7N1nsk5mUnuYoVwLhe9EtXTpIW3KqxRFi"
+          alt="Groepsfoto van de leidingsploeg"
           width={300}
           height={300}
           className="absolute left-1/2 top-1/2 w-[200px] -translate-x-1/2 -translate-y-1/2 sm:w-[260px] md:w-[300px] lg:w-[220px] xl:w-[260px]"
           initialTransform="translate(-80%, -30%) rotate(-8deg)"
         />
         <AnimatedImage
-          src="https://utfs.io/f/9igZHUjyeBOxgePVg0rqKXTNnk8OeDP5t9HQuFpmAbJi6vla"
+          src="https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxgePVg0rqKXTNnk8OeDP5t9HQuFpmAbJi6vla"
           alt="Een optreden van de leden bij het kampvuur"
           width={300}
           height={300}
