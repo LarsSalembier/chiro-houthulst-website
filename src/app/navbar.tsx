@@ -11,11 +11,11 @@ import {
   NavbarMenuItem,
   Input,
 } from "@nextui-org/react";
-import ChiroHouthulstIcon from "../../components/icons/chiro-houthulst-icon";
 import { useState } from "react";
 import SearchIcon from "~/components/icons/search-icon";
 import FacebookIcon from "~/components/icons/facebook-icon";
 import InstagramIcon from "~/components/icons/instagram-icon";
+import ChiroHouthulstIcon from "~/components/icons/chiro-houthulst-icon";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

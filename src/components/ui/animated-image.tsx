@@ -3,27 +3,31 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
-interface HeroImageProps {
+interface AnimatedImageProps {
   src: string;
   alt: string;
   width: number;
   height: number;
   className?: string;
-  isVisible?: boolean;
   initialTransform?: string;
 }
 
-export default function HeroImage({
+export default function AnimatedImage({
   src,
   alt,
   width,
   height,
   className,
-  isVisible = false,
   initialTransform = "",
-}: HeroImageProps) {
+}: AnimatedImageProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [style, setStyle] = useState({});
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const rotateMatch = /rotate\([^)]+\)/.exec(initialTransform);
