@@ -1,50 +1,94 @@
 # Chiro Houthulst Website
 
-This is the repository for the website of Chiro Houthulst. The website is built with Next.js and is hosted on Vercel. The website is available at [https://chirohouthulst.be](https://chirohouthulst.be).
+De officiële website van Chiro Sint-Jan Houthulst, gebouwd met Next.js 14 en TypeScript.
 
-## Features
+## Technologieën
 
-- [ ] Homepage
+- **Framework:** Next.js 14
+- **Taal:** TypeScript
+- **Styling:** Tailwind CSS
+- **UI Componenten:** NextUI
+- **Database:** PostgreSQL met Drizzle ORM
+- **Analytics:** PostHog
+- **Deployment:** Vercel
 
-## TODO
+## Ontwikkeling
 
-- [ ] Scaffold basic UI with mock data
-- [ ] Actually set up database (w/ Vercel Postgres)
-- [ ] Add authentication (w/ Clerk)
-- [ ] Attach DB to UI (w/ tRPC)
-- [ ] Add error management (w/ Sentry)
-- [ ] Add analytics (w/ Posthog)
-- [ ] Add ratelimiting (w/ Upstash)
+### Vereisten
 
-## Development
+- Node.js 18.17 of hoger
+- pnpm 8.9.2
+- PostgreSQL database
 
-To run the website locally, you need to have Node.js installed. You can install the dependencies by running:
+### Installatie
+
+1. Clone de repository:
+
+   ```bash
+   git clone https://github.com/yourusername/chirohouthulst-website.git
+   cd chirohouthulst-website
+   ```
+
+2. Installeer dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+3. Maak een `.env` bestand aan in de root van het project:
+
+   ```env
+   DATABASE_URL="postgresql://user:password@localhost:5432/chirohouthulst"
+   POSTHOG_API_KEY="your-posthog-api-key"
+   POSTHOG_HOST="your-posthog-host"
+   ```
+
+4. Start de development server:
+   ```bash
+   pnpm dev
+   ```
+
+### Database
+
+De website gebruikt PostgreSQL met Drizzle ORM voor data management. Database migraties kunnen worden uitgevoerd met de volgende commando's:
 
 ```bash
-npm install
+# Genereer migraties
+pnpm db:generate
+
+# Push migraties naar de database
+pnpm db:migrate
+
+# Open Drizzle Studio (database GUI)
+pnpm db:studio
 ```
 
-After that, you can start the development server by running:
+### Beschikbare Scripts
 
-```bash
-npm run dev
+- `pnpm dev` - Start de development server
+- `pnpm build` - Bouw de productieversie
+- `pnpm start` - Start de productieserver
+- `pnpm lint` - Voer linting uit
+- `pnpm format:write` - Format code met Prettier
+- `pnpm typecheck` - Controleer TypeScript types
+
+## Project Structuur
+
 ```
-
-The website will be available at [http://localhost:3000](http://localhost:3000).
+src/
+├── app/                    # Next.js app router
+│   └── page.tsx           # Homepage
+├── components/            # Herbruikbare componenten
+├── features/             # Feature-specifieke code
+├── server/               # Server-side code
+│   └── db/               # Database configuratie
+└── styles/               # Global styles
+```
 
 ## Deployment
 
-The website is automatically deployed to Vercel when changes are pushed to the `main` branch.
+De website wordt automatisch gedeployed naar Vercel wanneer er wordt gepusht naar de main branch.
 
-## License
+## Licentie
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Author
-
-This project was created and is maintained by [Lars Salembier](mailto:lars.salembier@gmail.com).
-
-## Acknowledgements
-
-- [Next.js](https://nextjs.org/)
-- [Vercel](https://vercel.com/)
+Dit project is privé en alle rechten zijn voorbehouden aan Chiro Sint-Jan Houthulst.
