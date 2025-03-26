@@ -18,6 +18,7 @@ import FacebookIcon from "~/components/icons/facebook-icon";
 import InstagramIcon from "~/components/icons/instagram-icon";
 import ChiroHouthulstIcon from "~/components/icons/chiro-houthulst-icon";
 import NextLink from "next/link";
+import { SignedIn, UserButton } from "@clerk/nextjs";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -138,6 +139,9 @@ export default function Navbar() {
           >
             <InstagramIcon size={24} />
           </Button>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
         </div>
       </NavbarContent>
       <NavbarMenu>
