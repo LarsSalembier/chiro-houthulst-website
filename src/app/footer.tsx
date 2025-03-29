@@ -55,24 +55,20 @@ export function Footer() {
         <BlogText>
           <h2 className="hidden md:flex">Overig</h2>
           <h3>Volg ons</h3>
-          <ul>
-            <li>
-              <Link
-                href="https://www.facebook.com/chirohouthulst"
-                className="flex items-center gap-2 text-base md:text-lg"
-              >
-                <FacebookIcon /> Facebook
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="https://www.instagram.com/chirohouthulst"
-                className="flex items-center gap-2 text-base md:text-lg"
-              >
-                <InstagramIcon /> Instagram
-              </Link>
-            </li>
-          </ul>
+          <div className="flex flex-col gap-3 lg:gap-4">
+            <Link
+              href="https://www.facebook.com/chirohouthulst"
+              className="flex items-center gap-2 text-base md:text-lg"
+            >
+              <FacebookIcon /> Facebook
+            </Link>
+            <Link
+              href="https://www.instagram.com/chirohouthulst"
+              className="flex items-center gap-2 text-base md:text-lg"
+            >
+              <InstagramIcon /> Instagram
+            </Link>
+          </div>
           <h3>Juridisch</h3>
           <p>
             Lees onze{" "}
