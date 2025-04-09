@@ -1,5 +1,5 @@
-import { cn } from "@heroui/react";
 import { type ReactNode } from "react";
+import { cn } from "~/lib/cn";
 
 interface SplitSectionProps {
   className?: string;

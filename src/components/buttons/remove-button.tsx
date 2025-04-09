@@ -1,5 +1,5 @@
 import { Button } from "@heroui/button";
-import { Link } from "@heroui/react";
+import { Link } from "@heroui/link";
 import TrashIcon from "../icons/trash-icon";
 
 interface CreateButtonProps {

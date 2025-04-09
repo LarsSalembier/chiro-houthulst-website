@@ -1,6 +1,6 @@
 import { Button } from "@heroui/button";
 import PlusIcon from "../icons/plus-icon";
-import { Link } from "@heroui/react";
+import { Link } from "@heroui/link";
 
 interface CreateButtonProps {
   onPress?: () => void;

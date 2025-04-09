@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Link } from "@heroui/react";
+import { Button } from "@heroui/button";
+import { Link } from "@heroui/link";
 import { type ReactNode } from "react";
 import BlurFade from "~/components/animation/blur-fade";
 import AnimatedImage from "~/components/ui/animated-image";

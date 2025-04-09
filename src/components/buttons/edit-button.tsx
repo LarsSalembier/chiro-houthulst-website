@@ -1,5 +1,5 @@
 import { Button } from "@heroui/button";
-import { Link } from "@heroui/react";
+import { Link } from "@heroui/link";
 import EditIcon from "../icons/edit-icon";
 
 interface CreateButtonProps {

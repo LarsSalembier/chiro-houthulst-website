@@ -1,7 +1,7 @@
 "use client";
 
 import { SignInButton, SignUpButton } from "@clerk/nextjs";
-import { Button } from "@heroui/react";
+import { Button } from "@heroui/button";
 
 export default function SignInAsLeiding() {
   return (

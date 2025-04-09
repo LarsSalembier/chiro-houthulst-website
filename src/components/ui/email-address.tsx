@@ -1,6 +1,6 @@
 import { Link } from "@heroui/link";
 import MailIcon from "../icons/mail-icon";
-import { cn } from "@heroui/react";
+import { cn } from "~/lib/cn";
 
 interface EmailAddressProps {
   address: string;

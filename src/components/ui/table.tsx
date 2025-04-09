@@ -1,20 +1,23 @@
 "use client";
 
 import {
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Input,
-  Pagination,
   Table as HeroUITable,
+  type Selection as HeroUISelection,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-} from "@heroui/react";
+} from "@heroui/table";
+import { Button } from "@heroui/button";
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+} from "@heroui/dropdown";
+import { Input } from "@heroui/input";
+import { Pagination } from "@heroui/pagination";
 import {
   type ChangeEvent,
   type ReactNode,
@@ -25,7 +28,6 @@ import {
 } from "react";
 import ChevronDownIcon from "~/components/icons/chevron-down-icon";
 import SearchIcon from "~/components/icons/search-icon";
-import { type Selection as HeroUISelection } from "@heroui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { capitalize } from "~/utilities/capitalize";
 import { isFuzzyMatch } from "~/utilities/fuzzy-search";

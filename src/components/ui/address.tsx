@@ -1,4 +1,4 @@
-import { cn } from "@heroui/react";
+import { cn } from "~/lib/cn";
 
 interface AddressProps extends React.HTMLAttributes<HTMLBaseElement> {
   addressLine1?: string;

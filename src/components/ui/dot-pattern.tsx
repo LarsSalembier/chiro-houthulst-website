@@ -1,5 +1,5 @@
-import { cn } from "@heroui/react";
 import { useId } from "react";
+import { cn } from "~/lib/cn";
 
 interface DotPatternProps {
   width?: number;

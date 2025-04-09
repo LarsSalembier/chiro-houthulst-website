@@ -10,7 +10,8 @@ import { Carousel } from "~/components/ui/carousel";
 import { EventCard } from "~/features/calendar/event-card";
 import Aside from "~/components/ui/aside";
 import GoogleMapsMap from "~/features/home/google-maps-map";
-import { Button, Link } from "@heroui/react";
+import { Button } from "@heroui/button";
+import { Link } from "@heroui/link";
 
 const MEMBER_COUNT = 150;
 const LEADER_COUNT = 26;

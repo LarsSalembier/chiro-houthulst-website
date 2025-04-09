@@ -4,14 +4,14 @@ import {
   Navbar as NextUiNavbar,
   NavbarBrand,
   NavbarContent,
-  Link,
-  Button,
   NavbarMenuToggle,
   NavbarMenu,
   NavbarMenuItem,
-  Input,
   NavbarItem,
-} from "@heroui/react";
+} from "@heroui/navbar";
+import { Link } from "@heroui/link";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
 import { useState } from "react";
 import SearchIcon from "~/components/icons/search-icon";
 import FacebookIcon from "~/components/icons/facebook-icon";

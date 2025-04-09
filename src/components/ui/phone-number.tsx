@@ -1,6 +1,6 @@
 import { Link } from "@heroui/link";
 import PhoneIcon from "../icons/phone-icon";
-import { cn } from "@heroui/react";
+import { cn } from "~/lib/cn";
 
 interface PhoneNumberProps {
   number: string;
