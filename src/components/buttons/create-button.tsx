@@ -1,6 +1,6 @@
-import { Button } from "@nextui-org/button";
+import { Button } from "@heroui/button";
 import PlusIcon from "../icons/plus-icon";
-import { Link } from "@nextui-org/react";
+import { Link } from "@heroui/react";
 
 interface CreateButtonProps {
   onPress?: () => void;

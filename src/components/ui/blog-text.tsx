@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import BlurFade from "../animation/blur-fade";
-import { cn } from "@nextui-org/react";
+import { cn } from "@heroui/react";
 
 interface BlogTextProps {
   className?: string;

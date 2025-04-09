@@ -1,5 +1,5 @@
-import { Button } from "@nextui-org/button";
-import { Link } from "@nextui-org/react";
+import { Button } from "@heroui/button";
+import { Link } from "@heroui/react";
 import TrashIcon from "../icons/trash-icon";
 
 interface CreateButtonProps {

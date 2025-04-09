@@ -1,4 +1,4 @@
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 import { type Metadata } from "next";
 import DownloadIcon from "~/components/icons/download-icon";
 import MailIcon from "~/components/icons/mail-icon";

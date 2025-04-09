@@ -1,4 +1,4 @@
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 import FacebookIcon from "~/components/icons/facebook-icon";
 import InstagramIcon from "~/components/icons/instagram-icon";
 import Address from "~/components/ui/address";

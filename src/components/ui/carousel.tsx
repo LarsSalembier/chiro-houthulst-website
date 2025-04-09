@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import ArrowLeftIcon from "~/components/icons/arrow-left-icon";
 import ArrowRightIcon from "~/components/icons/arrow-right-icon";
 

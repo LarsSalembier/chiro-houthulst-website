@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Link } from "@nextui-org/react";
+import { Button, Link } from "@heroui/react";
 import { type ReactNode } from "react";
 import BlurFade from "~/components/animation/blur-fade";
 import AnimatedImage from "~/components/ui/animated-image";

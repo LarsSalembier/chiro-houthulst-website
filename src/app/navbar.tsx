@@ -11,7 +11,7 @@ import {
   NavbarMenuItem,
   Input,
   NavbarItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { useState } from "react";
 import SearchIcon from "~/components/icons/search-icon";
 import FacebookIcon from "~/components/icons/facebook-icon";

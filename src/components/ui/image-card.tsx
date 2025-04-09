@@ -10,7 +10,7 @@ import {
   ModalContent,
   ModalHeader,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { CarouselContext } from "./carousel";
 
 interface ImageCardProps {

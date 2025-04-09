@@ -1,6 +1,6 @@
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 import MailIcon from "../icons/mail-icon";
-import { cn } from "@nextui-org/react";
+import { cn } from "@heroui/react";
 
 interface EmailAddressProps {
   address: string;

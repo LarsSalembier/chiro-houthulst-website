@@ -10,7 +10,7 @@ import { Carousel } from "~/components/ui/carousel";
 import { EventCard } from "~/features/calendar/event-card";
 import Aside from "~/components/ui/aside";
 import GoogleMapsMap from "~/features/home/google-maps-map";
-import { Button, Link } from "@nextui-org/react";
+import { Button, Link } from "@heroui/react";
 
 const MEMBER_COUNT = 150;
 const LEADER_COUNT = 26;

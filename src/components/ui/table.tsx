@@ -14,7 +14,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import {
   type ChangeEvent,
   type ReactNode,
@@ -25,7 +25,7 @@ import {
 } from "react";
 import ChevronDownIcon from "~/components/icons/chevron-down-icon";
 import SearchIcon from "~/components/icons/search-icon";
-import { type Selection as HeroUISelection } from "@nextui-org/react";
+import { type Selection as HeroUISelection } from "@heroui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { capitalize } from "~/utilities/capitalize";
 import { isFuzzyMatch } from "~/utilities/fuzzy-search";
