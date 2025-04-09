@@ -16,6 +16,9 @@ import {
   unique,
 } from "drizzle-orm/pg-core";
 import { z } from "zod";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+
+// --- Constants ---
 export const MAX_STRING_LENGTH = 255;
 export const MAX_NAME_LENGTH = 100;
 export const MAX_EMAIL_ADDRESS_LENGTH = MAX_STRING_LENGTH;
@@ -37,12 +40,61 @@ export const MAX_EVENT_LOCATION_LENGTH = MAX_STRING_LENGTH;
 
 export const MAX_COMPANY_NAME_LENGTH = 100;
 
-/**
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
+// --- Table Creator ---
 export const createTable = pgTableCreator(
   (name) => `chirohouthulst-website_${name}`,
 );
+
+// --- Enums and Zod Schemas ---
+export const genderEnumValues = ["M", "F", "X"] as const;
+export const genderEnumSchema = z.enum(genderEnumValues);
+export type Gender = z.infer<typeof genderEnumSchema>;
+export const genderEnum = pgEnum("gender", genderEnumValues);
+
+export const paymentMethodEnumValues = [
+  "CASH",
+  "BANK_TRANSFER",
+  "PAYCONIQ",
+  "OTHER",
+] as const;
+export const paymentMethodEnumSchema = z.enum(paymentMethodEnumValues);
+export type PaymentMethod = z.infer<typeof paymentMethodEnumSchema>;
+export const paymentMethodEnum = pgEnum(
+  "payment_method",
+  paymentMethodEnumValues,
+);
+
+export const eventTypeEnumValues = [
+  "CHIRO",
+  "SPECIAL_CHIRO",
+  "MEMBER_EVENT",
+  "PUBLIC_EVENT",
+  "CAMP",
+] as const;
+export const eventTypeEnumSchema = z.enum(eventTypeEnumValues);
+export type EventType = z.infer<typeof eventTypeEnumSchema>;
+export const eventTypeEnum = pgEnum("event_type", eventTypeEnumValues);
+
+export const parentRelationshipEnumValues = [
+  "MOTHER",
+  "FATHER",
+  "PLUSMOTHER",
+  "PLUSFATHER",
+  "GUARDIAN",
+] as const;
+export const parentRelationshipEnumSchema = z.enum(
+  parentRelationshipEnumValues,
+);
+export type ParentRelationship = z.infer<typeof parentRelationshipEnumSchema>;
+export const parentRelationshipEnum = pgEnum(
+  "relationship",
+  parentRelationshipEnumValues,
+);
+
+export const auditActionEnumValues = ["CREATE", "UPDATE", "DELETE"] as const;
+export const auditActionEnumSchema = z.enum(auditActionEnumValues);
+export type AuditAction = z.infer<typeof auditActionEnumSchema>;
+export const auditActionEnum = pgEnum("audit_action", auditActionEnumValues);
 
 const tableNamesArray = [
   "addresses",
@@ -78,75 +130,8 @@ const tableNames = {
   sponsorshipAgreements: tableNamesArray[13],
   auditLogs: "audit_logs",
 };
-
-/**
- * Beschikbare genders voor leden.
- */
-export const genderEnumValues = ["M", "F", "X"] as const;
-export const genderEnumSchema = z.enum(genderEnumValues);
-export type Gender = z.infer<typeof genderEnumSchema>;
-export const genderEnum = pgEnum("gender", genderEnumValues);
-
-/**
- * Beschikbare betalingsmethoden.
- */
-export const paymentMethodEnumValues = [
-  "CASH",
-  "BANK_TRANSFER",
-  "PAYCONIQ",
-  "OTHER",
-] as const;
-export const paymentMethodEnumSchema = z.enum(paymentMethodEnumValues);
-export type PaymentMethod = z.infer<typeof paymentMethodEnumSchema>;
-export const paymentMethodEnum = pgEnum(
-  "payment_method",
-  paymentMethodEnumValues,
-);
-
-/**
- * Soorten evenementen die georganiseerd worden.
- */
-export const eventTypeEnumValues = [
-  "CHIRO",
-  "SPECIAL_CHIRO",
-  "MEMBER_EVENT",
-  "PUBLIC_EVENT",
-  "CAMP",
-] as const;
-export const eventTypeEnumSchema = z.enum(eventTypeEnumValues);
-export type EventType = z.infer<typeof eventTypeEnumSchema>;
-export const eventTypeEnum = pgEnum("event_type", eventTypeEnumValues);
-
-/**
- * Familierelaties voor ouders/voogden.
- */
-export const parentRelationshipEnumValues = [
-  "MOTHER",
-  "FATHER",
-  "PLUSMOTHER",
-  "PLUSFATHER",
-  "GUARDIAN",
-] as const;
-export const parentRelationshipEnumSchema = z.enum(
-  parentRelationshipEnumValues,
-);
-export type ParentRelationship = z.infer<typeof parentRelationshipEnumSchema>;
-export const parentRelationshipEnum = pgEnum(
-  "relationship",
-  parentRelationshipEnumValues,
-);
-
-/**
- * Acties die worden bijgehouden in de audit logs.
- */
-export const auditActionEnumValues = ["CREATE", "UPDATE", "DELETE"] as const;
-export const auditActionEnumSchema = z.enum(auditActionEnumValues);
-export type AuditAction = z.infer<typeof auditActionEnumSchema>;
-export const auditActionEnum = pgEnum("audit_action", auditActionEnumValues);
-
-/**
- * Namen van de tabellen in de database. Gebruikt voor de audit logs.
- */
+export const tableNameEnumSchema = z.enum(tableNamesArray);
+export type TableName = z.infer<typeof auditActionEnumSchema>;
 export const tableNameEnum = pgEnum("table_name", tableNamesArray);
 
 /**
@@ -186,8 +171,22 @@ export const addressesRelations = relations(addresses, ({ many }) => ({
   sponsors: many(sponsors),
 }));
 
-export const UNIQUE_START_END_DATE_FOR_WORK_YEAR_CONSTRAINT =
-  "unique_work_year";
+export const SelectAddressSchema = createSelectSchema(addresses);
+export const InsertAddressSchema = createInsertSchema(addresses, {
+  street: z.string().trim().min(1).max(MAX_STREET_LENGTH),
+  houseNumber: z.string().trim().min(1).max(MAX_HOUSE_NUMBER_LENGTH),
+  box: z
+    .string()
+    .trim()
+    .max(MAX_ADDRESS_BOX_LENGTH)
+    .optional()
+    .or(z.literal("")),
+  municipality: z.string().trim().min(1).max(MAX_MUNICIPALITY_LENGTH),
+  postalCode: z.coerce.number().int().min(1000).max(9999),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type Address = z.infer<typeof SelectAddressSchema>;
+export type NewAddress = z.infer<typeof InsertAddressSchema>;
 
 /**
  * Werkjaren waarvoor leden kunnen inschrijven.
@@ -214,17 +213,22 @@ export const workYearsRelations = relations(workYears, ({ many }) => ({
   sponsorshipAgreements: many(sponsorshipAgreements),
 }));
 
-export const UNIQUE_NAME_FOR_GROUP_CONSTRAINT =
-  "chirohouthulst-website_groups_name_unique";
+export const SelectWorkYearSchema = createSelectSchema(workYears);
+export const InsertWorkYearSchema = createInsertSchema(workYears, {
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  membershipFee: z.coerce.number().nonnegative(),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type WorkYear = z.infer<typeof SelectWorkYearSchema>;
+export type NewWorkYear = z.infer<typeof InsertWorkYearSchema>;
 
 /**
  * Chirogroepen, bijvoorbeeld "Ribbels", "Speelclub", etc.
  */
 export const groups = createTable(tableNames.groups, {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: MAX_GROUP_NAME_LENGTH })
-    .unique(UNIQUE_NAME_FOR_GROUP_CONSTRAINT)
-    .notNull(),
+  name: varchar("name", { length: MAX_GROUP_NAME_LENGTH }).unique().notNull(),
   color: varchar("color", { length: MAX_GROUP_COLOR_LENGTH }),
   description: text("description"),
   minimumAgeInDays: integer("minimum_age_in_days").notNull(),
@@ -244,11 +248,38 @@ export const groupsRelations = relations(groups, ({ many }) => ({
   eventGroups: many(eventGroups),
 }));
 
-export const UNIQUE_NAME_AND_DATE_OF_BIRTH_FOR_MEMBER_CONSTRAINT =
-  "unique_member";
+export const SelectGroupSchema = createSelectSchema(groups);
+export const InsertGroupSchema = createInsertSchema(groups, {
+  name: z.string().trim().min(1).max(MAX_GROUP_NAME_LENGTH),
+  color: z
+    .string()
+    .trim()
+    .max(MAX_GROUP_COLOR_LENGTH)
+    .optional()
+    .or(z.literal("")),
+  description: z.string().optional().or(z.literal("")),
+  minimumAgeInDays: z.coerce.number().int().nonnegative(),
+  maximumAgeInDays: z.coerce.number().int().nonnegative().optional(),
+  gender: genderEnumSchema.optional(),
+  mascotImageUrl: z
+    .string()
+    .trim()
+    .max(MAX_URL_LENGTH)
+    .url()
+    .optional()
+    .or(z.literal("")),
+  coverImageUrl: z
+    .string()
+    .trim()
+    .max(MAX_URL_LENGTH)
+    .url()
+    .optional()
+    .or(z.literal("")),
+  active: z.coerce.boolean().default(true),
+}).omit({ id: true, createdAt: true, updatedAt: true });
 
-export const UNIQUE_EMAIL_ADDRESS_FOR_MEMBER_CONSTRAINT =
-  "chirohouthulst-website_members_email_address_unique";
+export type Group = z.infer<typeof SelectGroupSchema>;
+export type NewGroup = z.infer<typeof InsertGroupSchema>;
 
 /**
  * Leden van de Chiro.
@@ -282,18 +313,36 @@ export const members = createTable(
 export const membersRelations = relations(members, ({ many, one }) => ({
   yearlyMemberships: many(yearlyMemberships),
   membersParents: many(membersParents),
-  emergencyContacts: many(emergencyContacts),
   medicalInformation: one(medicalInformation),
   emergencyContact: one(emergencyContacts),
   eventRegistrations: many(eventRegistrations),
 }));
+
+export const SelectMemberSchema = createSelectSchema(members);
+export const InsertMemberSchema = createInsertSchema(members, {
+  firstName: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+  lastName: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+  gender: genderEnumSchema,
+  dateOfBirth: z.coerce.date(),
+  emailAddress: z.string().email().optional().or(z.literal("")),
+  phoneNumber: z
+    .string()
+    .trim()
+    .max(MAX_PHONE_NUMBER_LENGTH)
+    .optional()
+    .or(z.literal("")),
+  gdprPermissionToPublishPhotos: z.coerce.boolean().default(false),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type Member = z.infer<typeof SelectMemberSchema>;
+export type NewMember = z.infer<typeof InsertMemberSchema>;
 
 /**
  * Noodcontact van leden. Bijvoorbeeld grootouders, vrienden etc.
  */
 export const emergencyContacts = createTable(tableNames.emergencyContacts, {
   memberId: integer("member_id")
-    .references(() => members.id)
+    .references(() => members.id, { onDelete: "cascade" })
     .primaryKey(),
   firstName: varchar("first_name", { length: MAX_NAME_LENGTH }).notNull(),
   lastName: varchar("last_name", { length: MAX_NAME_LENGTH }).notNull(),
@@ -319,12 +368,31 @@ export const emergencyContactsRelations = relations(
   }),
 );
 
+export const SelectEmergencyContactSchema =
+  createSelectSchema(emergencyContacts);
+export const InsertEmergencyContactSchema = createInsertSchema(
+  emergencyContacts,
+  {
+    memberId: z.coerce.number().int().positive(),
+    firstName: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+    lastName: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+    phoneNumber: z.string().trim().min(1).max(MAX_PHONE_NUMBER_LENGTH),
+    relationship: z
+      .string()
+      .trim()
+      .max(MAX_EMERGENCY_CONTACT_RELATIONSHIP_LENGTH),
+  },
+).omit({ createdAt: true, updatedAt: true });
+
+export type EmergencyContact = z.infer<typeof SelectEmergencyContactSchema>;
+export type NewEmergencyContact = z.infer<typeof InsertEmergencyContactSchema>;
+
 /**
  * Medische informatie van leden.
  */
 export const medicalInformation = createTable(tableNames.medicalInformation, {
   memberId: integer("member_id")
-    .references(() => members.id)
+    .references(() => members.id, { onDelete: "cascade" })
     .primaryKey(),
   pastMedicalHistory: text("past_medical_history"),
   tetanusVaccination: boolean("tetanus_vaccination").default(false).notNull(),
@@ -354,7 +422,7 @@ export const medicalInformation = createTable(tableNames.medicalInformation, {
   otherMedicalConditions: text("other_medical_conditions"),
   getsTiredQuickly: boolean("gets_tired_quickly").default(false).notNull(),
   canParticipateSports: boolean("can_participate_sports")
-    .default(false)
+    .default(false) // TODO: this should probably be true
     .notNull(),
   canSwim: boolean("can_swim").default(false).notNull(),
   otherRemarks: text("other_remarks"),
@@ -386,8 +454,54 @@ export const medicalInformationRelations = relations(
   }),
 );
 
-export const UNIQUE_EMAIL_ADDRESS_FOR_PARENT_CONSTRAINT =
-  "chirohouthulst-website_parents_email_address_unique";
+export const SelectMedicalInformationSchema =
+  createSelectSchema(medicalInformation);
+
+export const InsertMedicalInformationSchema = createInsertSchema(
+  medicalInformation,
+  {
+    memberId: z.coerce.number().int().positive(),
+    pastMedicalHistory: z.string().optional().or(z.literal("")),
+    tetanusVaccination: z.coerce.boolean().default(false),
+    tetanusVaccinationYear: z.coerce.number().int().positive().optional(),
+    asthma: z.coerce.boolean().default(false),
+    asthmaInformation: z.string().optional().or(z.literal("")),
+    bedwetting: z.coerce.boolean().default(false),
+    bedwettingInformation: z.string().optional().or(z.literal("")),
+    epilepsy: z.coerce.boolean().default(false),
+    epilepsyInformation: z.string().optional().or(z.literal("")),
+    heartCondition: z.boolean().default(false),
+    heartConditionInformation: z.string().optional().or(z.literal("")),
+    hayFever: z.coerce.boolean().default(false),
+    hayFeverInformation: z.string().optional().or(z.literal("")),
+    skinCondition: z.boolean().default(false),
+    skinConditionInformation: z.string().optional().or(z.literal("")),
+    rheumatism: z.coerce.boolean().default(false),
+    rheumatismInformation: z.string().optional().or(z.literal("")),
+    sleepwalking: z.coerce.boolean().default(false),
+    sleepwalkingInformation: z.string().optional().or(z.literal("")),
+    diabetes: z.coerce.boolean().default(false),
+    diabetesInformation: z.string().optional().or(z.literal("")),
+    foodAllergies: z.string().optional().or(z.literal("")),
+    substanceAllergies: z.string().optional().or(z.literal("")),
+    medicationAllergies: z.string().optional().or(z.literal("")),
+    medication: z.string().optional().or(z.literal("")),
+    otherMedicalConditions: z.string().optional().or(z.literal("")),
+    getsTiredQuickly: z.coerce.boolean().default(false),
+    canParticipateSports: z.coerce.boolean().default(false),
+    canSwim: z.coerce.boolean().default(false),
+    otherRemarks: z.string().optional().or(z.literal("")),
+    permissionMedication: z.coerce.boolean().default(false),
+    doctorFirstName: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+    doctorLastName: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+    doctorPhoneNumber: z.string().trim().min(1).max(MAX_PHONE_NUMBER_LENGTH),
+  },
+).omit({ createdAt: true, updatedAt: true });
+
+export type MedicalInformation = z.infer<typeof SelectMedicalInformationSchema>;
+export type NewMedicalInformation = z.infer<
+  typeof InsertMedicalInformationSchema
+>;
 
 /**
  * Ouders/verzorgers van leden.
@@ -426,6 +540,19 @@ export const parentsRelations = relations(parents, ({ many, one }) => ({
   }),
 }));
 
+export const SelectParentSchema = createSelectSchema(parents);
+export const InsertParentSchema = createInsertSchema(parents, {
+  emailAddress: z.string().trim().email().min(1).max(MAX_EMAIL_ADDRESS_LENGTH),
+  relationship: parentRelationshipEnumSchema,
+  firstName: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+  lastName: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+  phoneNumber: z.string().trim().min(1).max(MAX_PHONE_NUMBER_LENGTH),
+  addressId: z.coerce.number().int().positive(),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type Parent = z.infer<typeof SelectParentSchema>;
+export type NewParent = z.infer<typeof InsertParentSchema>;
+
 /**
  * Koppelt leden aan ouders/verzorgers.
  */
@@ -434,10 +561,10 @@ export const membersParents = createTable(
   {
     memberId: integer("member_id")
       .notNull()
-      .references(() => members.id),
+      .references(() => members.id, { onDelete: "cascade" }),
     parentId: integer("parent_id")
       .notNull()
-      .references(() => parents.id),
+      .references(() => parents.id, { onDelete: "cascade" }),
     isPrimary: boolean("is_primary").default(false).notNull(),
   },
   (t) => ({
@@ -459,6 +586,16 @@ export const membersParentsRelations = relations(membersParents, ({ one }) => ({
   }),
 }));
 
+export const SelectMemberParentSchema = createSelectSchema(membersParents);
+export const InsertMemberParentSchema = createInsertSchema(membersParents, {
+  memberId: z.coerce.number().int().positive(),
+  parentId: z.coerce.number().int().positive(),
+  isPrimary: z.coerce.boolean().default(false),
+});
+
+export type MemberParent = z.infer<typeof SelectMemberParentSchema>;
+export type NewMemberParent = z.infer<typeof InsertMemberParentSchema>;
+
 /**
  * Houdt de jaarlijkse lidgelden bij.
  */
@@ -467,7 +604,7 @@ export const yearlyMemberships = createTable(
   {
     memberId: integer("member_id")
       .notNull()
-      .references(() => members.id),
+      .references(() => members.id, { onDelete: "cascade" }),
     workYearId: integer("work_year_id")
       .notNull()
       .references(() => workYears.id),
@@ -508,6 +645,23 @@ export const yearlyMembershipsRelations = relations(
   }),
 );
 
+export const SelectYearlyMembershipSchema =
+  createSelectSchema(yearlyMemberships);
+export const InsertYearlyMembershipSchema = createInsertSchema(
+  yearlyMemberships,
+  {
+    memberId: z.coerce.number().int().positive(),
+    workYearId: z.coerce.number().int().positive(),
+    groupId: z.coerce.number().int().positive(),
+    paymentReceived: z.coerce.boolean().default(false),
+    paymentMethod: paymentMethodEnumSchema.optional().or(z.literal("")),
+    paymentDate: z.coerce.date().optional(),
+  },
+).omit({ createdAt: true, updatedAt: true });
+
+export type YearlyMembership = z.infer<typeof SelectYearlyMembershipSchema>;
+export type NewYearlyMembership = z.infer<typeof InsertYearlyMembershipSchema>;
+
 /**
  * Evenementen die door de Chiro georganiseerd worden.
  */
@@ -538,6 +692,37 @@ export const eventsRelations = relations(events, ({ many }) => ({
   eventRegistrations: many(eventRegistrations),
 }));
 
+export const SelectEventSchema = createSelectSchema(events);
+export const InsertEventSchema = createInsertSchema(events, {
+  title: z.string().trim().min(1).max(MAX_EVENT_TITLE_LENGTH),
+  description: z.string().optional().or(z.literal("")),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  location: z.string().trim().optional().or(z.literal("")),
+  facebookEventUrl: z
+    .string()
+    .trim()
+    .max(MAX_URL_LENGTH)
+    .url()
+    .optional()
+    .or(z.literal("")),
+  eventType: eventTypeEnumSchema,
+  price: z.coerce.number().nonnegative().optional(),
+  canSignUp: z.coerce.boolean().default(false),
+  signUpDeadline: z.coerce.date().optional(),
+  flyerUrl: z.string().trim().max(MAX_URL_LENGTH).optional().or(z.literal("")),
+  coverImageUrl: z
+    .string()
+    .trim()
+    .max(MAX_URL_LENGTH)
+    .url()
+    .optional()
+    .or(z.literal("")),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type Event = z.infer<typeof SelectEventSchema>;
+export type NewEvent = z.infer<typeof InsertEventSchema>;
+
 /**
  * Koppelt evenementen aan Chirogroepen die deelnemen.
  */
@@ -546,10 +731,10 @@ export const eventGroups = createTable(
   {
     eventId: integer("event_id")
       .notNull()
-      .references(() => events.id),
+      .references(() => events.id, { onDelete: "cascade" }),
     groupId: integer("group_id")
       .notNull()
-      .references(() => groups.id),
+      .references(() => groups.id, { onDelete: "cascade" }),
   },
   (t) => ({
     pk: primaryKey({
@@ -570,6 +755,15 @@ export const eventGroupsRelations = relations(eventGroups, ({ one }) => ({
   }),
 }));
 
+export const SelectEventGroupSchema = createSelectSchema(eventGroups);
+export const InsertEventGroupSchema = createInsertSchema(eventGroups, {
+  eventId: z.coerce.number().int().positive(),
+  groupId: z.coerce.number().int().positive(),
+});
+
+export type EventGroup = z.infer<typeof SelectEventGroupSchema>;
+export type NewEventGroup = z.infer<typeof InsertEventGroupSchema>;
+
 /**
  * Houdt de inschrijvingen voor evenementen bij.
  */
@@ -581,7 +775,7 @@ export const eventRegistrations = createTable(
       .references(() => events.id),
     memberId: integer("member_id")
       .notNull()
-      .references(() => members.id),
+      .references(() => members.id, { onDelete: "cascade" }),
     paymentReceived: boolean("payment_received").default(false).notNull(),
     paymentMethod: paymentMethodEnum("payment_method"),
     paymentDate: timestamp("payment_date", { withTimezone: true }),
@@ -612,8 +806,23 @@ export const eventRegistrationsRelations = relations(
   }),
 );
 
-export const UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT =
-  "chirohouthulst-website_sponsors_company_name_unique";
+export const SelectEventRegistrationSchema =
+  createSelectSchema(eventRegistrations);
+export const InsertEventRegistrationSchema = createInsertSchema(
+  eventRegistrations,
+  {
+    eventId: z.coerce.number().int().positive(),
+    memberId: z.coerce.number().int().positive(),
+    paymentReceived: z.coerce.boolean().default(false),
+    paymentMethod: paymentMethodEnumSchema.optional().or(z.literal("")),
+    paymentDate: z.coerce.date().optional(),
+  },
+).omit({ createdAt: true, updatedAt: true });
+
+export type EventRegistration = z.infer<typeof SelectEventRegistrationSchema>;
+export type NewEventRegistration = z.infer<
+  typeof InsertEventRegistrationSchema
+>;
 
 /**
  * Sponsors van de Chiro.
@@ -621,7 +830,7 @@ export const UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT =
 export const sponsors = createTable(tableNames.sponsors, {
   id: serial("id").primaryKey(),
   companyName: varchar("company_name", { length: MAX_COMPANY_NAME_LENGTH })
-    .unique(UNIQUE_COMPANY_NAME_FOR_SPONSOR_CONSTRAINT)
+    .unique()
     .notNull(),
   companyOwnerFirstName: varchar("company_owner_first_name", {
     length: MAX_NAME_LENGTH,
@@ -647,6 +856,44 @@ export const sponsorsRelations = relations(sponsors, ({ many, one }) => ({
   }),
   sponsorshipAgreements: many(sponsorshipAgreements),
 }));
+
+export const SelectSponsorSchema = createSelectSchema(sponsors);
+export const InsertSponsorSchema = createInsertSchema(sponsors, {
+  companyName: z.string().trim().min(1).max(MAX_COMPANY_NAME_LENGTH),
+  companyOwnerFirstName: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+  companyOwnerLastName: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+  addressId: z.coerce.number().int().positive().optional(),
+  phoneNumber: z
+    .string()
+    .trim()
+    .max(MAX_PHONE_NUMBER_LENGTH)
+    .optional()
+    .or(z.literal("")),
+  emailAddress: z
+    .string()
+    .trim()
+    .email()
+    .max(MAX_EMAIL_ADDRESS_LENGTH)
+    .optional()
+    .or(z.literal("")),
+  websiteUrl: z
+    .string()
+    .trim()
+    .max(MAX_URL_LENGTH)
+    .url()
+    .optional()
+    .or(z.literal("")),
+  logoUrl: z
+    .string()
+    .trim()
+    .max(MAX_URL_LENGTH)
+    .url()
+    .optional()
+    .or(z.literal("")),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type Sponsor = z.infer<typeof SelectSponsorSchema>;
+export type NewSponsor = z.infer<typeof InsertSponsorSchema>;
 
 /**
  * Houdt de sponsorcontracten per jaar bij.
@@ -691,6 +938,28 @@ export const sponsorshipAgreementsRelations = relations(
   }),
 );
 
+export const SelectSponsorshipAgreementSchema = createSelectSchema(
+  sponsorshipAgreements,
+);
+export const InsertSponsorshipAgreementSchema = createInsertSchema(
+  sponsorshipAgreements,
+  {
+    sponsorId: z.coerce.number().int().positive(),
+    workYearId: z.coerce.number().int().positive(),
+    amount: z.coerce.number().positive(),
+    paymentReceived: z.coerce.boolean().default(false),
+    paymentMethod: paymentMethodEnumSchema.optional().or(z.literal("")),
+    paymentDate: z.coerce.date().optional(),
+  },
+).omit({ createdAt: true, updatedAt: true });
+
+export type SponsorshipAgreement = z.infer<
+  typeof SelectSponsorshipAgreementSchema
+>;
+export type NewSponsorshipAgreement = z.infer<
+  typeof InsertSponsorshipAgreementSchema
+>;
+
 export const auditLogs = createTable("audit_logs", {
   id: serial("id").primaryKey(),
   tableName: tableNameEnum("table_name").notNull(),
@@ -703,3 +972,40 @@ export const auditLogs = createTable("audit_logs", {
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
 });
+
+export const SelectAuditLogSchema = createSelectSchema(auditLogs);
+export const InsertAuditLogSchema = createInsertSchema(auditLogs, {
+  tableName: tableNameEnumSchema,
+  recordId: z.coerce.number().int().positive(),
+  action: auditActionEnumSchema,
+  oldValues: z
+    .record(
+      z.string(),
+      z.union([
+        z.string(),
+        z.number(),
+        z.date(),
+        z.boolean(),
+        z.null(),
+        z.undefined(),
+      ]),
+    )
+    .optional(),
+  newValues: z
+    .record(
+      z.string(),
+      z.union([
+        z.string(),
+        z.number(),
+        z.date(),
+        z.boolean(),
+        z.null(),
+        z.undefined(),
+      ]),
+    )
+    .optional(),
+  userId: z.string().trim().min(1).max(MAX_STRING_LENGTH),
+}).omit({ id: true, timestamp: true });
+
+export type AuditLog = z.infer<typeof SelectAuditLogSchema>;
+export type NewAuditLog = z.infer<typeof InsertAuditLogSchema>;

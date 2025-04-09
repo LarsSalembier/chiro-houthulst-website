@@ -1,27 +1,6 @@
-import { type IconProps } from "./icons.types";
+import BaseIcon from "./base-icon";
+import { type IconProps } from "./icon-props";
 
-export default function ArrowLeftIcon({
-  size = 24,
-  strokeWidth = 1.5,
-  width,
-  height,
-  ...props
-}: IconProps) {
-  return (
-    <svg
-      fill="none"
-      height={height ?? size}
-      viewBox="0 0 24 24"
-      width={width ?? size}
-      {...props}
-    >
-      <path
-        d="M19 12H5M12 19l-7-7 7-7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={strokeWidth}
-      />
-    </svg>
-  );
+export default function ArrowLeftIcon(props: IconProps) {
+  return <BaseIcon {...props} svgPath={<path d="M19 12H5M12 19l-7-7 7-7" />} />;
 }

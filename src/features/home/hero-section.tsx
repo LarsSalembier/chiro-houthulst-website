@@ -47,7 +47,7 @@ export default function HeroSection({
             as={Link}
             href="/#inschrijven"
           >
-            Inschrijven
+            Schrijf je nu in!
           </Button>
         </BlurFade>
 
