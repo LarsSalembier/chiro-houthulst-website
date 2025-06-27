@@ -1,6 +1,6 @@
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 import PhoneIcon from "../icons/phone-icon";
-import { cn } from "@nextui-org/react";
+import { cn } from "~/lib/cn";
 
 interface PhoneNumberProps {
   number: string;

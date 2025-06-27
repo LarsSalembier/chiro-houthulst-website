@@ -1,4 +1,4 @@
-import { Link } from "@nextui-org/link";
+import { Link } from "@heroui/link";
 import { type Metadata } from "next";
 import DownloadIcon from "~/components/icons/download-icon";
 import MailIcon from "~/components/icons/mail-icon";
@@ -24,7 +24,7 @@ export default function Verzekeringen() {
       <h2>Wanneer ben je verzekerd?</h2>
 
       <p>
-        Chiro Sint-Jan Houthulst verzekert via Chiro Nationaal alle leden,
+        Chiro Sint-Jan Houthulst verzekert via Chirojeugd Vlaanderen alle leden,
         leiding en (tijdelijke) vrijwilligers. De verzekering dekt de kosten van
         een ongeval tijdens de Chiro-activiteiten. Ook onderweg van en naar elke
         chiro-activiteit ben je verzekerd. Dit geldt ook voor activiteiten die

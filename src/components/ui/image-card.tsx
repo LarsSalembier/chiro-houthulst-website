@@ -1,16 +1,14 @@
 "use client";
 import { useCallback, useContext } from "react";
 import Image from "next/image";
+import { Card, CardHeader, CardFooter } from "@heroui/card";
 import {
-  Card,
-  CardHeader,
-  CardFooter,
   Modal,
   ModalBody,
   ModalContent,
   ModalHeader,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/modal";
 import { CarouselContext } from "./carousel";
 
 interface ImageCardProps {
