@@ -11,7 +11,7 @@ export default function BlogTextNoAnimation({
   children,
 }: BlogTextNoAnimationProps) {
   return (
-    <div className={cn("prose w-full self-start md:prose-lg", className)}>
+    <div className={cn("prose w-full self-start md:prose-lg max-w-none", className)}>
       {children}
     </div>
   );

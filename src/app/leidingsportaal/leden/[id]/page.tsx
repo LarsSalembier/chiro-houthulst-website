@@ -46,8 +46,12 @@ import {
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import SignInAsLeiding from "../../sign-in-as-leiding";
 import { getFullMemberDetails } from "./actions";
-import { type Member, type Group, type WorkYear } from "~/server/db/schema";
+import { type Member, type Group, type WorkYear, type PaymentMethod } from "~/server/db/schema";
 import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
+import { CampSubscription } from "./components/camp-subscription";
+
+// Note: This is a client component, so role checking is handled at the parent level
+// The main leidingsportaal pages already have role protection
 
 interface MemberWithDetails extends Member {
   parents: Array<{
@@ -107,6 +111,10 @@ interface MemberWithDetails extends Member {
   yearlyMemberships: Array<{
     workYear: WorkYear;
     group: Group;
+    campSubscription: boolean;
+    campPaymentReceived: boolean;
+    campPaymentMethod?: PaymentMethod | null;
+    campPaymentDate?: Date | null;
   }>;
 }
 
@@ -233,31 +241,38 @@ export default function MemberDetailPage() {
 
   return (
     <>
-      <BreadcrumbsWrapper items={breadcrumbItems} />
-
-      <BlogTextNoAnimation>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1>
-              {member.firstName} {member.lastName}
-            </h1>
-            <p className="text-gray-600">
-              Lid sinds{" "}
-              {member.yearlyMemberships[0]?.workYear.startDate.toLocaleDateString(
-                "nl-BE",
-              )}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <SignedOut>
-              <SignInAsLeiding />
-            </SignedOut>
-          </div>
-        </div>
-      </BlogTextNoAnimation>
-
       <SignedIn>
         <div className="mx-auto max-w-6xl space-y-8">
+          {/* Breadcrumbs */}
+          <div className="pt-8">
+            <BreadcrumbsWrapper items={breadcrumbItems} />
+          </div>
+
+          {/* Header Section with Edit Button */}
+          <BlogTextNoAnimation>
+            <div className="flex items-start justify-between">
+              <div>
+                <h1>
+                  {member.firstName} {member.lastName}
+                </h1>
+                <p className="text-gray-600">
+                  Lid sinds{" "}
+                  {member.yearlyMemberships[0]?.workYear.startDate.toLocaleDateString(
+                    "nl-BE",
+                  )}
+                </p>
+              </div>
+              <Button
+                color="primary"
+                size="lg"
+                onPress={() => window.location.href = `/leidingsportaal/leden/${memberId}/bewerken`}
+                className="px-8"
+              >
+                Bewerken
+              </Button>
+            </div>
+          </BlogTextNoAnimation>
+
           {/* Important Medical Information Alert */}
           {hasImportantMedicalInfo && (
             <Card className="border-2 border-warning-200 bg-warning-50">
@@ -503,7 +518,7 @@ export default function MemberDetailPage() {
             </Card>
           )}
 
-          {/* Basic Information */}
+          {/* Basic Information - Full Width */}
           <Card>
             <CardHeader className="px-6 py-3">
               <h2 className="text-xl font-semibold">Basisgegevens</h2>
@@ -600,7 +615,69 @@ export default function MemberDetailPage() {
             </CardBody>
           </Card>
 
-          {/* Parents Information */}
+          {/* Membership and Camp Subscription - Side by Side */}
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            {/* Membership Information */}
+            <Card>
+              <CardHeader className="px-6 py-3">
+                <h2 className="text-xl font-semibold">Lidmaatschap</h2>
+              </CardHeader>
+              <CardBody className="p-6">
+                <div className="space-y-4">
+                  {member.yearlyMemberships[0] && (
+                    <>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="inline-block rounded-lg px-3 py-1 font-medium text-white"
+                          style={{
+                            backgroundColor:
+                              member.yearlyMemberships[0].group.color ??
+                              "#3b82f6",
+                          }}
+                        >
+                          {member.yearlyMemberships[0].group.name}
+                        </div>
+                        <Badge color="success" variant="flat">
+                          Actief lid
+                        </Badge>
+                      </div>
+                      <p>
+                        <strong>Werkjaar:</strong>{" "}
+                        {member.yearlyMemberships[0].workYear.startDate.toLocaleDateString(
+                          "nl-BE",
+                        )}{" "}
+                        -{" "}
+                        {member.yearlyMemberships[0].workYear.endDate.toLocaleDateString(
+                          "nl-BE",
+                        )}
+                      </p>
+                      <p>
+                        <strong>Lid sinds:</strong>{" "}
+                        {member.yearlyMemberships[0].workYear.startDate.toLocaleDateString(
+                          "nl-BE",
+                        )}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </CardBody>
+            </Card>
+
+            {/* Camp Subscription */}
+            {member.yearlyMemberships[0] && (
+              <CampSubscription
+                memberId={memberId}
+                workYearId={member.yearlyMemberships[0].workYear.id}
+                campPrice={175}
+                isSubscribed={member.yearlyMemberships[0].campSubscription}
+                paymentReceived={member.yearlyMemberships[0].campPaymentReceived}
+                paymentMethod={member.yearlyMemberships[0].campPaymentMethod}
+                paymentDate={member.yearlyMemberships[0].campPaymentDate}
+              />
+            )}
+          </div>
+
+          {/* Parents Information - Full Width */}
           <Card>
             <CardHeader className="px-6 py-3">
               <h2 className="text-xl font-semibold">Ouders/Verzorgers</h2>
@@ -655,15 +732,16 @@ export default function MemberDetailPage() {
             </CardBody>
           </Card>
 
-          {/* Emergency Contact */}
-          {member.emergencyContact && (
-            <Card>
-              <CardHeader className="px-6 py-3">
-                <h2 className="text-xl font-semibold">Noodcontact</h2>
-              </CardHeader>
-              <CardBody className="p-6">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
+          {/* Emergency Contact and Doctor Information - Side by Side */}
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            {/* Emergency Contact */}
+            {member.emergencyContact && (
+              <Card>
+                <CardHeader className="px-6 py-3">
+                  <h2 className="text-xl font-semibold">Noodcontact</h2>
+                </CardHeader>
+                <CardBody className="p-6">
+                  <div className="space-y-4">
                     <p className="flex items-center gap-2">
                       <User className="h-4 w-4 text-blue-600" />
                       <strong>Naam:</strong> {member.emergencyContact.firstName}{" "}
@@ -673,20 +751,40 @@ export default function MemberDetailPage() {
                       <strong>Relatie:</strong>{" "}
                       {member.emergencyContact.relationship}
                     </p>
-                  </div>
-                  <div>
                     <p className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-green-600" />
                       <strong>Telefoon:</strong>{" "}
                       {member.emergencyContact.phoneNumber}
                     </p>
                   </div>
-                </div>
-              </CardBody>
-            </Card>
-          )}
+                </CardBody>
+              </Card>
+            )}
 
-          {/* Medical Information */}
+            {/* Doctor Information */}
+            {medicalInfo && (
+              <Card>
+                <CardHeader className="px-6 py-3">
+                  <h2 className="text-xl font-semibold">Dokter</h2>
+                </CardHeader>
+                <CardBody className="p-6">
+                  <div className="space-y-4">
+                    <p>
+                      <strong>Naam:</strong> {medicalInfo.doctorFirstName}{" "}
+                      {medicalInfo.doctorLastName}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-green-600" />
+                      <strong>Telefoon:</strong>{" "}
+                      {medicalInfo.doctorPhoneNumber}
+                    </p>
+                  </div>
+                </CardBody>
+              </Card>
+            )}
+          </div>
+
+          {/* Medical Information - Full Width */}
           {medicalInfo && (
             <Card>
               <CardHeader className="px-6 py-3">
@@ -694,27 +792,6 @@ export default function MemberDetailPage() {
               </CardHeader>
               <CardBody className="p-6">
                 <div className="space-y-8">
-                  {/* Doctor Information */}
-                  <div>
-                    <h3 className="mb-4 flex items-center gap-2 font-medium text-gray-700">
-                      <Stethoscope className="h-5 w-5 text-teal-600" />
-                      Dokter
-                    </h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                      <p>
-                        <strong>Naam:</strong> {medicalInfo.doctorFirstName}{" "}
-                        {medicalInfo.doctorLastName}
-                      </p>
-                      <p className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-green-600" />
-                        <strong>Telefoon:</strong>{" "}
-                        {medicalInfo.doctorPhoneNumber}
-                      </p>
-                    </div>
-                  </div>
-
-                  <Divider />
-
                   {/* Vaccinations */}
                   <div>
                     <h3 className="mb-4 flex items-center gap-2 font-medium text-gray-700">
@@ -860,7 +937,7 @@ export default function MemberDetailPage() {
                           {medicalInfo.bedwetting && (
                             <div className="rounded-lg border bg-warning-50 p-4">
                               <p className="flex items-center gap-2 font-medium text-warning-800">
-                                <Bed className="h-4 w-4 text-purple-600" />
+                                <Baby className="h-4 w-4 text-pink-600" />
                                 Bedplassen
                               </p>
                               {medicalInfo.bedwettingInformation && (
@@ -876,10 +953,11 @@ export default function MemberDetailPage() {
                   )}
 
                   {/* Allergies */}
-                  {(medicalInfo.foodAllergies ??
-                    (false || medicalInfo.substanceAllergies) ??
-                    (false || medicalInfo.medicationAllergies) ??
-                    false) && (
+                  {Boolean(
+                    medicalInfo.foodAllergies ||
+                    medicalInfo.substanceAllergies ||
+                    medicalInfo.medicationAllergies
+                  ) && (
                     <>
                       <Divider />
                       <div>
@@ -1081,6 +1159,9 @@ export default function MemberDetailPage() {
           )}
         </div>
       </SignedIn>
+      <SignedOut>
+        <SignInAsLeiding />
+      </SignedOut>
     </>
   );
 }

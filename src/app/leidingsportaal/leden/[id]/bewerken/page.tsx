@@ -1,4 +1,3 @@
-/* eslint-disable */
 "use client";
 
 import { SignedIn, SignedOut } from "@clerk/nextjs";
@@ -12,49 +11,30 @@ import { Checkbox } from "@heroui/checkbox";
 import { DateInput } from "@heroui/date-input";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Divider } from "@heroui/divider";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { CalendarDate } from "@internationalized/date";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
-import SignInAsLeiding from "../sign-in-as-leiding";
-import {
-  getCurrentWorkYear,
-  registerNewMember,
-  findGroupForMember,
-} from "./actions";
-import {
-  type Gender,
-  type ParentRelationship,
-  type WorkYear,
-  type Group,
-  type PaymentMethod,
-} from "~/server/db/schema";
+import { getFullMemberDetails, updateMember } from "../actions";
+import { type Gender, type ParentRelationship, type PaymentMethod } from "~/server/db/schema";
+import SignInAsLeiding from "~/app/leidingsportaal/sign-in-as-leiding";
 
-export default function InschrijvenPage() {
+export default function EditMemberPage() {
   const router = useRouter();
+  const params = useParams();
+  const memberId = parseInt(params.id as string, 10);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [workYear, setWorkYear] = useState<WorkYear | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [memberData, setMemberData] = useState<Awaited<ReturnType<typeof getFullMemberDetails>> | null>(null);
 
   const breadcrumbItems = [
     { href: "/leidingsportaal", label: "Leidingsportaal" },
-    { label: "Nieuwe inschrijving" },
+    { href: "/leidingsportaal/leden", label: "Leden" },
+    { href: `/leidingsportaal/leden/${memberId}`, label: "Lidgegevens" },
+    { label: "Bewerken" },
   ];
-
-  // Load work year on component mount
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const currentWorkYear = await getCurrentWorkYear();
-        setWorkYear(currentWorkYear);
-      } catch (error) {
-        console.error("Error loading data:", error);
-      }
-    };
-    void loadData();
-  }, []);
 
   const form = useForm({
     defaultValues: {
@@ -77,8 +57,8 @@ export default function InschrijvenPage() {
           address: {
             street: "",
             houseNumber: "",
-            postalCode: "8650",
-            municipality: "Houthulst",
+            postalCode: "",
+            municipality: "",
           },
           isPrimary: true,
         },
@@ -135,54 +115,148 @@ export default function InschrijvenPage() {
       },
     },
     onSubmit: async ({ value }) => {
-      setFormError(null);
-
-      if (!workYear) {
-        setFormError("Geen werkjaar gevonden");
-        return;
-      }
-
-      if (!value.member.gender || !value.member.dateOfBirth) {
-        setFormError("Vul alle verplichte velden in");
-        return;
-      }
-
-      setIsSubmitting(true);
       try {
-        const memberData = {
-          ...value.member,
-          gender: value.member.gender,
-          dateOfBirth: value.member.dateOfBirth,
+        const submitData = {
+          member: {
+            ...value.member,
+            gender: value.member.gender!,
+            dateOfBirth: value.member.dateOfBirth!,
+          },
           parents: value.parents.map((parent) => ({
             ...parent,
             relationship: parent.relationship!,
             address: {
               ...parent.address,
-              postalCode: parseInt(parent.address.postalCode, 10) || 0,
+              postalCode: parseInt(parent.address.postalCode, 10) ?? 0,
             },
-            addressId: 0,
           })),
           emergencyContact: value.emergencyContact,
           medicalInformation: value.medicalInformation,
-          workYearId: workYear.id,
-          paymentReceived: value.payment.paymentReceived,
-          paymentMethod: value.payment.paymentMethod,
-          paymentDate: value.payment.paymentDate,
+          payment: value.payment,
         };
 
-        await registerNewMember(memberData);
-        router.push("/leidingsportaal");
+        await updateMember(Number(memberId), submitData);
+        router.push(`/leidingsportaal/leden/${memberId}`);
       } catch (error) {
-        console.error("Error registering member:", error);
-        setFormError(
-          "Er is een fout opgetreden bij het inschrijven van het lid.",
-        );
-      } finally {
-        setIsSubmitting(false);
+        console.error("Error updating member:", error);
+        // Handle error (show toast, etc.)
       }
     },
   });
 
+  useEffect(() => {
+    const loadMember = async () => {
+      setLoading(true);
+      try {
+        const data = await getFullMemberDetails(memberId);
+        setMemberData(data);
+      } catch (err) {
+        setFormError("Kon lidgegevens niet laden.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (memberId) void loadMember();
+  }, [memberId]);
+
+  // Load member data into form when available
+  useEffect(() => {
+    if (memberData) {
+      // Set member data
+      form.setFieldValue("member.firstName", memberData.firstName ?? "");
+      form.setFieldValue("member.lastName", memberData.lastName ?? "");
+      form.setFieldValue("member.gender", memberData.gender);
+      if (memberData.dateOfBirth) {
+        // Handle both Date objects and date strings
+        const date = memberData.dateOfBirth instanceof Date 
+          ? memberData.dateOfBirth 
+          : new Date(memberData.dateOfBirth);
+        form.setFieldValue("member.dateOfBirth", date);
+      }
+      form.setFieldValue("member.emailAddress", memberData.emailAddress ?? "");
+      form.setFieldValue("member.phoneNumber", memberData.phoneNumber ?? "");
+      form.setFieldValue("member.gdprPermissionToPublishPhotos", memberData.gdprPermissionToPublishPhotos ?? true);
+
+      // Set parents data
+      if (memberData.parents && memberData.parents.length > 0) {
+        const parentsData = memberData.parents.map((parent) => ({
+          firstName: parent.firstName ?? "",
+          lastName: parent.lastName ?? "",
+          emailAddress: parent.emailAddress ?? "",
+          phoneNumber: parent.phoneNumber ?? "",
+          relationship: parent.relationship,
+          address: {
+            street: parent.address?.street ?? "",
+            houseNumber: parent.address?.houseNumber ?? "",
+            postalCode: parent.address?.postalCode?.toString() ?? "",
+            municipality: parent.address?.municipality ?? "",
+          },
+          isPrimary: parent.isPrimary ?? false,
+        }));
+        form.setFieldValue("parents", parentsData);
+      }
+
+      // Set emergency contact data
+      if (memberData.emergencyContact) {
+        form.setFieldValue("emergencyContact.firstName", memberData.emergencyContact.firstName ?? "");
+        form.setFieldValue("emergencyContact.lastName", memberData.emergencyContact.lastName ?? "");
+        form.setFieldValue("emergencyContact.phoneNumber", memberData.emergencyContact.phoneNumber ?? "");
+        form.setFieldValue("emergencyContact.relationship", memberData.emergencyContact.relationship ?? "");
+      }
+
+      // Set medical information data
+      if (memberData.medicalInformation) {
+        form.setFieldValue("medicalInformation.doctorFirstName", memberData.medicalInformation.doctorFirstName ?? "");
+        form.setFieldValue("medicalInformation.doctorLastName", memberData.medicalInformation.doctorLastName ?? "");
+        form.setFieldValue("medicalInformation.doctorPhoneNumber", memberData.medicalInformation.doctorPhoneNumber ?? "");
+        form.setFieldValue("medicalInformation.tetanusVaccination", memberData.medicalInformation.tetanusVaccination ?? true);
+        form.setFieldValue("medicalInformation.asthma", memberData.medicalInformation.asthma ?? false);
+        form.setFieldValue("medicalInformation.asthmaDescription", memberData.medicalInformation.asthmaInformation ?? "");
+        form.setFieldValue("medicalInformation.bedwetting", memberData.medicalInformation.bedwetting ?? false);
+        form.setFieldValue("medicalInformation.bedwettingDescription", memberData.medicalInformation.bedwettingInformation ?? "");
+        form.setFieldValue("medicalInformation.epilepsy", memberData.medicalInformation.epilepsy ?? false);
+        form.setFieldValue("medicalInformation.epilepsyDescription", memberData.medicalInformation.epilepsyInformation ?? "");
+        form.setFieldValue("medicalInformation.heartCondition", memberData.medicalInformation.heartCondition ?? false);
+        form.setFieldValue("medicalInformation.heartConditionDescription", memberData.medicalInformation.heartConditionInformation ?? "");
+        form.setFieldValue("medicalInformation.hayFever", memberData.medicalInformation.hayFever ?? false);
+        form.setFieldValue("medicalInformation.hayFeverDescription", memberData.medicalInformation.hayFeverInformation ?? "");
+        form.setFieldValue("medicalInformation.skinCondition", memberData.medicalInformation.skinCondition ?? false);
+        form.setFieldValue("medicalInformation.skinConditionDescription", memberData.medicalInformation.skinConditionInformation ?? "");
+        form.setFieldValue("medicalInformation.rheumatism", memberData.medicalInformation.rheumatism ?? false);
+        form.setFieldValue("medicalInformation.rheumatismDescription", memberData.medicalInformation.rheumatismInformation ?? "");
+        form.setFieldValue("medicalInformation.sleepwalking", memberData.medicalInformation.sleepwalking ?? false);
+        form.setFieldValue("medicalInformation.sleepwalkingDescription", memberData.medicalInformation.sleepwalkingInformation ?? "");
+        form.setFieldValue("medicalInformation.diabetes", memberData.medicalInformation.diabetes ?? false);
+        form.setFieldValue("medicalInformation.diabetesDescription", memberData.medicalInformation.diabetesInformation ?? "");
+        form.setFieldValue("medicalInformation.hasFoodAllergies", !!memberData.medicalInformation.foodAllergies);
+        form.setFieldValue("medicalInformation.foodAllergies", memberData.medicalInformation.foodAllergies ?? "");
+        form.setFieldValue("medicalInformation.hasSubstanceAllergies", !!memberData.medicalInformation.substanceAllergies);
+        form.setFieldValue("medicalInformation.substanceAllergies", memberData.medicalInformation.substanceAllergies ?? "");
+        form.setFieldValue("medicalInformation.hasMedicationAllergies", !!memberData.medicalInformation.medicationAllergies);
+        form.setFieldValue("medicalInformation.medicationAllergies", memberData.medicalInformation.medicationAllergies ?? "");
+        form.setFieldValue("medicalInformation.hasMedication", !!memberData.medicalInformation.medication);
+        form.setFieldValue("medicalInformation.medication", memberData.medicalInformation.medication ?? "");
+        form.setFieldValue("medicalInformation.hasOtherMedicalConditions", !!memberData.medicalInformation.otherMedicalConditions);
+        form.setFieldValue("medicalInformation.otherMedicalConditions", memberData.medicalInformation.otherMedicalConditions ?? "");
+        form.setFieldValue("medicalInformation.getsTiredQuickly", memberData.medicalInformation.getsTiredQuickly ?? false);
+        form.setFieldValue("medicalInformation.canParticipateSports", memberData.medicalInformation.canParticipateSports ?? true);
+        form.setFieldValue("medicalInformation.canSwim", memberData.medicalInformation.canSwim ?? true);
+        form.setFieldValue("medicalInformation.otherRemarks", memberData.medicalInformation.otherRemarks ?? "");
+        form.setFieldValue("medicalInformation.permissionMedication", memberData.medicalInformation.permissionMedication ?? true);
+      }
+
+      // Set payment data
+      if (memberData.yearlyMemberships?.[0]) {
+        form.setFieldValue("payment.paymentReceived", memberData.yearlyMemberships[0].paymentReceived ?? false);
+        form.setFieldValue("payment.paymentMethod", memberData.yearlyMemberships[0].paymentMethod ?? undefined);
+        if (memberData.yearlyMemberships[0].paymentDate) {
+          form.setFieldValue("payment.paymentDate", new Date(memberData.yearlyMemberships[0].paymentDate));
+        }
+      }
+    }
+  }, [memberData, form]);
+
+  // Parent management functions
   const addParent = () => {
     const currentParents = form.getFieldValue("parents");
     const lastParent = currentParents[currentParents.length - 1];
@@ -207,7 +281,7 @@ export default function InschrijvenPage() {
   const removeParent = (index: number) => {
     const currentParents = form.getFieldValue("parents");
     if (currentParents.length > 1) {
-      const updatedParents = currentParents.filter((_, i) => i !== index);
+      const updatedParents = currentParents.filter((_, i: number) => i !== index);
       if (
         currentParents[index]?.isPrimary &&
         updatedParents.length > 0 &&
@@ -221,45 +295,32 @@ export default function InschrijvenPage() {
 
   const setPrimaryParent = (index: number) => {
     const currentParents = form.getFieldValue("parents");
-    const updatedParents = currentParents.map((parent, i) => ({
+    const updatedParents = currentParents.map((parent, i: number) => ({
       ...parent,
       isPrimary: i === index,
     }));
     form.setFieldValue("parents", updatedParents);
   };
 
-  const handleDateOfBirthChange = async (date: Date) => {
-    try {
-      const gender = form.getFieldValue("member.gender");
-      if (!gender) {
-        setSelectedGroup(null);
-        return;
-      }
-      const group = await findGroupForMember(date, gender);
-      setSelectedGroup(group);
-    } catch (error) {
-      console.error("Error finding group:", error);
-      setSelectedGroup(null);
-    }
-  };
+  if (loading) {
+    return <div className="flex min-h-screen items-center justify-center">Laden...</div>;
+  }
+
+  if (!memberData) {
+    return <div className="flex min-h-screen items-center justify-center text-red-600">{formError ?? "Lid niet gevonden"}</div>;
+  }
 
   return (
     <>
       <BreadcrumbsWrapper items={breadcrumbItems} />
-
       <BlogTextNoAnimation>
-        <h1>Nieuw lid inschrijven</h1>
-        <p>
-          Vul onderstaand formulier in om een nieuw lid in te schrijven voor het
-          huidige werkjaar.
-        </p>
+        <h1>Lidgegevens bewerken</h1>
         <div className="flex gap-4">
           <SignedOut>
             <SignInAsLeiding />
           </SignedOut>
         </div>
       </BlogTextNoAnimation>
-
       <SignedIn>
         <form
           onSubmit={(e) => {
@@ -344,25 +405,9 @@ export default function InschrijvenPage() {
                       selectedKeys={
                         field.state.value ? [field.state.value] : []
                       }
-                      onSelectionChange={async (keys) => {
+                      onSelectionChange={(keys) => {
                         const value = Array.from(keys)[0] as Gender;
                         field.handleChange(value);
-
-                        // Revalidate group when gender changes
-                        const dateOfBirth =
-                          form.getFieldValue("member.dateOfBirth");
-                        if (dateOfBirth) {
-                          try {
-                            const group = await findGroupForMember(
-                              dateOfBirth,
-                              value,
-                            );
-                            setSelectedGroup(group);
-                          } catch (error) {
-                            console.error("Error finding group:", error);
-                            setSelectedGroup(null);
-                          }
-                        }
                       }}
                       isInvalid={field.state.meta.errors.length > 0}
                       errorMessage={field.state.meta.errors[0]}
@@ -402,7 +447,6 @@ export default function InschrijvenPage() {
                         if (value) {
                           const date = value.toDate("UTC");
                           field.handleChange(date);
-                          void handleDateOfBirthChange(date);
                         }
                       }}
                       isInvalid={field.state.meta.errors.length > 0}
@@ -449,7 +493,6 @@ export default function InschrijvenPage() {
                   {(field) => (
                     <Input
                       label="Telefoonnummer"
-                      type="tel"
                       value={field.state.value}
                       onValueChange={field.handleChange}
                       isInvalid={field.state.meta.errors.length > 0}
@@ -458,26 +501,6 @@ export default function InschrijvenPage() {
                   )}
                 </form.Field>
               </div>
-
-              {selectedGroup && (
-                <div
-                  className="rounded-lg p-4"
-                  style={{
-                    backgroundColor: selectedGroup.color
-                      ? `${selectedGroup.color}15`
-                      : "#f0f9ff",
-                  }}
-                >
-                  <p
-                    className="text-sm font-medium"
-                    style={{
-                      color: selectedGroup.color ?? "#0c4a6e",
-                    }}
-                  >
-                    <strong>Geselecteerde groep:</strong> {selectedGroup.name}
-                  </p>
-                </div>
-              )}
 
               <form.Field name="member.gdprPermissionToPublishPhotos">
                 {(field) => (
@@ -1505,7 +1528,7 @@ export default function InschrijvenPage() {
             <Button
               type="button"
               variant="flat"
-              onPress={() => router.push("/leidingsportaal")}
+              onPress={() => router.push(`/leidingsportaal/leden/${memberId}`)}
             >
               Annuleren
             </Button>
@@ -1515,11 +1538,11 @@ export default function InschrijvenPage() {
               isLoading={isSubmitting}
               isDisabled={isSubmitting}
             >
-              {isSubmitting ? "Inschrijven..." : "Lid inschrijven"}
+              {isSubmitting ? "Bewerken..." : "Wijzigingen opslaan"}
             </Button>
           </div>
         </form>
       </SignedIn>
     </>
   );
-}
+} 

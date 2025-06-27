@@ -5,8 +5,12 @@ import { WORK_YEAR_QUERIES } from "~/server/db/queries/work-year-queries";
 import SignInAsLeiding from "../sign-in-as-leiding";
 import { MEMBER_QUERIES } from "~/server/db/queries/member-queries";
 import MembersTable from "~/features/leidingsportaal/members-table";
+import { requireLeidingAuth } from "~/lib/auth";
 
 export default async function LedenPage() {
+  // Check if user has leiding role - this will redirect if not authorized
+  await requireLeidingAuth();
+
   const workyear = await WORK_YEAR_QUERIES.getByDate();
 
   if (!workyear) {

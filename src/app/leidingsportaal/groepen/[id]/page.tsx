@@ -39,15 +39,20 @@ import { MEMBER_QUERIES } from "~/server/db/queries/member-queries";
 import { notFound } from "next/navigation";
 import MembersTable from "~/features/leidingsportaal/members-table";
 import TableLink from "~/components/ui/table-link";
+import { requireLeidingAuth } from "~/lib/auth";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function GroupDetailPage({ params }: PageProps) {
-  const groupId = parseInt(params.id);
+  // Check if user has leiding role - this will redirect if not authorized
+  await requireLeidingAuth();
+
+  const { id } = await params;
+  const groupId = parseInt(id);
 
   if (isNaN(groupId)) {
     notFound();

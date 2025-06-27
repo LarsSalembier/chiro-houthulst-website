@@ -198,6 +198,7 @@ export const workYears = createTable(
     startDate: date("start_date", { mode: "date" }).notNull(),
     endDate: date("end_date", { mode: "date" }).notNull(),
     membershipFee: doublePrecision("membership_fee").notNull(),
+    campPrice: doublePrecision("camp_price"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -218,6 +219,7 @@ export const InsertWorkYearSchema = createInsertSchema(workYears, {
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   membershipFee: z.coerce.number().nonnegative(),
+  campPrice: z.coerce.number().nonnegative().optional(),
 }).omit({ id: true, createdAt: true, updatedAt: true });
 
 export type WorkYear = z.infer<typeof SelectWorkYearSchema>;
@@ -614,6 +616,10 @@ export const yearlyMemberships = createTable(
     paymentReceived: boolean("payment_received").default(false).notNull(),
     paymentMethod: paymentMethodEnum("payment_method"),
     paymentDate: timestamp("payment_date", { withTimezone: true }),
+    campSubscription: boolean("camp_subscription").default(false).notNull(),
+    campPaymentMethod: paymentMethodEnum("camp_payment_method"),
+    campPaymentReceived: boolean("camp_payment_received").default(false).notNull(),
+    campPaymentDate: timestamp("camp_payment_date", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -656,6 +662,10 @@ export const InsertYearlyMembershipSchema = createInsertSchema(
     paymentReceived: z.coerce.boolean().default(false),
     paymentMethod: paymentMethodEnumSchema.optional().or(z.literal("")),
     paymentDate: z.coerce.date().optional(),
+    campSubscription: z.coerce.boolean().default(false),
+    campPaymentMethod: paymentMethodEnumSchema.optional().or(z.literal("")),
+    campPaymentReceived: z.coerce.boolean().default(false),
+    campPaymentDate: z.coerce.date().optional(),
   },
 ).omit({ createdAt: true, updatedAt: true });
 

@@ -4,8 +4,12 @@ import { Button } from "@heroui/button";
 import { UserPlus, Users, UserCheck, ArrowRight } from "lucide-react";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import SignInAsLeiding from "./sign-in-as-leiding";
+import { requireLeidingAuth } from "~/lib/auth";
 
-export default function Leidingsportaal() {
+export default async function Leidingsportaal() {
+  // Check if user has leiding role - this will redirect if not authorized
+  await requireLeidingAuth();
+
   return (
     <>
       <BlogTextNoAnimation className="pt-16">

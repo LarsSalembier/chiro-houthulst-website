@@ -13,6 +13,7 @@ import {
 import { ADDRESS_MUTATIONS } from "./address-queries"; // Importeer address mutaties
 import { GROUP_QUERIES } from "./group-queries"; // Om groep te vinden
 import { db } from "../db";
+import { z } from "zod";
 
 // Type voor complexe member data input
 export type FullNewMemberData = NewMember & {
@@ -20,6 +21,9 @@ export type FullNewMemberData = NewMember & {
   emergencyContact?: Omit<NewEmergencyContact, "memberId">;
   medicalInformation?: Omit<NewMedicalInformation, "memberId">;
   workYearId: number; // Het werkjaar waarvoor ingeschreven wordt
+  paymentReceived: boolean;
+  paymentMethod?: schema.PaymentMethod;
+  paymentDate?: Date;
 };
 
 export const MEMBER_QUERIES = {
@@ -271,6 +275,132 @@ export const MEMBER_QUERIES = {
       orderBy: [asc(schema.members.lastName), asc(schema.members.firstName)],
     });
   },
+
+  // --- Verwijder Lid ---
+  // Dit zal via cascade ook emergency contact, medical info, memberships, etc. verwijderen.
+  // Wees hier zeer voorzichtig mee! Overweeg een 'soft delete' (bv. een 'archived' boolean).
+  removeMember: async (id: number): Promise<void> => {
+    console.warn(
+      `Attempting to permanently delete member with ID: ${id}. This is irreversible.`,
+    );
+
+    try {
+      await db
+        .delete(schema.members)
+        .where(eq(schema.members.id, id))
+        .execute();
+    } catch (error) {
+      console.error(`Error deleting member with ID ${id}:`, error);
+      throw new Error("Fout bij het verwijderen van het lid.");
+    }
+  },
+
+  // --- Kamp Inschrijving Functies ---
+  
+  // Schrijf een lid in voor kamp
+  subscribeToCamp: async (
+    memberId: number,
+    workYearId: number,
+    paymentMethod?: schema.PaymentMethod,
+  ): Promise<void> => {
+    await db
+      .update(schema.yearlyMemberships)
+      .set({
+        campSubscription: true,
+        campPaymentMethod: paymentMethod,
+        campPaymentReceived: false,
+        campPaymentDate: null,
+      })
+      .where(
+        and(
+          eq(schema.yearlyMemberships.memberId, memberId),
+          eq(schema.yearlyMemberships.workYearId, workYearId),
+        ),
+      )
+      .execute();
+  },
+
+  // Schrijf een lid uit voor kamp
+  unsubscribeFromCamp: async (
+    memberId: number,
+    workYearId: number,
+  ): Promise<void> => {
+    await db
+      .update(schema.yearlyMemberships)
+      .set({
+        campSubscription: false,
+        campPaymentMethod: null,
+        campPaymentReceived: false,
+        campPaymentDate: null,
+      })
+      .where(
+        and(
+          eq(schema.yearlyMemberships.memberId, memberId),
+          eq(schema.yearlyMemberships.workYearId, workYearId),
+        ),
+      )
+      .execute();
+  },
+
+  // Markeer kamp betaling als ontvangen
+  markCampPaymentReceived: async (
+    memberId: number,
+    workYearId: number,
+    paymentReceived: boolean,
+    paymentMethod?: schema.PaymentMethod,
+    paymentDate?: Date,
+  ): Promise<void> => {
+    await db
+      .update(schema.yearlyMemberships)
+      .set({
+        campPaymentReceived: paymentReceived,
+        campPaymentMethod: paymentMethod,
+        campPaymentDate: paymentReceived ? (paymentDate ?? new Date()) : null,
+      })
+      .where(
+        and(
+          eq(schema.yearlyMemberships.memberId, memberId),
+          eq(schema.yearlyMemberships.workYearId, workYearId),
+        ),
+      )
+      .execute();
+  },
+
+  // Haal kamp inschrijvingen op voor een werkjaar
+  getCampSubscriptionsForWorkYear: async (workYearId: number) => {
+    return await db.query.yearlyMemberships.findMany({
+      where: and(
+        eq(schema.yearlyMemberships.workYearId, workYearId),
+        eq(schema.yearlyMemberships.campSubscription, true),
+      ),
+      with: {
+        member: true,
+        group: true,
+        workYear: true,
+      },
+      orderBy: [asc(schema.members.lastName), asc(schema.members.firstName)],
+    });
+  },
+
+  // Haal kamp inschrijvingen op voor een specifieke groep
+  getCampSubscriptionsForGroup: async (
+    workYearId: number,
+    groupId: number,
+  ) => {
+    return await db.query.yearlyMemberships.findMany({
+      where: and(
+        eq(schema.yearlyMemberships.workYearId, workYearId),
+        eq(schema.yearlyMemberships.groupId, groupId),
+        eq(schema.yearlyMemberships.campSubscription, true),
+      ),
+      with: {
+        member: true,
+        group: true,
+        workYear: true,
+      },
+      orderBy: [asc(schema.members.lastName), asc(schema.members.firstName)],
+    });
+  },
 };
 
 export const MEMBER_MUTATIONS = {
@@ -392,7 +522,9 @@ export const MEMBER_MUTATIONS = {
           memberId: newMember.id,
           workYearId: data.workYearId,
           groupId: group.id,
-          paymentReceived: false,
+          paymentReceived: data.paymentReceived,
+          paymentMethod: data.paymentMethod,
+          paymentDate: data.paymentDate,
         })
         .execute();
 
@@ -405,7 +537,18 @@ export const MEMBER_MUTATIONS = {
     id: number,
     data: Partial<NewMember>,
   ): Promise<Member | null> => {
-    const parseResult = InsertMemberSchema.partial().safeParse(data);
+    // Create a validation schema for partial updates
+    const partialSchema = z.object({
+      firstName: z.string().trim().min(1).max(100).optional(),
+      lastName: z.string().trim().min(1).max(100).optional(),
+      gender: z.enum(['M', 'F', 'X']).optional(),
+      dateOfBirth: z.coerce.date().optional(),
+      emailAddress: z.string().email().optional().or(z.literal("")),
+      phoneNumber: z.string().trim().max(20).optional().or(z.literal("")),
+      gdprPermissionToPublishPhotos: z.coerce.boolean().optional(),
+    });
+
+    const parseResult = partialSchema.safeParse(data);
     if (!parseResult.success) {
       throw new Error(`Invalid update data: ${parseResult.error.message}`);
     }
@@ -533,24 +676,5 @@ export const MEMBER_MUTATIONS = {
         )
         .execute();
     });
-  },
-
-  // --- Verwijder Lid ---
-  // Dit zal via cascade ook emergency contact, medical info, memberships, etc. verwijderen.
-  // Wees hier zeer voorzichtig mee! Overweeg een 'soft delete' (bv. een 'archived' boolean).
-  removeMember: async (id: number): Promise<void> => {
-    console.warn(
-      `Attempting to permanently delete member with ID: ${id}. This is irreversible.`,
-    );
-
-    try {
-      await db
-        .delete(schema.members)
-        .where(eq(schema.members.id, id))
-        .execute();
-    } catch (error) {
-      console.error(`Error deleting member with ID ${id}:`, error);
-      throw new Error("Fout bij het verwijderen van het lid.");
-    }
   },
 };

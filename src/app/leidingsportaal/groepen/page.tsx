@@ -14,8 +14,12 @@ import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
 import SignInAsLeiding from "../sign-in-as-leiding";
 import { getGroupsWithMemberCount } from "./actions";
+import { requireLeidingAuth } from "~/lib/auth";
 
 export default async function GroepenPage() {
+  // Check if user has leiding role - this will redirect if not authorized
+  await requireLeidingAuth();
+
   const { groups, workYear } = await getGroupsWithMemberCount();
 
   // Filter to only show active groups
