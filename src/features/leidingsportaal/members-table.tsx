@@ -6,6 +6,7 @@ import { type Member, type Group } from "~/server/db/schema";
 import { Table } from "~/components/ui/table";
 import TableLink from "~/components/ui/table-link";
 import CreateButton from "~/components/buttons/create-button";
+import { formatDateLocale } from "~/lib/date-utils";
 
 type MemberTableData = Member & {
   name: string;
@@ -174,7 +175,7 @@ export default function ToponymsTable({
         case "gender":
           return <span>{member.gender}</span>;
         case "dateOfBirth":
-          return <span>{member.dateOfBirth.toLocaleDateString("nl-BE")}</span>;
+          return <span>{formatDateLocale(member.dateOfBirth)}</span>;
         case "group":
           return <span>{member.group?.name}</span>;
         case "parentNames":
@@ -392,9 +393,9 @@ export default function ToponymsTable({
             </span>
           );
         case "createdAt":
-          return <span>{member.createdAt.toLocaleDateString("nl-BE")}</span>;
+          return <span>{formatDateLocale(member.createdAt)}</span>;
         case "updatedAt":
-          return <span>{member.updatedAt?.toLocaleDateString("nl-BE")}</span>;
+          return <span>{member.updatedAt ? formatDateLocale(member.updatedAt) : ""}</span>;
         case "paymentReceived":
           return (
             <span
@@ -408,7 +409,7 @@ export default function ToponymsTable({
         case "paymentMethod":
           return <span>{member.paymentMethod}</span>;
         case "paymentDate":
-          return <span>{member.paymentDate?.toLocaleDateString("nl-BE")}</span>;
+          return <span>{member.paymentDate ? formatDateLocale(member.paymentDate) : ""}</span>;
         default:
           return null;
       }

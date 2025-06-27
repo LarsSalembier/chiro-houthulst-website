@@ -9,7 +9,6 @@ import { Input } from "@heroui/input";
 import { Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { Checkbox } from "@heroui/checkbox";
-import { DateInput } from "@heroui/date-input";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { useRouter } from "next/navigation";
@@ -30,6 +29,8 @@ import {
   type Group,
   type PaymentMethod,
 } from "~/server/db/schema";
+import { createCalendarDateFromDate, createDateFromCalendarDate } from "~/lib/date-utils";
+import DDMMYYYYDateInput from "~/components/ui/dd-mm-yyyy-date-input";
 
 export default function InschrijvenPage() {
   const router = useRouter();
@@ -387,21 +388,12 @@ export default function InschrijvenPage() {
                   }}
                 >
                   {(field) => (
-                    <DateInput
+                    <DDMMYYYYDateInput
                       label="Geboortedatum"
-                      value={
-                        field.state.value
-                          ? new CalendarDate(
-                              field.state.value.getFullYear(),
-                              field.state.value.getMonth() + 1,
-                              field.state.value.getDate(),
-                            )
-                          : undefined
-                      }
-                      onChange={(value) => {
-                        if (value) {
-                          const date = value.toDate("UTC");
-                          field.handleChange(date);
+                      value={field.state.value}
+                      onChange={(date: Date | undefined) => {
+                        field.handleChange(date);
+                        if (date) {
                           void handleDateOfBirthChange(date);
                         }
                       }}

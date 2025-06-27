@@ -15,6 +15,9 @@ import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
 import SignInAsLeiding from "../sign-in-as-leiding";
 import { getGroupsWithMemberCount } from "./actions";
 import { requireLeidingAuth } from "~/lib/auth";
+import { GROUP_QUERIES } from "~/server/db/queries/group";
+import { WORK_YEAR_QUERIES } from "~/server/db/queries/work-year";
+import { formatDateLocale } from "~/lib/date-utils";
 
 export default async function GroepenPage() {
   // Check if user has leiding role - this will redirect if not authorized
@@ -41,8 +44,8 @@ export default async function GroepenPage() {
             Beheer en bekijk de verschillende leeftijdsgroepen van de Chiro.
             {workYear && (
               <span className="mt-2 block text-lg font-medium text-gray-600">
-                Werkjaar: {workYear.startDate.toLocaleDateString("nl-BE")} -{" "}
-                {workYear.endDate.toLocaleDateString("nl-BE")}
+                Werkjaar: {formatDateLocale(workYear.startDate)} -{" "}
+                {formatDateLocale(workYear.endDate)}
               </span>
             )}
           </p>

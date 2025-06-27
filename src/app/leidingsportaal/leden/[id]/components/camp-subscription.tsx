@@ -10,6 +10,7 @@ import { Checkbox } from "@heroui/checkbox";
 import { CalendarIcon, CheckCircle, XCircle, Euro, Tent, UserCheck, UserX, AlertTriangle } from "lucide-react";
 import { type PaymentMethod } from "~/server/db/schema";
 import { subscribeToCamp, unsubscribeFromCamp, markCampPaymentReceived } from "../actions";
+import { formatDateLocale } from "~/lib/date-utils";
 
 interface CampSubscriptionProps {
   memberId: number;
@@ -98,7 +99,7 @@ export function CampSubscription({
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString("nl-BE");
+    return formatDateLocale(date);
   };
 
   return (
