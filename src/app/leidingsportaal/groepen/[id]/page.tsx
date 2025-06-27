@@ -103,6 +103,11 @@ export default async function GroupDetailPage({ params }: PageProps) {
   const girlsCount = members.filter((m) => m.gender === "F").length;
   const otherGenderCount = members.filter((m) => m.gender === "X").length;
 
+  // Calculate camp statistics
+  const campSubscriptions = members.filter((m) => m.yearlyMembership?.campSubscription).length;
+  const campPaymentReceived = members.filter((m) => m.yearlyMembership?.campPaymentReceived).length;
+  const campPaymentPending = campSubscriptions - campPaymentReceived;
+
   const averageAge =
     totalMembers > 0
       ? Math.round(
@@ -228,7 +233,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
       <SignedIn>
         <div className="mx-auto max-w-6xl space-y-8">
           {/* Group Statistics Overview */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
             <Card>
               <CardBody className="p-6">
                 <div className="flex items-center gap-4">
@@ -277,6 +282,23 @@ export default async function GroupDetailPage({ params }: PageProps) {
                     <p className="text-sm text-gray-600">Leeftijdsbereik</p>
                     <p className="text-2xl font-bold">
                       {minAge}-{displayMaxAge ?? "∞"}
+                    </p>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+
+            <Card>
+              <CardBody className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="rounded-lg bg-orange-100 p-3">
+                    <Calendar className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Kamp inschrijvingen</p>
+                    <p className="text-2xl font-bold">{campSubscriptions}</p>
+                    <p className="text-xs text-gray-500">
+                      {campPaymentReceived} betaald, {campPaymentPending} openstaand
                     </p>
                   </div>
                 </div>
@@ -416,6 +438,100 @@ export default async function GroupDetailPage({ params }: PageProps) {
               </CardBody>
             </Card>
           </div>
+
+          {/* Camp Statistics */}
+          <Card>
+            <CardHeader className="px-6 py-3">
+              <h2 className="flex items-center gap-2 text-xl font-semibold">
+                <Calendar className="h-5 w-5 text-orange-600" />
+                Kamp statistieken
+              </h2>
+            </CardHeader>
+            <CardBody className="p-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="text-center">
+                  <div className="mb-2 flex justify-center">
+                    <div className="rounded-lg bg-orange-100 p-3">
+                      <Calendar className="h-8 w-8 text-orange-600" />
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">Totaal ingeschreven</p>
+                  <p className="text-3xl font-bold text-orange-600">{campSubscriptions}</p>
+                  <p className="text-xs text-gray-500">
+                    {totalMembers > 0 ? Math.round((campSubscriptions / totalMembers) * 100) : 0}% van de groep
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <div className="mb-2 flex justify-center">
+                    <div className="rounded-lg bg-green-100 p-3">
+                      <CheckCircle className="h-8 w-8 text-green-600" />
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">Betaald</p>
+                  <p className="text-3xl font-bold text-green-600">{campPaymentReceived}</p>
+                  <p className="text-xs text-gray-500">
+                    {campSubscriptions > 0 ? Math.round((campPaymentReceived / campSubscriptions) * 100) : 0}% van inschrijvingen
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <div className="mb-2 flex justify-center">
+                    <div className="rounded-lg bg-yellow-100 p-3">
+                      <Clock className="h-8 w-8 text-yellow-600" />
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">Openstaand</p>
+                  <p className="text-3xl font-bold text-yellow-600">{campPaymentPending}</p>
+                  <p className="text-xs text-gray-500">
+                    {campSubscriptions > 0 ? Math.round((campPaymentPending / campSubscriptions) * 100) : 0}% van inschrijvingen
+                  </p>
+                </div>
+              </div>
+
+              {campSubscriptions > 0 && (
+                <>
+                  <Divider className="my-6" />
+                  <div>
+                    <h3 className="mb-3 flex items-center gap-2 font-medium text-gray-700">
+                      <Users className="h-5 w-5 text-blue-600" />
+                      Leden ingeschreven voor kamp
+                    </h3>
+                    <div className="space-y-2">
+                      {members
+                        .filter((m) => m.yearlyMembership?.campSubscription)
+                        .map((member) => (
+                          <div
+                            key={member.id}
+                            className={`flex items-center justify-between rounded-lg p-3 ${
+                              member.yearlyMembership?.campPaymentReceived
+                                ? "border border-green-200 bg-green-50"
+                                : "border border-yellow-200 bg-yellow-50"
+                            }`}
+                          >
+                            <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              {member.firstName} {member.lastName}
+                            </TableLink>
+                            <Badge
+                              color={
+                                member.yearlyMembership?.campPaymentReceived
+                                  ? "success"
+                                  : "warning"
+                              }
+                              variant="flat"
+                            >
+                              {member.yearlyMembership?.campPaymentReceived
+                                ? "Betaald"
+                                : "Openstaand"}
+                            </Badge>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardBody>
+          </Card>
 
           {/* Medical and Important Information Breakdown */}
           <div className="space-y-6">
