@@ -25,45 +25,45 @@ export type FullNewMemberData = NewMember & {
 export const MEMBER_QUERIES = {
   // Haal alle leden op voor een specifiek werkjaar, eventueel gefilterd op groep
   getMembersForWorkYear: async (workYearId: number, groupId?: number) => {
-    return await db.query.members
-      .findMany({
-        with: {
-          yearlyMemberships: {
-            where: and(
-              eq(schema.yearlyMemberships.workYearId, workYearId),
-              groupId
-                ? eq(schema.yearlyMemberships.groupId, groupId)
-                : undefined,
-            ),
-            with: {
-              group: true,
-            },
-            limit: 1,
+    const members = await db.query.members.findMany({
+      with: {
+        yearlyMemberships: {
+          where: and(
+            eq(schema.yearlyMemberships.workYearId, workYearId),
+            groupId ? eq(schema.yearlyMemberships.groupId, groupId) : undefined,
+          ),
+          with: {
+            group: true,
           },
-          membersParents: {
-            with: {
-              parent: {
-                with: {
-                  address: true,
-                },
+        },
+        membersParents: {
+          with: {
+            parent: {
+              with: {
+                address: true,
               },
             },
           },
-          medicalInformation: true,
-          emergencyContact: true,
         },
-        orderBy: [asc(schema.members.lastName), asc(schema.members.firstName)],
-      })
-      .then((members) =>
-        members.map((m) => ({
-          ...m,
-          parents: m.membersParents.map((mp) => ({
-            ...mp.parent,
-            isPrimary: mp.isPrimary,
-          })),
-          yearlyMembership: m.yearlyMemberships[0],
-        })),
-      );
+        medicalInformation: true,
+        emergencyContact: true,
+      },
+      orderBy: [asc(schema.members.lastName), asc(schema.members.firstName)],
+    });
+
+    // Filter members to only include those with yearly memberships for the specified criteria
+    const filteredMembers = members.filter(
+      (member) => member.yearlyMemberships.length > 0,
+    );
+
+    return filteredMembers.map((m) => ({
+      ...m,
+      parents: m.membersParents.map((mp) => ({
+        ...mp.parent,
+        isPrimary: mp.isPrimary,
+      })),
+      yearlyMembership: m.yearlyMemberships[0],
+    }));
   },
 
   // Haal een specifiek lid op met alle gerelateerde gegevens
@@ -107,13 +107,13 @@ export const MEMBER_QUERIES = {
             workYear: true,
             group: true,
           },
-          orderBy: [desc(schema.workYears.startDate)], // Nieuwste eerst
+          orderBy: [desc(schema.yearlyMemberships.createdAt)], // Nieuwste eerst
         },
         eventRegistrations: {
           with: {
             event: true,
           },
-          orderBy: [desc(schema.events.startDate)], // Nieuwste eerst
+          orderBy: [desc(schema.eventRegistrations.createdAt)], // Nieuwste eerst
         },
       },
     });

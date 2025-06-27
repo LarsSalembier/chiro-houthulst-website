@@ -2586,3 +2586,1793 @@ return (
 Here, we're using Remix's useActionData hook and TanStack Form's useTransform hook to merge state returned from the server action with the form state.
 
 # NextUI
+
+## Checkbox
+
+Data Attributes
+Checkbox has the following attributes on the base element:
+
+data-selected: When the checkbox is checked. Based on isSelected prop.
+data-pressed: When the checkbox is pressed. Based on usePress
+data-invalid: When the checkbox is invalid. Based on validationState prop.
+data-readonly: When the checkbox is readonly. Based on isReadOnly prop.
+data-indeterminate: When the checkbox is indeterminate. Based on isIndeterminate prop.
+data-hover: When the checkbox is being hovered. Based on useHover
+data-focus: When the checkbox is being focused. Based on useFocusRing.
+data-focus-visible: When the checkbox is being focused with the keyboard. Based on useFocusRing.
+data-disabled: When the checkbox is disabled. Based on isDisabled prop.
+data-loading: When the checkbox is loading. Based on isLoading prop.
+Accessibility
+Built with a native HTML <input> element.
+Full support for browser features like form autofill.
+Keyboard focus management and cross browser normalization.
+Keyboard event support for
+Tab
+and
+Space
+keys.
+Labeling support for assistive technology.
+Indeterminate state support.
+API
+Checkbox Props
+Prop Type Default
+children
+ReactNode
+icon
+CheckboxIconProps
+value
+string
+name
+string
+size
+sm | md | lg
+"md"
+color
+default | primary | secondary | success | warning | danger
+"primary"
+radius
+none | sm | md | lg | full
+lineThrough
+boolean
+false
+isSelected
+boolean
+defaultSelected
+boolean
+isRequired
+boolean
+false
+isReadOnly
+boolean
+isDisabled
+boolean
+false
+isIndeterminate
+boolean
+isInvalid
+boolean
+false
+validationState
+valid | invalid
+disableAnimation
+boolean
+false
+classNames
+Partial<Record<"base"｜ "wrapper"｜ "icon"｜ "label", string>>
+Checkbox Events
+Prop Type Default
+onChange
+React.ChangeEvent<HTMLInputElement>
+onValueChange
+(isSelected: boolean) => void
+Types
+Checkbox Icon Props
+type IconProps = {
+"data-checked": string;
+isSelected: boolean;
+isIndeterminate: boolean;
+disableAnimation: boolean;
+className: string;
+};
+
+type CheckboxIconProps = ReactNode | ((props: IconProps) => ReactNode);
+
+## Checkbox Group
+
+API
+Checkbox Group Props
+Prop Type Default
+children
+ReactNode[] | ReactNode[]
+orientation
+vertical | horizontal
+"vertical"
+color
+default | primary | secondary | success | warning | danger
+"primary"
+size
+xs | sm | md | lg | xl
+"md"
+radius
+none | base | xs | sm | md | lg | xl | full
+"md"
+name
+string
+label
+string
+value
+string[]
+lineThrough
+boolean
+false
+defaultValue
+string[]
+isInvalid
+boolean
+false
+validationState
+valid | invalid
+description
+ReactNode
+errorMessage
+ReactNode | ((v: ValidationResult) => ReactNode)
+validate
+(value: string[]) => ValidationError | true | null | undefined
+validationBehavior
+native | aria
+"native"
+isDisabled
+boolean
+false
+isRequired
+boolean
+false
+isReadOnly
+boolean
+disableAnimation
+boolean
+false
+classNames
+Partial<Record<"base" | "wrapper" | "label", string>>
+Checkbox Group Events
+Prop Type Default
+onChange
+(value: string[]) => void
+
+## DateInput
+
+DateInput
+DateInput is a component that allows users to enter and edit date and time values using a keyboard. Each part of a date value is displayed in an individually editable segment.
+
+Product Hunt
+We're live on Product Hunt! (30% OFF)
+Join the conversation and help us get #1 Product of the Week! ↗
+Installation
+
+CLI
+
+npm
+
+yarn
+
+pnpm
+
+bun
+The above command is for individual installation only. You may skip this step if @heroui/react is already installed globally.
+Import
+
+Individual
+
+Global
+Usage
+
+Preview
+
+Code
+Birth date
+mm
+/
+dd
+/
+yyyy
+Disabled
+
+Preview
+
+Code
+Birth date
+04
+/
+04
+/
+2024
+Read Only
+
+Preview
+
+Code
+Birth date
+04
+/
+04
+/
+2024
+Required
+
+Preview
+
+Code
+Birth date
+04
+/
+04
+/
+2024
+Variants
+
+Preview
+
+Code
+Birth date
+mm
+/
+dd
+/
+yyyy
+Birth date
+mm
+/
+dd
+/
+yyyy
+Birth date
+mm
+/
+dd
+/
+yyyy
+Birth date
+mm
+/
+dd
+/
+yyyy
+Label Placements
+You can change the position of the label by setting the labelPlacement property to inside, outside or outside-left.
+
+Preview
+
+Code
+Birth date
+mm
+/
+dd
+/
+yyyy
+inside
+Birth date
+mm
+/
+dd
+/
+yyyy
+outside
+Birth date
+mm
+/
+dd
+/
+yyyy
+outside-left
+Note: If the label is not passed, the labelPlacement property will be outside by default.
+
+Start & End Content
+You can use the startContent and endContent properties to add content to the start and end of the DateInput.
+
+Preview
+
+Code
+Date Input
+04
+/
+04
+/
+2024
+Date Input
+04
+/
+04
+/
+2024
+With Description
+You can add a description to the input by passing the description property.
+
+Preview
+
+Code
+Birth date
+mm
+/
+dd
+/
+yyyy
+This is my birth date.
+With Error Message
+You can combine the isInvalid and errorMessage properties to show an invalid input.
+
+Preview
+
+Code
+Birth date
+04
+/
+04
+/
+2024
+Please enter a valid date.
+You can also pass an error message as a function. This allows for dynamic error message handling based on the ValidationResult.
+
+Preview
+
+Code
+Birth date
+04
+/
+04
+/
+2024
+Please enter a valid date.
+Controlled
+You can use the value and onChange properties to control the input value.
+
+Preview
+
+Code
+Date (controlled)
+04
+/
+04
+/
+2024
+Selected date: Thursday, April 4, 2024
+
+Time Zones
+DateInput is time zone aware when a ZonedDateTime object is provided as the value. In this case, the time zone abbreviation is displayed, and time zone concerns such as daylight saving time are taken into account when the value is manipulated.
+
+@internationalized/date includes functions for parsing strings in multiple formats into ZonedDateTime objects.
+
+npm
+
+yarn
+
+pnpm
+
+Preview
+
+Code
+Event date
+11
+/
+07
+/
+2022
+,
+⁦
+12
+:
+45
+⁩
+
+ 
+AM
+PST
+Event date
+11
+/
+07
+/
+2021
+,
+⁦
+08
+:
+45
+⁩
+
+ 
+AM
+GMT+1
+Granularity
+The granularity prop allows you to control the smallest unit that is displayed by DateInput By default, the value is displayed with "day" granularity (year, month, and day), and CalendarDateTime and ZonedDateTime values are displayed with "minute" granularity.
+
+@internationalized/date includes functions for parsing strings in multiple formats into ZonedDateTime objects.
+
+npm
+
+yarn
+
+pnpm
+
+Preview
+
+Code
+Date and time
+04
+/
+07
+/
+2021
+,
+⁦
+08
+:
+45
+:
+22
+⁩
+
+ 
+PM
+GMT+2
+Date
+04
+/
+07
+/
+2021
+Event date
+mm
+/
+dd
+/
+yyyy
+,
+⁦
+––
+:
+––
+:
+––
+⁩
+
+ 
+AM
+Event date
+mm
+/
+dd
+/
+yyyy
+,
+⁦
+––
+:
+––
+:
+––
+⁩
+
+ 
+PM
+EDT
+Min Date And Max Date
+The minValue and maxValue props can also be used to ensure the value is within a specific range.
+
+@internationalized/date includes functions for parsing strings in multiple formats into ZonedDateTime objects.
+
+npm
+
+yarn
+
+pnpm
+
+Preview
+
+Code
+Min date
+Date and time
+04
+/
+08
+/
+2025
+Max date
+Date and time
+04
+/
+10
+/
+2025
+International Calendar
+DateInput supports selecting dates in many calendar systems used around the world, including Gregorian, Hebrew, Indian, Islamic, Buddhist, and more. Dates are automatically displayed in the appropriate calendar system for the user's locale. The calendar system can be overridden using the Unicode calendar locale extension, passed to the I18nProvider component.
+
+@internationalized/date includes functions for parsing strings in multiple formats into ZonedDateTime objects.
+
+npm
+
+yarn
+
+pnpm
+
+Preview
+
+Code
+Appointment date
+17
+
+- 01
+- 1943
+  शक
+  ,
+  ⁦
+  08
+  :
+  45
+  ⁩
+  pm
+  GMT+2
+  Hide Time Zone
+  When a ZonedDateTime object is provided as the value to DateInput, the time zone abbreviation is displayed by default. However, if this is displayed elsewhere or implicit based on the usecase, it can be hidden using the hideTimeZone option.
+
+@internationalized/date includes functions for parsing strings in multiple formats into ZonedDateTime objects.
+
+npm
+
+yarn
+
+pnpm
+
+Preview
+
+Code
+Appointment time
+11
+/
+07
+/
+2022
+,
+⁦
+12
+:
+45
+⁩
+
+ 
+AM
+Hourly Cycle
+By default, DateInput displays times in either 12 or 24 hour hour format depending on the user's locale. However, this can be overridden using the hourCycle prop if needed for a specific usecase. This example forces DateInput to use 24-hour time, regardless of the locale.
+
+@internationalized/date includes functions for parsing strings in multiple formats into ZonedDateTime objects.
+
+npm
+
+yarn
+
+pnpm
+
+Preview
+
+Code
+Slots
+base: Input wrapper, it handles alignment, placement, and general appearance.
+label: Label of the date-input, it is the one that is displayed above, inside or left of the date-input.
+inputWrapper: Wraps the label (when it is inside) and the innerWrapper.
+input: The date-input element.
+innerWrapper: Wraps the input, the startContent and the endContent.
+clearButton: The clear button, it is at the end of the input.
+helperWrapper: Wraps the description and the errorMessage.
+description: The description of the date-input.
+errorMessage: The error message of the date-input.
+Data Attributes
+DateInput has the following attributes on the base element:
+
+data-slot: All slots have this prop. which slot the element represents(e.g. slot).
+data-invalid: When the date-input is invalid. Based on isInvalid prop.
+data-required: When the date-input is required. Based on isRequired prop.
+data-readonly: When the date-input is readonly. Based on isReadOnly prop.
+data-disabled: When the date-input is disabled. Based on isDisabled prop.
+data-has-helper: When the date-input has helper text(errorMessage or description). Base on those two props.
+data-has-start-content: When the date-input has a start content. Base on those startContent prop.
+data-has-end-content: When the date-input has a end content. Base on those endContent prop.
+Accessibility
+Built with a native <input> element.
+Visual and ARIA labeling support.
+Change, clipboard, composition, selection, and input event support.
+Required and invalid states exposed to assistive technology via ARIA.
+Support for description and error message help text linked to the input via ARIA.
+Each date and time unit is displayed as an individually focusable and editable segment, which allows users an easy way to edit dates using the keyboard, in any date format and locale.
+Date segments are editable using an easy to use numeric keypad, and all interactions are accessible using touch-based screen readers.
+API
+DateInput Props
+Prop Type Default
+label
+ReactNode
+value
+DateValue
+defaultValue
+DateValue
+variant
+flat | bordered | faded | underlined
+"flat"
+color
+default | primary | secondary | success | warning | danger
+"default"
+size
+sm | md | lg
+"md"
+radius
+none | sm | md | lg | full
+placeholderValue
+DateValue
+minValue
+DateValue
+maxValue
+DateValue
+locale
+string
+description
+ReactNode
+errorMessage
+ReactNode | (v: ValidationResult) => ReactNode
+labelPlacement
+inside | outside | outside-left
+"inside"
+isRequired
+boolean
+false
+isReadOnly
+boolean
+isDisabled
+boolean
+false
+isInvalid
+boolean
+false
+autoFocus
+boolean
+false
+hideTimeZone
+boolean
+false
+disableAnimation
+boolean
+false
+classNames
+Partial<Record<"base" | "label" | "inputWrapper" | "input" | "segment" | "helperWrapper" | "description" | "errorMessage", string>>
+DateInput Events
+Prop Type Default
+onChange
+(value: ZonedDateTime | CalendarDate | CalendarDateTime) => void
+onFocus
+(e: FocusEvent<HTMLInputElement>) => void
+onBlur
+(e: FocusEvent<HTMLInputElement>) => void
+onFocusChange
+(isFocused: boolean) => void
+onKeyDown
+(e: KeyboardEvent) => void
+onKeyUp
+(e: KeyboardEvent) => void
+
+## Divider
+
+Divider is a component that separates content in a page.
+
+Data Attributes
+Divider has the following attributes on the base element:
+
+data-orientation: The orientation of the divider. Based on orientation prop.
+Accessibility
+Separator role is added to the divider.
+Support for horizontal and vertical orientation.
+Support for HTML <hr> element or a custom element type.
+API
+Divider Props
+Prop Type Default
+orientation
+`horizontal` | `vertical`
+
+## Form
+
+Anatomy
+A Form is a container for input elements and submit/reset buttons, with support for validation messages. When labeled with aria-label or aria-labelledby, it becomes a navigable form landmark for assistive technology.
+
+Events
+The onSubmit event will be triggered when a user submits the form with the Enter key or by pressing a submit button. The onReset event will be triggered when a user presses a reset button.
+
+Validation
+Form supports native HTML constraint validation with customizable UI, custom validation functions, and server-side validation. Server-side validation errors can be provided via the validationErrors prop as an object mapping field names to error messages, which are cleared when the user modifies the field.
+
+Validation Behavior
+Form validation uses native validation behavior by default, but can be switched to ARIA validation by setting validationBehavior="aria". ARIA validation shows realtime errors without blocking submission. This can be set at the form or field level. To set the default behavior at the app level, you can change the form defaults for your entire app using HeroUI Provider.
+
+Accessibility
+Built with a native HTML <form> element, with support for ARIA labelling to create a form landmark.
+Full support for browser features like form autofill.
+Support for native HTML constraint validation with customizable UI, custom validation functions, realtime validation, and server-side validation errors.
+API
+Form Props
+Prop Type Default
+children
+ReactNode
+validationBehavior
+'native' | 'aria'
+"native"
+validationErrors
+Record<string, string | string[]>
+action
+string | FormHTMLAttributes<HTMLFormElement>['action']
+encType
+'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
+method
+'get' | 'post' | 'dialog'
+target
+'\_blank' | '\_self' | '\_parent' | '\_top'
+autoComplete
+'off' | 'on'
+autoCapitalize
+'off' | 'none' | 'on' | 'sentences' | 'words' | 'characters'
+className
+string
+style
+CSSProperties
+
+## Input
+
+Input is a component that allows users to enter text. It can be used to get user inputs in forms, search fields, and more.
+
+With Form
+Input can be used with a Form component to leverage form state management. For more on form and validation behaviors, see the Forms guide.
+
+Built-in Validation
+Input supports the following native HTML constraints:
+
+isRequired indicates that a field must have a value before the form can be submitted.
+minLength and maxLength specify the minimum and length of text input.
+pattern provides a custom regular expression that a text input must conform to.
+type="email" and type="url" provide built-in validation for email addresses and URLs.
+When using native validation, error messages can be customized by passing a function to errorMessage and checking the ValidityState of validationDetails.
+
+Custom Validation
+In addition to built-in constraints, you can provide a function to the validate property for custom validation.
+
+Realtime Validation
+If you want to display validation errors while the user is typing, you can control the field value and use the isInvalid prop along with the errorMessage prop.
+
+Server Validation
+Client-side validation provides immediate feedback, but you should also validate data on the server to ensure accuracy and security. HeroUI allows you to display server-side validation errors by using the validationErrors prop in the Form component. This prop should be an object where each key is the field name and the value is the error message.
+
+Slots
+base: Input wrapper, it handles alignment, placement, and general appearance.
+label: Label of the input, it is the one that is displayed above, inside or left of the input.
+mainWrapper: Wraps the inputWrapper when position is outside / outside-left.
+inputWrapper: Wraps the label (when it is inside) and the innerWrapper.
+innerWrapper: Wraps the input, the startContent and the endContent.
+input: The input element.
+clearButton: The clear button, it is at the end of the input.
+helperWrapper: Wraps the description and the errorMessage.
+description: The description of the input.
+errorMessage: The error message of the input.
+Custom Styles
+You can customize the Input component by passing custom Tailwind CSS classes to the component slots.
+
+Custom Implementation
+In case you need to customize the input even further, you can use the useInput hook to create your own implementation.
+
+Data Attributes
+Input has the following attributes on the base element:
+
+data-invalid: When the input is invalid. Based on isInvalid prop.
+data-required: When the input is required. Based on isRequired prop.
+data-readonly: When the input is readonly. Based on isReadOnly prop.
+data-hover: When the input is being hovered. Based on useHover
+data-focus: When the input is being focused. Based on useFocusRing.
+data-focus-within: When the input is being focused or any of its children. Based on useFocusWithin.
+data-focus-visible: When the input is being focused with the keyboard. Based on useFocusRing.
+data-disabled: When the input is disabled. Based on isDisabled prop.
+Accessibility
+Built with a native <input> element.
+Visual and ARIA labeling support.
+Change, clipboard, composition, selection, and input event support.
+Required and invalid states exposed to assistive technology via ARIA.
+Support for description and error message help text linked to the input via ARIA.
+API
+Input Props
+Prop Type Default
+children
+ReactNode
+variant
+flat | bordered | faded | underlined
+"flat"
+color
+default | primary | secondary | success | warning | danger
+"default"
+size
+sm | md | lg
+"md"
+radius
+none | sm | md | lg | full
+label
+ReactNode
+value
+string
+defaultValue
+string
+placeholder
+string
+description
+ReactNode
+errorMessage
+ReactNode | ((v: ValidationResult) => ReactNode)
+validate
+(value: string) => ValidationError | true | null | undefined
+validationBehavior
+native | aria
+"native"
+minLength
+number
+maxLength
+number
+pattern
+string
+type
+text | email | url | password | tel | search | file
+"text"
+startContent
+ReactNode
+endContent
+ReactNode
+labelPlacement
+inside | outside | outside-left
+"inside"
+fullWidth
+boolean
+true
+isClearable
+boolean
+false
+isRequired
+boolean
+false
+isReadOnly
+boolean
+false
+isDisabled
+boolean
+false
+isInvalid
+boolean
+false
+baseRef
+RefObject<HTMLDivElement>
+disableAnimation
+boolean
+false
+classNames
+Partial<Record<'base' | 'label' | 'inputWrapper' | 'innerWrapper' | 'mainWrapper' | 'input' | 'clearButton' | 'helperWrapper' | 'description' | 'errorMessage', string>>
+Input Events
+Prop Type Default
+onChange
+React.ChangeEvent<HTMLInputElement>
+onValueChange
+(value: string) => void
+onClear
+() => void
+
+## Number Input
+
+The numeric input component is designed for users to enter a number, and increase or decrease the value using stepper buttons
+
+Slots
+base: Input wrapper, it handles alignment, placement, and general appearance.
+label: Label of the input, it is the one that is displayed above, inside or left of the input.
+mainWrapper: Wraps the inputWrapper
+inputWrapper: Wraps the label (when it is inside) and the innerWrapper.
+innerWrapper: Wraps the input, the startContent and the endContent.
+input: The input element.
+clearButton: The clear button, it is at the end of the input.
+stepperButton: The stepper button to increase or decrease the value.
+stepperWrapper: The wrapper for the stepper.
+description: The description of NumberInput.
+errorMessage: The error message of NumberInput.
+
+Data Attributes
+NumberInput has the following attributes on the base element:
+
+data-invalid: When the input is invalid. Based on isInvalid prop.
+data-required: When the input is required. Based on isRequired prop.
+data-readonly: When the input is readonly. Based on isReadOnly prop.
+data-hover: When the input is being hovered. Based on useHover
+data-focus: When the input is being focused. Based on useFocusRing.
+data-focus-within: When the input is being focused or any of its children. Based on useFocusWithin.
+data-focus-visible: When the input is being focused with the keyboard. Based on useFocusRing.
+data-disabled: When the input is disabled. Based on isDisabled prop.
+data-filled: When the input has content, placeholder, start content or the placeholder is shown.
+data-has-elements: When the input has any element (label, helper text, description, error message).
+data-has-helper: When the input has helper text.
+data-has-description: When the input has a description.
+data-has-label: When the input has a label.
+data-has-value: When the input has a value (placeholder is not shown).
+Accessibility
+Built with a native <input> element with type="number".
+Visual and ARIA labeling support.
+Change, clipboard, composition, selection, and input event support.
+Required and invalid states exposed to assistive technology via ARIA.
+Support for description, helper text, and error message linked to the input via ARIA.
+API
+NumberInput Props
+Prop Type Default
+children
+ReactNode
+variant
+flat | bordered | faded | underlined
+"flat"
+color
+default | primary | secondary | success | warning | danger
+"default"
+size
+sm | md | lg
+"md"
+radius
+none | sm | md | lg | full
+name
+string
+label
+ReactNode
+description
+ReactNode
+value
+string
+defaultValue
+string
+placeholder
+string
+errorMessage
+ReactNode | ((v: ValidationResult) => ReactNode)
+validate
+(value: string) => ValidationError | true | null | undefined
+validationBehavior
+native | aria
+"native"
+minValue
+number
+maxValue
+number
+formatOptions
+Intl.NumberFormatOptions
+step
+number
+"1"
+hideStepper
+boolean
+isWheelDisabled
+boolean
+startContent
+ReactNode
+endContent
+ReactNode
+labelPlacement
+inside | outside | outside-left
+"inside"
+fullWidth
+boolean
+true
+isClearable
+boolean
+false
+isRequired
+boolean
+false
+isReadOnly
+boolean
+false
+isDisabled
+boolean
+false
+isInvalid
+boolean
+false
+incrementAriaLabel
+string
+decrementAriaLabel
+string
+baseRef
+RefObject<HTMLDivElement>
+disableAnimation
+boolean
+false
+classNames
+Partial<Record<'base' | 'label' | 'inputWrapper' | 'innerWrapper' | 'mainWrapper' | 'input' | 'clearButton' | 'stepperButton' | 'helperWrapper' | 'stepperWrapper' | 'description' | 'errorMessage', string>>
+NumberInput Events
+Prop Type Default
+onChange
+React.ChangeEvent<HTMLInputElement>
+onValueChange
+(value: number) => void
+onClear
+() => void
+
+## Radio group
+
+Radio Group allow users to select a single option from a list of mutually exclusive options.
+
+Slots
+RadioGroup Slots
+
+base: Radio group root wrapper, it wraps the label and the wrapper.
+wrapper: Radio group wrapper, it wraps all Radios.
+label: Radio group label, it is placed before the wrapper.
+description: Description slot for the radio group.
+errorMessage: Error message slot for the radio group.
+Radio Slots
+
+base: Radio root wrapper, it wraps all elements.
+wrapper: Radio wrapper, it wraps the control element.
+hiddenInput: The hidden input element that is used to handle the radio state.
+labelWrapper: Label and description wrapper.
+label: Label slot for the radio.
+control: Control element, it is the circle element.
+description: Description slot for the radio.
+
+Data Attributes
+RadioGroup has the following attributes on the base element:
+
+data-orientation: The orientation of the radio group. Based on orientation prop.
+Radio has the following attributes on the base element:
+
+data-selected: When the radio is checked. Based on isSelected prop.
+data-pressed: When the radio is pressed. Based on usePress.
+data-invalid: When the radio is invalid. Based on validationState prop.
+data-readonly: When the radio is readonly. Based on isReadOnly prop.
+data-hover-unselected: When the radio is being hovered and unchecked. Based on useHover.
+data-hover: When the radio is being hovered. Based on useHover.
+data-focus: When the radio is being focused. Based on useFocusRing.
+data-focus-visible: When the radio is being focused with the keyboard. Based on useFocusRing.
+data-disabled: When the radio is disabled. Based on isDisabled prop.
+Accessibility
+Radio groups are exposed to assistive technology via ARIA.
+Each radio is built with a native HTML <input> element, which can be optionally visually hidden to allow custom styling.
+Full support for browser features like form autofill.
+Keyboard event support for arrows keys.
+Keyboard focus management and cross browser normalization.
+Group and radio labeling support for assistive technology.
+API
+RadioGroup Props
+Prop Type Default
+children
+ReactNode | ReactNode[]
+label
+ReactNode
+size
+sm | md | lg
+"md"
+color
+default | primary | secondary | success | warning | danger
+"primary"
+orientation
+horizontal | vertical
+"vertical"
+name
+string
+value
+string[]
+defaultValue
+string[]
+description
+ReactNode
+errorMessage
+ReactNode | ((v: ValidationResult) => ReactNode)
+validate
+(value: string) => ValidationError | true | null | undefined
+validationBehavior
+native | aria
+"native"
+isDisabled
+boolean
+false
+isRequired
+boolean
+false
+isReadOnly
+boolean
+isInvalid
+boolean
+false
+validationState
+valid | invalid
+false
+disableAnimation
+boolean
+false
+classNames
+Partial<Record<"base" | "wrapper" | "label", string>>
+RadioGroup Events
+Prop Type Default
+onChange
+React.ChangeEvent<HTMLInputElement>
+onValueChange
+((value: string) => void)
+Radio Props
+Prop Type Default
+children
+ReactNode
+label
+ReactNode
+size
+sm | md | lg
+"md"
+color
+default | primary | secondary | success | warning | danger
+"primary"
+description
+ReactNode
+isDisabled
+boolean
+false
+isRequired
+boolean
+false
+isReadOnly
+boolean
+isInvalid
+boolean
+false
+disableAnimation
+boolean
+false
+classNames
+Partial<Record<"base" | "wrapper" | "labelWrapper" | "label" | "control" | "description", string>>
+
+## Select
+
+A select displays a collapsible list of options and allows a user to select one or more of them.
+
+Slots
+base: The main wrapper of the select. This wraps the rest of the slots.
+label: The label of the select.
+mainWrapper: Wraps the helperWrapper and the trigger slots.
+trigger: The trigger of the select. This wraps the label the inner wrapper and the selector icon.
+innerWrapper: The wrapper of the select content. This wraps the start/end content and the select value.
+selectorIcon: The selector icon of the select. This is the icon that rotates when the select is open (data-open).
+value: The select value. This is also the slot that wraps the renderValue function result.
+listboxWrapper: The wrapper of the listbox. This wraps the listbox component, this slot is used on top of the scroll shadow component.
+listbox: The listbox component. This is the component that wraps the select items.
+popoverContent: The popover content slot. Use this to modify the popover content styles.
+helperWrapper: The wrapper of the helper text. This wraps the helper text and the error message.
+description: The description of the select.
+errorMessage: The error message of the select.
+Data Attributes
+Select has the following attributes on the base element:
+
+data-filled: Indicates if the select has a value, is focused, has start/end content or is open.
+data-has-value: Indicates if the select has selected item(s).
+data-has-label: Indicates if the select has a label. Based on label prop.
+data-has-helper: Indicates if the select has helper text. Based on errorMessage or description prop.
+data-invalid: Indicates if the select is invalid. Based on isInvalid prop.
+Select has the following attributes on the trigger element:
+
+data-open: Indicates if the select is open.
+data-disabled: When the select trigger is disabled. Based on select isDisabled prop.
+data-focus: When the select trigger is being focused. Based on useFocusRing.
+data-focus-visible: When the select trigger is being focused with the keyboard. Based on useFocusRing.
+data-pressed: When the select trigger is pressed. Based on usePress
+data-hover: When the select trigger is being hovered. Based on useHover
+Select has the following attributes on the selectorIcon element:
+
+data-open: Indicates if the select is open.
+SelectItem has the following attributes on the base element:
+
+data-disabled: When the select item is disabled. Based on select disabledKeys prop.
+data-selected: When the select item is selected. Based on select selectedKeys prop.
+data-hover: When the select item is being hovered. Based on useHover
+data-pressed: When the select item is pressed. Based on usePress
+data-focus: When the select item is being focused. Based on useFocusRing.
+data-focus-visible: When the select item is being focused with the keyboard. Based on useFocusRing.
+Accessibility
+Exposed to assistive technology as a button with a listbox popup using ARIA (combined with Listbox).
+Support for selecting a single option.
+Support for selecting multiple options.
+Support for disabled options.
+Support for sections.
+Labeling support for accessibility.
+Support for description and error message help text linked to the input via ARIA.
+Support for mouse, touch, and keyboard interactions.
+Tab stop focus management.
+Keyboard support for opening the listbox using the arrow keys, including automatically focusing the first or last item accordingly.
+Typeahead to allow selecting options by typing text, even without opening the listbox.
+Browser autofill integration via a hidden native <select> element.
+Mobile screen reader listbox dismissal support.
+API
+Select Props
+Prop Type Default
+children\*
+ReactNode[]
+items
+Iterable<T>
+selectionMode
+single | multiple
+selectedKeys
+all | Iterable<React.Key>
+disabledKeys
+Iterable<React.Key>
+defaultSelectedKeys
+all | Iterable<React.Key>
+variant
+flat | bordered | faded | underlined
+"flat"
+color
+default | primary | secondary | success | warning | danger
+"default"
+size
+sm | md | lg
+"md"
+radius
+none | sm | md | lg | full
+placeholder
+string
+"Select an option"
+labelPlacement
+inside | outside | outside-left
+"inside"
+label
+ReactNode
+description
+ReactNode
+errorMessage
+ReactNode | ((v: ValidationResult) => ReactNode)
+startContent
+ReactNode
+endContent
+ReactNode
+selectorIcon
+ReactNode
+scrollRef
+React.RefObject<HTMLElement>
+spinnerRef
+React.RefObject<HTMLElement>
+maxListboxHeight
+number
+"256"
+itemHeight
+number
+"32"
+isVirtualized
+boolean
+"undefined"
+fullWidth
+boolean
+true
+isOpen
+boolean
+defaultOpen
+boolean
+isRequired
+boolean
+false
+isDisabled
+boolean
+false
+isMultiline
+boolean
+false
+isInvalid
+boolean
+false
+validationState
+valid | invalid
+showScrollIndicators
+boolean
+true
+autoFocus
+boolean
+false
+disallowEmptySelection
+boolean
+false
+disableAnimation
+boolean
+true
+disableSelectorIconRotation
+boolean
+false
+hideEmptyContent
+boolean
+false
+popoverProps
+PopoverProps
+listboxProps
+ListboxProps
+scrollShadowProps
+ScrollShadowProps
+classNames
+Partial<Record<"base"｜ "label"｜ "trigger"｜ "mainWrapper" ｜ "innerWrapper"｜ "selectorIcon" ｜ "value" ｜ "listboxWrapper"｜ "listbox" ｜ "popoverContent" ｜ "helperWrapper" ｜ "description" ｜ "errorMessage", string>>
+Select Events
+Prop Type Default
+onClose
+() => void
+onOpenChange
+(isOpen: boolean) => void
+onSelectionChange
+(keys: "all" | Set<React.Key> & {anchorKey?: string; currentKey?: string}) => void
+onChange
+React.ChangeEvent<HTMLSelectElement>
+renderValue
+RenderValueFunction
+SelectItem Props
+Check the ListboxItem props.
+
+SelectItem Events
+Check the ListboxItem events.
+
+SelectSection Props
+Check the ListboxSection props.
+
+Types
+Render Value Function
+The T type is the type of the data passed to the select items.
+
+export type SelectedItemProps<T> = {
+/** A unique key for the item. \*/
+key?: Key;
+/** The props passed to the item. _/
+props?: Record<string, any>;
+/\*\* The item data. _/
+data?: T | null;
+/** An accessibility label for this item. \*/
+"aria-label"?: string;
+/** The rendered contents of this item (e.g. JSX). _/
+rendered?: ReactNode;
+/\*\* A string value for this item, used for features like typeahead. _/
+textValue?: string;
+/\*_ The type of item this item represents. _/
+type?: string;
+};
+
+type SelectedItems<T> = Array<SelectedItemProps<T>>;
+
+renderValue: (items: SelectedItems<T>) => ReactNode;
+
+ListboxItem Props
+Prop Type Default
+children\*
+ReactNode
+key
+React.Key
+title
+string | ReactNode
+textValue
+string
+description
+string | ReactNode
+shortcut
+string | ReactNode
+startContent
+ReactNode
+endContent
+ReactNode
+selectedIcon
+ListboxItemSelectedIconProps
+href
+string
+target
+HTMLAttributeAnchorTarget
+rel
+string
+download
+boolean | string
+ping
+string
+referrerPolicy
+HTMLAttributeReferrerPolicy
+shouldHighlightOnFocus
+boolean
+false
+hideSelectedIcon
+boolean
+false
+showDivider
+boolean
+false
+isDisabled
+boolean
+false
+isSelected
+boolean
+false
+isReadOnly
+boolean
+false
+classNames
+Partial<Record<"base" | "wrapper" | "title" | "description" | "shortcut" | "selectedIcon", string>>
+ListboxItem Events
+Prop Type Default
+onAction
+() => void
+onPress
+(e: PressEvent) => void
+onPressStart
+(e: PressEvent) => void
+onPressEnd
+(e: PressEvent) => void
+onPressChange
+(isPressed: boolean) => void
+onPressUp
+(e: PressEvent) => void
+onKeyDown
+(e: KeyboardEvent) => void
+onKeyUp
+(e: KeyboardEvent) => void
+onClick
+MouseEventHandler
+
+ListboxSection Props
+Prop Type Default
+children\*
+ReactNode
+title
+string
+items
+Iterable<T>
+hideSelectedIcon
+boolean
+false
+showDivider
+boolean
+false
+dividerProps
+DividerProps
+classNames
+Partial<Record<"base" | "heading" | "group" | "divider", string>>
+itemClasses
+Partial<Record<"base" | "wrapper" | "title" | "description" | "shortcut" | "selectedIcon", string>>
+
+## Tabs
+
+Tabs organize content into multiple sections and allow users to navigate between them.
+
+Slots
+base: The main tabs slot, it wraps the items and the panels.
+tabList: The tab list slot, it wraps the tab items.
+tab: The tab slot, it wraps the tab item.
+tabContent: The tab content slot, it wraps the tab content.
+cursor: The cursor slot, it wraps the cursor. This is only visible when disableAnimation=false
+panel: The panel slot, it wraps the tab panel (content).
+tabWrapper: The tab wrapper slot, it wraps the tab and the tab content.
+Custom Styles
+You can customize the Tabs component by passing custom Tailwind CSS classes to the component slots.
+
+Preview
+
+Code
+
+Photos
+9
+
+Music
+3
+
+Videos
+1
+Data Attributes
+Tab has the following attributes on the base element:
+
+data-selected: When the tab is selected.
+data-disabled: When the tab is disabled.
+data-hover: When the tab is being hovered. Based on useHover.
+data-hover-selected: When the tab is being hovered and is not selected. Based on useHover and selected state.
+data-focus: When the tab is being focused. Based on useFocusRing.
+data-focus-visible: When the tab is being focused with the keyboard. Based on useFocusRing.
+data-pressed: When the tab is pressed. Based on usePress.
+Accessibility
+Support for mouse, touch, and keyboard interactions on tabs.
+Keyboard event support for arrows keys.
+Support for disabled tabs.
+Follows the tabs ARIA pattern, semantically linking tabs and their associated tab panels.
+Focus management for tab panels without any focusable children.
+API
+Tabs Props
+Prop Type Default
+children*
+ReactNode | ((item: T) => ReactElement)
+variant
+solid | bordered | light | underlined
+"solid"
+color
+default | primary | secondary | success | warning | danger
+"default"
+size
+sm | md | lg
+"md"
+radius
+none | sm | md | lg | full
+fullWidth
+boolean
+false
+items
+Iterable<T>
+disabledKeys
+React.Key[]
+selectedKey
+React.Key
+defaultSelectedKey
+React.Key
+shouldSelectOnPressUp
+boolean
+true
+keyboardActivation
+automatic | manual
+"automatic"
+motionProps
+MotionProps
+disableCursorAnimation
+boolean
+false
+isDisabled
+boolean
+false
+disableAnimation
+boolean
+false
+classNames
+Partial<Record<"base"｜ "tabList"｜ "tab"｜ "tabContent"｜ "cursor" ｜ "panel" ｜ "tabWrapper", string>>
+placement
+top | bottom | start | end
+"top"
+isVertical
+boolean
+false
+destroyInactiveTabPanel
+boolean
+true
+Tabs Events
+Prop Type Default
+onSelectionChange
+(key: React.Key) => any
+Tab Props
+Prop Type Default
+tabRef
+RefObject<HTMLButtonElement>
+children*
+ReactNode
+title
+ReactNode
+titleValue
+string
+href
+string
+target
+HTMLAttributeAnchorTarget
+rel
+string
+download
+boolean | string
+ping
+string
+referrerPolicy
+HTMLAttributeReferrerPolicy
+shouldSelectOnPressUp
+boolean
+
+## Time Input
+
+The TimeInput component consists of a label, and a group of segments representing each unit of a time (e.g. hours, minutes, and seconds). Each segment is individually focusable and editable by the user, by typing or using the arrow keys to increment and decrement the value. This approach allows values to be formatted and parsed correctly regardless of the locale or time format, and offers an easy and error-free way to edit times using the keyboard.
+
+Slots
+base: Input wrapper, it handles alignment, placement, and general appearance.
+label: Label of the time input, it is the one that is displayed above, inside or left of the time input.
+inputWrapper: Wraps the label (when it is inside) and the innerWrapper.
+input: The time input element.
+innerWrapper: Wraps the segments, the startContent and the endContent.
+segment: The segment of input elements.
+helperWrapper: The wrapper of the helper text. This wraps the helper text and the error message.
+description: The description of the time input.
+errorMessage: The error message of the time input.
+Data Attributes
+TimeInput has the following attributes on the base element:
+
+data-has-helper: When the time input has description or error message. Based on description or errorMessage props.
+data-required: When the time input is required. Based on isRequired prop.
+data-disabled: When the time input is disabled. Based on isDisabled prop.
+data-readonly: When the time input is readonly. Based on isReadOnly prop.
+data-invalid: When the time input is invalid. Based on isInvalid prop.
+data-has-start-content: When the time input has start content. Based on startContent prop.
+data-has-end-content: When the time input has end content. Based on endContent prop.
+Accessibility
+Support for locale-specific formatting, number systems, hour cycles, and right-to-left layout.
+Times can optionally include a time zone. All modifications follow time zone rules such as daylight saving time.
+Each time unit is displayed as an individually focusable and editable segment, which allows users an easy way to edit times using the keyboard, in any format and locale.
+Time segments are editable using an easy to use numeric keypad, and all interactions are accessible using touch-based screen readers.
+API
+TimeInput Props
+Prop Type Default
+label
+ReactNode
+name
+string
+value
+TimeValue | null
+defaultValue
+TimeValue | null
+variant
+flat | bordered | faded | underlined
+"flat"
+color
+default | primary | secondary | success | warning | danger
+"default"
+size
+sm | md | lg
+"md"
+radius
+none | sm | md | lg | full
+hourCycle
+12 | 24
+granularity
+hour | minute | second
+"minute"
+hideTimeZone
+boolean
+labelPlacement
+inside | outside | outside-left
+"inside"
+shouldForceLeadingZeros
+boolean
+true
+placeholderValue
+TimeValue
+minValue
+TimeValue
+maxValue
+TimeValue
+isDisabled
+boolean
+isReadOnly
+boolean
+isRequired
+boolean
+isInvalid
+boolean
+autoFocus
+boolean
+description
+ReactNode
+errorMessage
+ReactNode | (v: ValidationResult) => ReactNode
+validate
+(value: MappedTimeValue<TimeValue>) => ValidationError | true | null | undefined
+validationBehavior
+native | aria
+"native"
+disableAnimation
+boolean
+classNames
+Partial<Record<"base" | "label" | "inputWrapper" | "innerWrapper" | "segment" | "helperWrapper" | "input" | "description" | "errorMessage", string>>
+TimeInput Events
+Prop Type Default
+onFocus
+(e: FocusEvent<Target>) => void
+onBlur
+(e: FocusEvent<Target>) => void
+onFocusChange
+(isFocused: boolean) => void
+onKeyDown
+(e: KeyboardEvent) => void
+onKeyUp
+(e: KeyboardEvent) => void
+onChange
+(value: MappedTimeValue<TimeValue>) => void
+
+## Textarea
+
+Textarea component is a multi-line Input which allows you to write large texts.
+
+Slots
+base: Input wrapper, it handles alignment, placement, and general appearance.
+label: Label of the textarea, it is the one that is displayed above, inside or left of the textarea.
+inputWrapper: Wraps the label (when it is inside) and the innerWrapper.
+input: The textarea input element.
+description: The description of the textarea.
+errorMessage: The error message of the textarea.
+headerWrapper: Wraps the label and the clearButton.
+Data Attributes
+Textarea has the following attributes on the base element:
+
+data-invalid: When the textarea is invalid. Based on isInvalid prop.
+data-required: When the textarea is required. Based on isRequired prop.
+data-readonly: When the textarea is readonly. Based on isReadOnly prop.
+data-hover: When the textarea is being hovered. Based on useHover
+data-focus: When the textarea is being focused. Based on useFocusRing.
+data-focus-visible: When the textarea is being focused with the keyboard. Based on useFocusRing.
+data-disabled: When the textarea is disabled. Based on isDisabled prop.
+Accessibility
+Built with a native <input> element.
+Visual and ARIA labeling support.
+Change, clipboard, composition, selection, and input event support.
+Required and invalid states exposed to assistive technology via ARIA.
+Support for description and error message help text linked to the input via ARIA.
+API
+Textarea Props
+Prop Type Default
+children
+ReactNode
+minRows
+number
+"3"
+maxRows
+number
+"8"
+cacheMeasurements
+boolean
+false
+variant
+flat | bordered | faded | underlined
+"flat"
+color
+default | primary | secondary | success | warning | danger
+"default"
+size
+sm | md | lg
+"md"
+radius
+none | sm | md | lg | full
+label
+ReactNode
+value
+string
+defaultValue
+string
+placeholder
+string
+startContent
+ReactNode
+endContent
+ReactNode
+description
+ReactNode
+errorMessage
+ReactNode | ((v: ValidationResult) => ReactNode)
+validate
+(value: string) => ValidationError | true | null | undefined
+validationBehavior
+native | aria
+"native"
+labelPlacement
+inside | outside | outside-left
+"inside"
+fullWidth
+boolean
+true
+isRequired
+boolean
+false
+isReadOnly
+boolean
+isDisabled
+boolean
+false
+isClearable
+boolean
+false
+isInvalid
+boolean
+false
+validationState
+valid | invalid
+disableAutosize
+boolean
+false
+disableAnimation
+boolean
+false
+classNames
+Partial<Record<"base" | "label" | "inputWrapper" | "innerWrapper" | "input" | "description" | "errorMessage", string>>
+Input Events
+Prop Type Default
+onChange
+React.ChangeEvent<HTMLInputElement>
+onValueChange
+(value: string) => void
+onClear
+() => void
+onHeightChange
+(height: number, meta: { rowHeight: number }) => void

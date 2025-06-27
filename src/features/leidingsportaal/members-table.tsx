@@ -139,9 +139,23 @@ const initialVisibleColumns = [
 
 interface MembersTableProps {
   members: MemberTableData[];
+  hideGroupColumn?: boolean;
 }
 
-export default function ToponymsTable({ members }: MembersTableProps) {
+export default function ToponymsTable({
+  members,
+  hideGroupColumn = false,
+}: MembersTableProps) {
+  // Filter out the group column if hideGroupColumn is true
+  const filteredColumns = hideGroupColumn
+    ? columns.filter((col) => col.uid !== "group")
+    : columns;
+
+  // Filter out the group column from initial visible columns if hideGroupColumn is true
+  const filteredInitialVisibleColumns = hideGroupColumn
+    ? initialVisibleColumns.filter((col) => col !== "group")
+    : initialVisibleColumns;
+
   const renderCell = useCallback(
     (member: MemberTableData, columnKey: keyof MemberTableData | "actions") => {
       switch (columnKey) {
@@ -405,14 +419,14 @@ export default function ToponymsTable({ members }: MembersTableProps) {
   return (
     <Table<MemberTableData>
       items={members}
-      columns={columns}
-      initialVisibleColumns={initialVisibleColumns}
+      columns={filteredColumns}
+      initialVisibleColumns={filteredInitialVisibleColumns}
       renderCellAction={renderCell}
       searchPlaceholder="Zoek een lid..."
       searchKeys={["name"]}
       extraActions={
         <CreateButton
-          href="/leidingsportaal/leden/lid-inschrijven"
+          href="/leidingsportaal/inschrijven"
           content="Nieuw lid inschrijven"
         />
       }
