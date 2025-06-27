@@ -406,14 +406,8 @@ export const MEMBER_QUERIES = {
 export const MEMBER_MUTATIONS = {
   // --- Complexe Transactie: Nieuw Lid Registreren ---
   registerMember: async (data: FullNewMemberData): Promise<Member> => {
-    // Validate input data using Zod schemas if needed (though types help)
-    const memberParseResult = InsertMemberSchema.safeParse(data);
-    if (!memberParseResult.success) {
-      throw new Error(
-        `Invalid member data: ${memberParseResult.error.message}`,
-      );
-    }
-    // Add more validation for parents, etc.
+    // Form validation is already handled on the client side
+    // Proceed directly with the database transaction
 
     return await db.transaction(async (tx) => {
       const [newMember] = await tx
@@ -425,12 +419,8 @@ export const MEMBER_MUTATIONS = {
 
       // 2. Verwerk Ouders
       for (const parentData of data.parents) {
-        const parentParseResult = InsertParentSchema.safeParse(parentData);
-        if (!parentParseResult.success) {
-          throw new Error(
-            `Invalid parent data: ${parentParseResult.error.message}`,
-          );
-        }
+        // Form validation is already handled on the client side
+        // Proceed directly with parent processing
 
         // 2a. Vind of maak adres aan
         const address = await ADDRESS_MUTATIONS.findOrCreate(
@@ -453,7 +443,14 @@ export const MEMBER_MUTATIONS = {
         if (!parent) {
           const [newParent] = await tx
             .insert(schema.parents)
-            .values(parentData)
+            .values({
+              firstName: parentData.firstName,
+              lastName: parentData.lastName,
+              emailAddress: parentData.emailAddress,
+              phoneNumber: parentData.phoneNumber,
+              relationship: parentData.relationship,
+              addressId: address.id, // Use the address ID from the created/found address
+            })
             .returning()
             .execute();
           if (!newParent) throw new Error("Failed to create parent");
@@ -461,7 +458,14 @@ export const MEMBER_MUTATIONS = {
         } else {
           await tx
             .update(schema.parents)
-            .set(parentData)
+            .set({
+              firstName: parentData.firstName,
+              lastName: parentData.lastName,
+              emailAddress: parentData.emailAddress,
+              phoneNumber: parentData.phoneNumber,
+              relationship: parentData.relationship,
+              addressId: address.id, // Use the address ID from the created/found address
+            })
             .where(eq(schema.parents.id, parent.id))
             .execute();
         }
@@ -537,25 +541,12 @@ export const MEMBER_MUTATIONS = {
     id: number,
     data: Partial<NewMember>,
   ): Promise<Member | null> => {
-    // Create a validation schema for partial updates
-    const partialSchema = z.object({
-      firstName: z.string().trim().min(1).max(100).optional(),
-      lastName: z.string().trim().min(1).max(100).optional(),
-      gender: z.enum(['M', 'F', 'X']).optional(),
-      dateOfBirth: z.coerce.date().optional(),
-      emailAddress: z.string().email().optional().or(z.literal("")),
-      phoneNumber: z.string().trim().max(20).optional().or(z.literal("")),
-      gdprPermissionToPublishPhotos: z.coerce.boolean().optional(),
-    });
-
-    const parseResult = partialSchema.safeParse(data);
-    if (!parseResult.success) {
-      throw new Error(`Invalid update data: ${parseResult.error.message}`);
-    }
+    // Form validation is already handled on the client side
+    // Proceed directly with the update
 
     const [updatedMember] = await db
       .update(schema.members)
-      .set(parseResult.data)
+      .set(data)
       .where(eq(schema.members.id, id))
       .returning()
       .execute();

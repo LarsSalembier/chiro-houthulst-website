@@ -49,6 +49,7 @@ import { getFullMemberDetails } from "./actions";
 import { type Member, type Group, type WorkYear, type PaymentMethod } from "~/server/db/schema";
 import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
 import { CampSubscription } from "./components/camp-subscription";
+import { formatDateLocale } from "~/lib/date-utils";
 
 // Note: This is a client component, so role checking is handled at the parent level
 // The main leidingsportaal pages already have role protection
@@ -257,9 +258,7 @@ export default function MemberDetailPage() {
                 </h1>
                 <p className="text-gray-600">
                   Lid sinds{" "}
-                  {member.yearlyMemberships[0]?.workYear.startDate.toLocaleDateString(
-                    "nl-BE",
-                  )}
+                  {member.yearlyMemberships[0] ? formatDateLocale(member.yearlyMemberships[0].workYear.startDate) : ""}
                 </p>
               </div>
               <Button
@@ -541,7 +540,7 @@ export default function MemberDetailPage() {
                     <p className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-green-600" />
                       <strong>Geboortedatum:</strong>{" "}
-                      {member.dateOfBirth.toLocaleDateString("nl-BE")}
+                      {formatDateLocale(member.dateOfBirth)}
                     </p>
                     <p>
                       <strong>Leeftijd:</strong>{" "}
@@ -585,13 +584,9 @@ export default function MemberDetailPage() {
                         </div>
                         <p>
                           <strong>Werkjaar:</strong>{" "}
-                          {member.yearlyMemberships[0].workYear.startDate.toLocaleDateString(
-                            "nl-BE",
-                          )}{" "}
+                          {formatDateLocale(member.yearlyMemberships[0].workYear.startDate)}{" "}
                           -{" "}
-                          {member.yearlyMemberships[0].workYear.endDate.toLocaleDateString(
-                            "nl-BE",
-                          )}
+                          {formatDateLocale(member.yearlyMemberships[0].workYear.endDate)}
                         </p>
                       </>
                     )}
@@ -643,19 +638,13 @@ export default function MemberDetailPage() {
                       </div>
                       <p>
                         <strong>Werkjaar:</strong>{" "}
-                        {member.yearlyMemberships[0].workYear.startDate.toLocaleDateString(
-                          "nl-BE",
-                        )}{" "}
+                        {formatDateLocale(member.yearlyMemberships[0].workYear.startDate)}{" "}
                         -{" "}
-                        {member.yearlyMemberships[0].workYear.endDate.toLocaleDateString(
-                          "nl-BE",
-                        )}
+                        {formatDateLocale(member.yearlyMemberships[0].workYear.endDate)}
                       </p>
                       <p>
                         <strong>Lid sinds:</strong>{" "}
-                        {member.yearlyMemberships[0].workYear.startDate.toLocaleDateString(
-                          "nl-BE",
-                        )}
+                        {formatDateLocale(member.yearlyMemberships[0].workYear.startDate)}
                       </p>
                     </>
                   )}
@@ -954,8 +943,8 @@ export default function MemberDetailPage() {
 
                   {/* Allergies */}
                   {Boolean(
-                    medicalInfo.foodAllergies ||
-                    medicalInfo.substanceAllergies ||
+                    medicalInfo.foodAllergies ??
+                    medicalInfo.substanceAllergies ??
                     medicalInfo.medicationAllergies
                   ) && (
                     <>
