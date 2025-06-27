@@ -2,6 +2,7 @@
 
 import { MEMBER_QUERIES, MEMBER_MUTATIONS } from "~/server/db/queries/member-queries";
 import { ADDRESS_MUTATIONS } from "~/server/db/queries/address-queries";
+import { GROUP_QUERIES } from "~/server/db/queries/group-queries";
 import { type PaymentMethod, type Gender, type ParentRelationship, members, emergencyContacts, medicalInformation, membersParents, parents, yearlyMemberships } from "~/server/db/schema";
 import { db } from "~/server/db/db";
 import { and, eq, isNull } from "drizzle-orm";
@@ -99,7 +100,11 @@ export async function getFullMemberDetails(memberId: number) {
 }
 
 export async function updateMember(memberId: number, data: UpdateMemberData) {
-  return await db.transaction(async (tx) => {
+  let groupChanged = false;
+  let oldGroupId: number | null = null;
+  let newGroupId: number | null = null;
+
+  const result = await db.transaction(async (tx) => {
     try {
       // 1. Update basic member info with null conversion
       const memberData = {
@@ -109,7 +114,34 @@ export async function updateMember(memberId: number, data: UpdateMemberData) {
       };
       await MEMBER_MUTATIONS.updateMemberDetails(memberId, memberData);
 
-      // 2. Update emergency contact with null conversion
+      // 2. Check if group needs to be updated based on new birthdate/gender
+      const currentYearlyMembership = await tx
+        .select()
+        .from(yearlyMemberships)
+        .where(eq(yearlyMemberships.memberId, memberId))
+        .limit(1)
+        .execute();
+
+      if (currentYearlyMembership[0]) {
+        oldGroupId = currentYearlyMembership[0].groupId;
+        const newGroup = await GROUP_QUERIES.findGroupForMember(
+          data.member.dateOfBirth,
+          data.member.gender,
+        );
+
+        // If a new group is found and it's different from the current group, update it
+        if (newGroup && newGroup.id !== currentYearlyMembership[0].groupId) {
+          newGroupId = newGroup.id;
+          groupChanged = true;
+          await tx
+            .update(yearlyMemberships)
+            .set({ groupId: newGroup.id })
+            .where(eq(yearlyMemberships.memberId, memberId))
+            .execute();
+        }
+      }
+
+      // 3. Update emergency contact with null conversion
       const emergencyContactData = {
         firstName: data.emergencyContact.firstName.trim(),
         lastName: data.emergencyContact.lastName.trim(),
@@ -128,7 +160,7 @@ export async function updateMember(memberId: number, data: UpdateMemberData) {
         })
         .execute();
 
-      // 3. Update medical information with null conversion and field mapping
+      // 4. Update medical information with null conversion and field mapping
       const medicalData = {
         doctorFirstName: data.medicalInformation.doctorFirstName.trim(),
         doctorLastName: data.medicalInformation.doctorLastName.trim(),
@@ -176,7 +208,7 @@ export async function updateMember(memberId: number, data: UpdateMemberData) {
         })
         .execute();
 
-      // 4. Handle parents - this is complex because we need to:
+      // 5. Handle parents - this is complex because we need to:
       // - Remove parents that are no longer in the list
       // - Update existing parents
       // - Add new parents
@@ -303,7 +335,7 @@ export async function updateMember(memberId: number, data: UpdateMemberData) {
         }
       }
 
-      // 5. Update payment information in yearlyMemberships
+      // 6. Update payment information in yearlyMemberships
       const yearlyMembershipResult = await tx
         .select()
         .from(yearlyMemberships)
@@ -332,6 +364,21 @@ export async function updateMember(memberId: number, data: UpdateMemberData) {
       throw new Error("Failed to update member");
     }
   });
+
+  // Revalidate relevant paths after successful update
+  revalidatePath(`/leidingsportaal/leden/${memberId}`);
+  revalidatePath(`/leidingsportaal/leden`);
+  revalidatePath(`/leidingsportaal/groepen`);
+  
+  // If group changed, revalidate the specific group pages
+  if (groupChanged && oldGroupId) {
+    revalidatePath(`/leidingsportaal/groepen/${oldGroupId}`);
+  }
+  if (groupChanged && newGroupId) {
+    revalidatePath(`/leidingsportaal/groepen/${newGroupId}`);
+  }
+
+  return result;
 }
 
 // Kamp Inschrijving Actions

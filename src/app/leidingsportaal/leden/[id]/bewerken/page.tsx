@@ -16,7 +16,8 @@ import { CalendarDate } from "@internationalized/date";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
 import { getFullMemberDetails, updateMember } from "../actions";
-import { type Gender, type ParentRelationship, type PaymentMethod } from "~/server/db/schema";
+import { findGroupForMember } from "~/app/leidingsportaal/inschrijven/actions";
+import { type Gender, type ParentRelationship, type PaymentMethod, type Group } from "~/server/db/schema";
 import SignInAsLeiding from "~/app/leidingsportaal/sign-in-as-leiding";
 import DDMMYYYYDateInput from "~/components/ui/dd-mm-yyyy-date-input";
 
@@ -28,6 +29,7 @@ export default function EditMemberPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [memberData, setMemberData] = useState<Awaited<ReturnType<typeof getFullMemberDetails>> | null>(null);
+  const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
 
   const breadcrumbItems = [
     { href: "/leidingsportaal", label: "Leidingsportaal" },
@@ -177,6 +179,11 @@ export default function EditMemberPage() {
       form.setFieldValue("member.phoneNumber", memberData.phoneNumber ?? "");
       form.setFieldValue("member.gdprPermissionToPublishPhotos", memberData.gdprPermissionToPublishPhotos ?? true);
 
+      // Set current group from member data
+      if (memberData.yearlyMemberships?.[0]?.group) {
+        setCurrentGroup(memberData.yearlyMemberships[0].group);
+      }
+
       // Set parents data
       if (memberData.parents && memberData.parents.length > 0) {
         const parentsData = memberData.parents.map((parent) => ({
@@ -295,11 +302,38 @@ export default function EditMemberPage() {
 
   const setPrimaryParent = (index: number) => {
     const currentParents = form.getFieldValue("parents");
-    const updatedParents = currentParents.map((parent, i: number) => ({
+    const updatedParents = currentParents.map((parent: {
+      firstName: string;
+      lastName: string;
+      emailAddress: string;
+      phoneNumber: string;
+      relationship: ParentRelationship | undefined;
+      address: {
+        street: string;
+        houseNumber: string;
+        postalCode: string;
+        municipality: string;
+      };
+      isPrimary: boolean;
+    }, i: number) => ({
       ...parent,
       isPrimary: i === index,
     }));
     form.setFieldValue("parents", updatedParents);
+  };
+
+  const handleGroupUpdate = async (dateOfBirth: Date | undefined, gender: Gender | undefined) => {
+    if (dateOfBirth && gender) {
+      try {
+        const group = await findGroupForMember(dateOfBirth, gender);
+        setCurrentGroup(group);
+      } catch (error) {
+        console.error("Error finding group:", error);
+        setCurrentGroup(null);
+      }
+    } else {
+      setCurrentGroup(null);
+    }
   };
 
   if (loading) {
@@ -405,9 +439,13 @@ export default function EditMemberPage() {
                       selectedKeys={
                         field.state.value ? [field.state.value] : []
                       }
-                      onSelectionChange={(keys) => {
+                      onSelectionChange={async (keys) => {
                         const value = Array.from(keys)[0] as Gender;
                         field.handleChange(value);
+                        
+                        // Update group when gender changes
+                        const dateOfBirth = form.getFieldValue("member.dateOfBirth");
+                        await handleGroupUpdate(dateOfBirth, value);
                       }}
                       isInvalid={field.state.meta.errors.length > 0}
                       errorMessage={field.state.meta.errors[0]}
@@ -435,8 +473,12 @@ export default function EditMemberPage() {
                     <DDMMYYYYDateInput
                       label="Geboortedatum"
                       value={field.state.value}
-                      onChange={(date: Date | undefined) => {
+                      onChange={async (date: Date | undefined) => {
                         field.handleChange(date);
+                        
+                        // Update group when birthdate changes
+                        const gender = form.getFieldValue("member.gender");
+                        await handleGroupUpdate(date, gender);
                       }}
                       isInvalid={field.state.meta.errors.length > 0}
                       errorMessage={field.state.meta.errors[0]}
@@ -444,6 +486,26 @@ export default function EditMemberPage() {
                     />
                   )}
                 </form.Field>
+
+                {currentGroup && (
+                  <div
+                    className="rounded-lg p-4"
+                    style={{
+                      backgroundColor: currentGroup.color
+                        ? `${currentGroup.color}15`
+                        : "#f0f9ff",
+                    }}
+                  >
+                    <p
+                      className="text-sm font-medium"
+                      style={{
+                        color: currentGroup.color ?? "#0c4a6e",
+                      }}
+                    >
+                      <strong>Huidige groep:</strong> {currentGroup.name}
+                    </p>
+                  </div>
+                )}
 
                 <form.Field
                   name="member.emailAddress"
