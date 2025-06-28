@@ -382,7 +382,9 @@ export const InsertEmergencyContactSchema = createInsertSchema(
     relationship: z
       .string()
       .trim()
-      .max(MAX_EMERGENCY_CONTACT_RELATIONSHIP_LENGTH),
+      .max(MAX_EMERGENCY_CONTACT_RELATIONSHIP_LENGTH)
+      .optional()
+      .or(z.literal("")),
   },
 ).omit({ createdAt: true, updatedAt: true });
 
@@ -618,7 +620,9 @@ export const yearlyMemberships = createTable(
     paymentDate: timestamp("payment_date", { withTimezone: true }),
     campSubscription: boolean("camp_subscription").default(false).notNull(),
     campPaymentMethod: paymentMethodEnum("camp_payment_method"),
-    campPaymentReceived: boolean("camp_payment_received").default(false).notNull(),
+    campPaymentReceived: boolean("camp_payment_received")
+      .default(false)
+      .notNull(),
     campPaymentDate: timestamp("camp_payment_date", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)

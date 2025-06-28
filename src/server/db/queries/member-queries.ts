@@ -17,10 +17,51 @@ import { z } from "zod";
 
 // Type voor complexe member data input
 export type FullNewMemberData = NewMember & {
-  parents: Array<NewParent & { address: NewAddress; isPrimary: boolean }>;
+  parents: Array<
+    Omit<NewParent, "addressId"> & { address: NewAddress; isPrimary: boolean }
+  >;
   emergencyContact?: Omit<NewEmergencyContact, "memberId">;
-  medicalInformation?: Omit<NewMedicalInformation, "memberId">;
+  medicalInformation?: {
+    doctorFirstName: string;
+    doctorLastName: string;
+    doctorPhoneNumber: string;
+    tetanusVaccination: boolean;
+    asthma: boolean;
+    asthmaDescription: string;
+    bedwetting: boolean;
+    bedwettingDescription: string;
+    epilepsy: boolean;
+    epilepsyDescription: string;
+    heartCondition: boolean;
+    heartConditionDescription: string;
+    hayFever: boolean;
+    hayFeverDescription: string;
+    skinCondition: boolean;
+    skinConditionDescription: string;
+    rheumatism: boolean;
+    rheumatismDescription: string;
+    sleepwalking: boolean;
+    sleepwalkingDescription: string;
+    diabetes: boolean;
+    diabetesDescription: string;
+    hasFoodAllergies: boolean;
+    foodAllergies: string;
+    hasSubstanceAllergies: boolean;
+    substanceAllergies: string;
+    hasMedicationAllergies: boolean;
+    medicationAllergies: string;
+    hasMedication: boolean;
+    medication: string;
+    hasOtherMedicalConditions: boolean;
+    otherMedicalConditions: string;
+    getsTiredQuickly: boolean;
+    canParticipateSports: boolean;
+    canSwim: boolean;
+    otherRemarks: string;
+    permissionMedication: boolean;
+  };
   workYearId: number; // Het werkjaar waarvoor ingeschreven wordt
+  groupId?: number; // Optionele groep ID voor handmatige selectie
   paymentReceived: boolean;
   paymentMethod?: schema.PaymentMethod;
   paymentDate?: Date;
@@ -296,7 +337,7 @@ export const MEMBER_QUERIES = {
   },
 
   // --- Kamp Inschrijving Functies ---
-  
+
   // Schrijf een lid in voor kamp
   subscribeToCamp: async (
     memberId: number,
@@ -383,10 +424,7 @@ export const MEMBER_QUERIES = {
   },
 
   // Haal kamp inschrijvingen op voor een specifieke groep
-  getCampSubscriptionsForGroup: async (
-    workYearId: number,
-    groupId: number,
-  ) => {
+  getCampSubscriptionsForGroup: async (workYearId: number, groupId: number) => {
     return await db.query.yearlyMemberships.findMany({
       where: and(
         eq(schema.yearlyMemberships.workYearId, workYearId),
@@ -404,43 +442,90 @@ export const MEMBER_QUERIES = {
 };
 
 export const MEMBER_MUTATIONS = {
-  // --- Complexe Transactie: Nieuw Lid Registreren ---
+  // --- Complexe Transactie: Nieuw Lid Registreren of Bestaand Lid Updaten ---
   registerMember: async (data: FullNewMemberData): Promise<Member> => {
     // Form validation is already handled on the client side
     // Proceed directly with the database transaction
 
     return await db.transaction(async (tx) => {
-      const [newMember] = await tx
-        .insert(schema.members)
-        .values(data)
-        .returning()
-        .execute();
-      if (!newMember) throw new Error("Failed to create member");
+      // 1. Check if member already exists (by name and date of birth)
+      let member = await tx.query.members.findFirst({
+        where: and(
+          eq(schema.members.firstName, data.firstName),
+          eq(schema.members.lastName, data.lastName),
+          eq(schema.members.dateOfBirth, data.dateOfBirth),
+        ),
+      });
 
-      // 2. Verwerk Ouders
+      if (member) {
+        // Update existing member with new data
+        const [updatedMember] = await tx
+          .update(schema.members)
+          .set({
+            gender: data.gender,
+            emailAddress: data.emailAddress,
+            phoneNumber: data.phoneNumber,
+            gdprPermissionToPublishPhotos: data.gdprPermissionToPublishPhotos,
+            updatedAt: new Date(),
+          })
+          .where(eq(schema.members.id, member.id))
+          .returning()
+          .execute();
+
+        if (!updatedMember) throw new Error("Failed to update member");
+        member = updatedMember;
+      } else {
+        // Create new member
+        const [newMember] = await tx
+          .insert(schema.members)
+          .values(data)
+          .returning()
+          .execute();
+
+        if (!newMember) throw new Error("Failed to create member");
+        member = newMember;
+      }
+
+      // 2. Handle Parents
+      // First, get existing parent relationships for this member
+      const existingParentRelationships =
+        await tx.query.membersParents.findMany({
+          where: eq(schema.membersParents.memberId, member.id),
+          with: {
+            parent: {
+              with: {
+                address: true,
+              },
+            },
+          },
+        });
+
+      // Create a set of existing parent IDs for easy lookup
+      const existingParentIds = new Set(
+        existingParentRelationships.map((r) => r.parentId),
+      );
+
+      // Process new parent data
+      const newParentIds = new Set<number>();
+
       for (const parentData of data.parents) {
-        // Form validation is already handled on the client side
-        // Proceed directly with parent processing
-
-        // 2a. Vind of maak adres aan
+        // 2a. Find or create address
         const address = await ADDRESS_MUTATIONS.findOrCreate(
           parentData.address,
           tx,
         );
 
-        // 2b. Vind of maak ouder aan
+        // 2b. Find or create parent
         let parent = await tx.query.parents.findFirst({
-          where: parentData.emailAddress // Use email as unique identifier if available and reliable
-            ? eq(schema.parents.emailAddress, parentData.emailAddress)
-            : // Fallback to name + address if no email
-              and(
-                eq(schema.parents.firstName, parentData.firstName),
-                eq(schema.parents.lastName, parentData.lastName),
-                eq(schema.parents.addressId, address.id),
-              ),
+          where: and(
+            eq(schema.parents.firstName, parentData.firstName),
+            eq(schema.parents.lastName, parentData.lastName),
+            eq(schema.parents.addressId, address.id),
+          ),
         });
 
         if (!parent) {
+          // Create new parent
           const [newParent] = await tx
             .insert(schema.parents)
             .values({
@@ -449,90 +534,641 @@ export const MEMBER_MUTATIONS = {
               emailAddress: parentData.emailAddress,
               phoneNumber: parentData.phoneNumber,
               relationship: parentData.relationship,
-              addressId: address.id, // Use the address ID from the created/found address
+              addressId: address.id,
             })
             .returning()
             .execute();
+
           if (!newParent) throw new Error("Failed to create parent");
           parent = newParent;
         } else {
+          // Update existing parent
           await tx
             .update(schema.parents)
             .set({
-              firstName: parentData.firstName,
-              lastName: parentData.lastName,
               emailAddress: parentData.emailAddress,
               phoneNumber: parentData.phoneNumber,
               relationship: parentData.relationship,
-              addressId: address.id, // Use the address ID from the created/found address
+              addressId: address.id,
+              updatedAt: new Date(),
             })
             .where(eq(schema.parents.id, parent.id))
             .execute();
         }
 
-        // 2c. Koppel lid aan ouder
-        await tx
-          .insert(schema.membersParents)
-          .values({
-            memberId: newMember.id,
-            parentId: parent.id,
-            isPrimary: parentData.isPrimary,
-          })
-          // Voorkom dubbele koppeling (indien nodig)
-          .onConflictDoNothing()
-          .execute();
-      }
+        newParentIds.add(parent.id);
 
-      // 3. Maak Emergency Contact aan (indien opgegeven)
-      if (data.emergencyContact) {
-        await tx
-          .insert(schema.emergencyContacts)
-          .values({
-            memberId: newMember.id,
-            ...data.emergencyContact,
-          })
-          .execute();
-      }
-
-      // 4. Maak Medical Information aan (indien opgegeven)
-      if (data.medicalInformation) {
-        await tx
-          .insert(schema.medicalInformation)
-          .values({
-            memberId: newMember.id,
-            ...data.medicalInformation,
-          })
-          .execute();
-      }
-
-      // 5. Maak Yearly Membership aan
-      // 5a. Vind de juiste groep (of laat gebruiker kiezen?)
-      const group = await GROUP_QUERIES.findGroupForMember(
-        newMember.dateOfBirth,
-        newMember.gender,
-      );
-      if (!group) {
-        // Fallback: Wijs toe aan een default groep of gooi error?
-        // Of laat dit veld leeg en vereis handmatige toewijzing?
-        // Voor nu: gooi error
-        throw new Error(
-          `Could not find suitable group for member ${newMember.firstName} ${newMember.lastName}`,
+        // 2c. Link member to parent (update existing or create new)
+        const existingRelationship = existingParentRelationships.find(
+          (r) => r.parentId === parent.id,
         );
+
+        if (existingRelationship) {
+          // Update existing relationship
+          await tx
+            .update(schema.membersParents)
+            .set({ isPrimary: parentData.isPrimary })
+            .where(eq(schema.membersParents.memberId, member.id))
+            .execute();
+        } else {
+          // Create new relationship
+          await tx
+            .insert(schema.membersParents)
+            .values({
+              memberId: member.id,
+              parentId: parent.id,
+              isPrimary: parentData.isPrimary,
+            })
+            .execute();
+        }
       }
 
-      await tx
-        .insert(schema.yearlyMemberships)
-        .values({
-          memberId: newMember.id,
-          workYearId: data.workYearId,
-          groupId: group.id,
-          paymentReceived: data.paymentReceived,
-          paymentMethod: data.paymentMethod,
-          paymentDate: data.paymentDate,
+      // 2d. Remove parent relationships that are no longer needed
+      const parentsToRemove = existingParentRelationships.filter(
+        (r) => !newParentIds.has(r.parentId),
+      );
+
+      for (const relationshipToRemove of parentsToRemove) {
+        // Check if this parent has other children in the organization
+        const otherChildren = await tx.query.membersParents.findMany({
+          where: and(
+            eq(schema.membersParents.parentId, relationshipToRemove.parentId),
+            ne(schema.membersParents.memberId, member.id),
+          ),
+        });
+
+        // Remove the relationship
+        await tx
+          .delete(schema.membersParents)
+          .where(
+            and(
+              eq(schema.membersParents.memberId, member.id),
+              eq(schema.membersParents.parentId, relationshipToRemove.parentId),
+            ),
+          )
+          .execute();
+
+        // If parent has no other children, remove the parent and potentially the address
+        if (otherChildren.length === 0) {
+          await tx
+            .delete(schema.parents)
+            .where(eq(schema.parents.id, relationshipToRemove.parentId))
+            .execute();
+
+          // Check if address is used by other parents
+          const otherParentsWithSameAddress = await tx.query.parents.findMany({
+            where: eq(
+              schema.parents.addressId,
+              relationshipToRemove.parent.addressId,
+            ),
+          });
+
+          // If no other parents use this address, remove it
+          if (otherParentsWithSameAddress.length === 0) {
+            await tx
+              .delete(schema.addresses)
+              .where(
+                eq(schema.addresses.id, relationshipToRemove.parent.addressId),
+              )
+              .execute();
+          }
+        }
+      }
+
+      // 3. Handle Emergency Contact
+      if (data.emergencyContact) {
+        // Check if emergency contact already exists
+        const existingEmergencyContact =
+          await tx.query.emergencyContacts.findFirst({
+            where: eq(schema.emergencyContacts.memberId, member.id),
+          });
+
+        if (existingEmergencyContact) {
+          // Update existing emergency contact
+          await tx
+            .update(schema.emergencyContacts)
+            .set({
+              firstName: data.emergencyContact.firstName,
+              lastName: data.emergencyContact.lastName,
+              phoneNumber: data.emergencyContact.phoneNumber,
+              relationship: data.emergencyContact.relationship,
+              updatedAt: new Date(),
+            })
+            .where(eq(schema.emergencyContacts.memberId, member.id))
+            .execute();
+        } else {
+          // Create new emergency contact
+          await tx
+            .insert(schema.emergencyContacts)
+            .values({
+              memberId: member.id,
+              ...data.emergencyContact,
+            })
+            .execute();
+        }
+      }
+
+      // 4. Handle Medical Information
+      if (data.medicalInformation) {
+        // Transform form data to database schema format
+        const medicalData = {
+          doctorFirstName: data.medicalInformation.doctorFirstName,
+          doctorLastName: data.medicalInformation.doctorLastName,
+          doctorPhoneNumber: data.medicalInformation.doctorPhoneNumber,
+          tetanusVaccination: data.medicalInformation.tetanusVaccination,
+          asthma: data.medicalInformation.asthma,
+          bedwetting: data.medicalInformation.bedwetting,
+          epilepsy: data.medicalInformation.epilepsy,
+          heartCondition: data.medicalInformation.heartCondition,
+          hayFever: data.medicalInformation.hayFever,
+          skinCondition: data.medicalInformation.skinCondition,
+          rheumatism: data.medicalInformation.rheumatism,
+          sleepwalking: data.medicalInformation.sleepwalking,
+          diabetes: data.medicalInformation.diabetes,
+          getsTiredQuickly: data.medicalInformation.getsTiredQuickly,
+          canParticipateSports: data.medicalInformation.canParticipateSports,
+          canSwim: data.medicalInformation.canSwim,
+          permissionMedication: data.medicalInformation.permissionMedication,
+          asthmaInformation:
+            data.medicalInformation.asthmaDescription || undefined,
+          bedwettingInformation:
+            data.medicalInformation.bedwettingDescription || undefined,
+          epilepsyInformation:
+            data.medicalInformation.epilepsyDescription || undefined,
+          heartConditionInformation:
+            data.medicalInformation.heartConditionDescription || undefined,
+          hayFeverInformation:
+            data.medicalInformation.hayFeverDescription || undefined,
+          skinConditionInformation:
+            data.medicalInformation.skinConditionDescription || undefined,
+          rheumatismInformation:
+            data.medicalInformation.rheumatismDescription || undefined,
+          sleepwalkingInformation:
+            data.medicalInformation.sleepwalkingDescription || undefined,
+          diabetesInformation:
+            data.medicalInformation.diabetesDescription || undefined,
+          foodAllergies: data.medicalInformation.hasFoodAllergies
+            ? data.medicalInformation.foodAllergies || undefined
+            : undefined,
+          substanceAllergies: data.medicalInformation.hasSubstanceAllergies
+            ? data.medicalInformation.substanceAllergies || undefined
+            : undefined,
+          medicationAllergies: data.medicalInformation.hasMedicationAllergies
+            ? data.medicalInformation.medicationAllergies || undefined
+            : undefined,
+          medication: data.medicalInformation.hasMedication
+            ? data.medicalInformation.medication || undefined
+            : undefined,
+          otherMedicalConditions: data.medicalInformation
+            .hasOtherMedicalConditions
+            ? data.medicalInformation.otherMedicalConditions || undefined
+            : undefined,
+          otherRemarks: data.medicalInformation.otherRemarks || undefined,
+          pastMedicalHistory: undefined,
+          tetanusVaccinationYear: undefined,
+        };
+
+        // Check if medical information already exists
+        const existingMedicalInfo = await tx.query.medicalInformation.findFirst(
+          {
+            where: eq(schema.medicalInformation.memberId, member.id),
+          },
+        );
+
+        if (existingMedicalInfo) {
+          // Update existing medical information
+          await tx
+            .update(schema.medicalInformation)
+            .set({
+              ...medicalData,
+              updatedAt: new Date(),
+            })
+            .where(eq(schema.medicalInformation.memberId, member.id))
+            .execute();
+        } else {
+          // Create new medical information
+          await tx
+            .insert(schema.medicalInformation)
+            .values({
+              memberId: member.id,
+              ...medicalData,
+            })
+            .execute();
+        }
+      }
+
+      // 5. Handle Yearly Membership
+      // Check if yearly membership already exists for this work year
+      const existingMembership = await tx.query.yearlyMemberships.findFirst({
+        where: and(
+          eq(schema.yearlyMemberships.memberId, member.id),
+          eq(schema.yearlyMemberships.workYearId, data.workYearId),
+        ),
+      });
+
+      if (!existingMembership) {
+        // Only create new yearly membership if it doesn't exist
+        let group: schema.Group | null = null;
+
+        // Use provided groupId if available, otherwise find automatically
+        if (data.groupId) {
+          group =
+            (await tx.query.groups.findFirst({
+              where: eq(schema.groups.id, data.groupId),
+            })) ?? null;
+        }
+
+        group ??= await GROUP_QUERIES.findGroupForMember(
+          member.dateOfBirth,
+          member.gender,
+        );
+
+        if (!group) {
+          throw new Error(
+            `Could not find suitable group for member ${member.firstName} ${member.lastName}`,
+          );
+        }
+
+        await tx
+          .insert(schema.yearlyMemberships)
+          .values({
+            memberId: member.id,
+            workYearId: data.workYearId,
+            groupId: group.id,
+            paymentReceived: data.paymentReceived,
+            paymentMethod: data.paymentMethod,
+            paymentDate: data.paymentDate,
+          })
+          .execute();
+      }
+      // If membership already exists, don't modify it (as per requirements)
+
+      return member;
+    });
+  },
+
+  // --- Complexe Transactie: Lid Updaten met Slimme Logica ---
+  updateMember: async (
+    memberId: number,
+    data: FullNewMemberData,
+  ): Promise<Member> => {
+    // Form validation is already handled on the client side
+    // Proceed directly with the database transaction
+
+    return await db.transaction(async (tx) => {
+      // 1. Get existing member
+      const existingMember = await tx.query.members.findFirst({
+        where: eq(schema.members.id, memberId),
+      });
+
+      if (!existingMember) {
+        throw new Error("Member not found");
+      }
+
+      // 2. Update member with new data
+      const [updatedMember] = await tx
+        .update(schema.members)
+        .set({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          gender: data.gender,
+          dateOfBirth: data.dateOfBirth,
+          emailAddress: data.emailAddress,
+          phoneNumber: data.phoneNumber,
+          gdprPermissionToPublishPhotos: data.gdprPermissionToPublishPhotos,
+          updatedAt: new Date(),
         })
+        .where(eq(schema.members.id, memberId))
+        .returning()
         .execute();
 
-      return newMember;
+      if (!updatedMember) throw new Error("Failed to update member");
+
+      // 3. Handle Parents
+      // First, get existing parent relationships for this member
+      const existingParentRelationships =
+        await tx.query.membersParents.findMany({
+          where: eq(schema.membersParents.memberId, memberId),
+          with: {
+            parent: {
+              with: {
+                address: true,
+              },
+            },
+          },
+        });
+
+      // Create a set of existing parent IDs for easy lookup
+      const existingParentIds = new Set(
+        existingParentRelationships.map((r) => r.parentId),
+      );
+
+      // Process new parent data
+      const newParentIds = new Set<number>();
+
+      for (const parentData of data.parents) {
+        // 3a. Find or create address
+        const address = await ADDRESS_MUTATIONS.findOrCreate(
+          parentData.address,
+          tx,
+        );
+
+        // 3b. Find or create parent
+        let parent = await tx.query.parents.findFirst({
+          where: and(
+            eq(schema.parents.firstName, parentData.firstName),
+            eq(schema.parents.lastName, parentData.lastName),
+            eq(schema.parents.addressId, address.id),
+          ),
+        });
+
+        if (!parent) {
+          // Create new parent
+          const [newParent] = await tx
+            .insert(schema.parents)
+            .values({
+              firstName: parentData.firstName,
+              lastName: parentData.lastName,
+              emailAddress: parentData.emailAddress,
+              phoneNumber: parentData.phoneNumber,
+              relationship: parentData.relationship,
+              addressId: address.id,
+            })
+            .returning()
+            .execute();
+
+          if (!newParent) throw new Error("Failed to create parent");
+          parent = newParent;
+        } else {
+          // Update existing parent
+          await tx
+            .update(schema.parents)
+            .set({
+              emailAddress: parentData.emailAddress,
+              phoneNumber: parentData.phoneNumber,
+              relationship: parentData.relationship,
+              addressId: address.id,
+              updatedAt: new Date(),
+            })
+            .where(eq(schema.parents.id, parent.id))
+            .execute();
+        }
+
+        newParentIds.add(parent.id);
+
+        // 3c. Link member to parent (update existing or create new)
+        const existingRelationship = existingParentRelationships.find(
+          (r) => r.parentId === parent.id,
+        );
+
+        if (existingRelationship) {
+          // Update existing relationship
+          await tx
+            .update(schema.membersParents)
+            .set({ isPrimary: parentData.isPrimary })
+            .where(
+              and(
+                eq(schema.membersParents.memberId, memberId),
+                eq(schema.membersParents.parentId, parent.id),
+              ),
+            )
+            .execute();
+        } else {
+          // Create new relationship
+          await tx
+            .insert(schema.membersParents)
+            .values({
+              memberId: memberId,
+              parentId: parent.id,
+              isPrimary: parentData.isPrimary,
+            })
+            .execute();
+        }
+      }
+
+      // 3d. Remove parent relationships that are no longer needed
+      const parentsToRemove = existingParentRelationships.filter(
+        (r) => !newParentIds.has(r.parentId),
+      );
+
+      for (const relationshipToRemove of parentsToRemove) {
+        // Check if this parent has other children in the organization
+        const otherChildren = await tx.query.membersParents.findMany({
+          where: and(
+            eq(schema.membersParents.parentId, relationshipToRemove.parentId),
+            ne(schema.membersParents.memberId, memberId),
+          ),
+        });
+
+        // Remove the relationship
+        await tx
+          .delete(schema.membersParents)
+          .where(
+            and(
+              eq(schema.membersParents.memberId, memberId),
+              eq(schema.membersParents.parentId, relationshipToRemove.parentId),
+            ),
+          )
+          .execute();
+
+        // If parent has no other children, remove the parent and potentially the address
+        if (otherChildren.length === 0) {
+          await tx
+            .delete(schema.parents)
+            .where(eq(schema.parents.id, relationshipToRemove.parentId))
+            .execute();
+
+          // Check if address is used by other parents
+          const otherParentsWithSameAddress = await tx.query.parents.findMany({
+            where: eq(
+              schema.parents.addressId,
+              relationshipToRemove.parent.addressId,
+            ),
+          });
+
+          // If no other parents use this address, remove it
+          if (otherParentsWithSameAddress.length === 0) {
+            await tx
+              .delete(schema.addresses)
+              .where(
+                eq(schema.addresses.id, relationshipToRemove.parent.addressId),
+              )
+              .execute();
+          }
+        }
+      }
+
+      // 4. Handle Emergency Contact
+      if (data.emergencyContact) {
+        // Check if emergency contact already exists
+        const existingEmergencyContact =
+          await tx.query.emergencyContacts.findFirst({
+            where: eq(schema.emergencyContacts.memberId, memberId),
+          });
+
+        if (existingEmergencyContact) {
+          // Update existing emergency contact
+          await tx
+            .update(schema.emergencyContacts)
+            .set({
+              firstName: data.emergencyContact.firstName,
+              lastName: data.emergencyContact.lastName,
+              phoneNumber: data.emergencyContact.phoneNumber,
+              relationship: data.emergencyContact.relationship,
+              updatedAt: new Date(),
+            })
+            .where(eq(schema.emergencyContacts.memberId, memberId))
+            .execute();
+        } else {
+          // Create new emergency contact
+          await tx
+            .insert(schema.emergencyContacts)
+            .values({
+              memberId: memberId,
+              ...data.emergencyContact,
+            })
+            .execute();
+        }
+      }
+
+      // 5. Handle Medical Information
+      if (data.medicalInformation) {
+        // Transform form data to database schema format
+        const medicalData = {
+          doctorFirstName: data.medicalInformation.doctorFirstName,
+          doctorLastName: data.medicalInformation.doctorLastName,
+          doctorPhoneNumber: data.medicalInformation.doctorPhoneNumber,
+          tetanusVaccination: data.medicalInformation.tetanusVaccination,
+          asthma: data.medicalInformation.asthma,
+          bedwetting: data.medicalInformation.bedwetting,
+          epilepsy: data.medicalInformation.epilepsy,
+          heartCondition: data.medicalInformation.heartCondition,
+          hayFever: data.medicalInformation.hayFever,
+          skinCondition: data.medicalInformation.skinCondition,
+          rheumatism: data.medicalInformation.rheumatism,
+          sleepwalking: data.medicalInformation.sleepwalking,
+          diabetes: data.medicalInformation.diabetes,
+          getsTiredQuickly: data.medicalInformation.getsTiredQuickly,
+          canParticipateSports: data.medicalInformation.canParticipateSports,
+          canSwim: data.medicalInformation.canSwim,
+          permissionMedication: data.medicalInformation.permissionMedication,
+          asthmaInformation:
+            data.medicalInformation.asthmaDescription || undefined,
+          bedwettingInformation:
+            data.medicalInformation.bedwettingDescription || undefined,
+          epilepsyInformation:
+            data.medicalInformation.epilepsyDescription || undefined,
+          heartConditionInformation:
+            data.medicalInformation.heartConditionDescription || undefined,
+          hayFeverInformation:
+            data.medicalInformation.hayFeverDescription || undefined,
+          skinConditionInformation:
+            data.medicalInformation.skinConditionDescription || undefined,
+          rheumatismInformation:
+            data.medicalInformation.rheumatismDescription || undefined,
+          sleepwalkingInformation:
+            data.medicalInformation.sleepwalkingDescription || undefined,
+          diabetesInformation:
+            data.medicalInformation.diabetesDescription || undefined,
+          foodAllergies: data.medicalInformation.hasFoodAllergies
+            ? data.medicalInformation.foodAllergies || undefined
+            : undefined,
+          substanceAllergies: data.medicalInformation.hasSubstanceAllergies
+            ? data.medicalInformation.substanceAllergies || undefined
+            : undefined,
+          medicationAllergies: data.medicalInformation.hasMedicationAllergies
+            ? data.medicalInformation.medicationAllergies || undefined
+            : undefined,
+          medication: data.medicalInformation.hasMedication
+            ? data.medicalInformation.medication || undefined
+            : undefined,
+          otherMedicalConditions: data.medicalInformation
+            .hasOtherMedicalConditions
+            ? data.medicalInformation.otherMedicalConditions || undefined
+            : undefined,
+          otherRemarks: data.medicalInformation.otherRemarks || undefined,
+          pastMedicalHistory: undefined,
+          tetanusVaccinationYear: undefined,
+        };
+
+        // Check if medical information already exists
+        const existingMedicalInfo = await tx.query.medicalInformation.findFirst(
+          {
+            where: eq(schema.medicalInformation.memberId, memberId),
+          },
+        );
+
+        if (existingMedicalInfo) {
+          // Update existing medical information
+          await tx
+            .update(schema.medicalInformation)
+            .set({
+              ...medicalData,
+              updatedAt: new Date(),
+            })
+            .where(eq(schema.medicalInformation.memberId, memberId))
+            .execute();
+        } else {
+          // Create new medical information
+          await tx
+            .insert(schema.medicalInformation)
+            .values({
+              memberId: memberId,
+              ...medicalData,
+            })
+            .execute();
+        }
+      }
+
+      // 6. Handle Yearly Membership Updates
+      // Check if yearly membership exists and update payment info
+      const existingMembership = await tx.query.yearlyMemberships.findFirst({
+        where: eq(schema.yearlyMemberships.memberId, memberId),
+      });
+
+      if (existingMembership) {
+        // Update payment information
+        await tx
+          .update(schema.yearlyMemberships)
+          .set({
+            paymentReceived: data.paymentReceived,
+            paymentMethod: data.paymentMethod,
+            paymentDate: data.paymentDate,
+            updatedAt: new Date(),
+          })
+          .where(eq(schema.yearlyMemberships.memberId, memberId))
+          .execute();
+
+        // Check if group needs to be updated based on new birthdate/gender or manual selection
+        let newGroup: schema.Group | null = null;
+
+        // Use provided groupId if available, otherwise find automatically
+        if (data.groupId) {
+          newGroup =
+            (await tx.query.groups.findFirst({
+              where: eq(schema.groups.id, data.groupId),
+            })) ?? null;
+        }
+
+        newGroup ??= await GROUP_QUERIES.findGroupForMember(
+          data.dateOfBirth,
+          data.gender,
+        );
+
+        if (newGroup && newGroup.id !== existingMembership.groupId) {
+          // Update group if it has changed
+          await tx
+            .update(schema.yearlyMemberships)
+            .set({
+              groupId: newGroup.id,
+              updatedAt: new Date(),
+            })
+            .where(eq(schema.yearlyMemberships.memberId, memberId))
+            .execute();
+        }
+      }
+
+      return updatedMember;
     });
   },
 

@@ -46,13 +46,15 @@ import {
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import SignInAsLeiding from "../../sign-in-as-leiding";
 import { getFullMemberDetails } from "./actions";
-import { type Member, type Group, type WorkYear, type PaymentMethod } from "~/server/db/schema";
+import {
+  type Member,
+  type Group,
+  type WorkYear,
+  type PaymentMethod,
+} from "~/server/db/schema";
 import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
 import { CampSubscription } from "./components/camp-subscription";
 import { formatDateLocale } from "~/lib/date-utils";
-
-// Note: This is a client component, so role checking is handled at the parent level
-// The main leidingsportaal pages already have role protection
 
 interface MemberWithDetails extends Member {
   parents: Array<{
@@ -258,13 +260,19 @@ export default function MemberDetailPage() {
                 </h1>
                 <p className="text-gray-600">
                   Lid sinds{" "}
-                  {member.yearlyMemberships[0] ? formatDateLocale(member.yearlyMemberships[0].workYear.startDate) : ""}
+                  {member.yearlyMemberships[0]
+                    ? formatDateLocale(
+                        member.yearlyMemberships[0].workYear.startDate,
+                      )
+                    : ""}
                 </p>
               </div>
               <Button
                 color="primary"
                 size="lg"
-                onPress={() => window.location.href = `/leidingsportaal/leden/${memberId}/bewerken`}
+                onPress={() =>
+                  (window.location.href = `/leidingsportaal/leden/${memberId}/bewerken`)
+                }
                 className="px-8"
               >
                 Bewerken
@@ -584,9 +592,13 @@ export default function MemberDetailPage() {
                         </div>
                         <p>
                           <strong>Werkjaar:</strong>{" "}
-                          {formatDateLocale(member.yearlyMemberships[0].workYear.startDate)}{" "}
+                          {formatDateLocale(
+                            member.yearlyMemberships[0].workYear.startDate,
+                          )}{" "}
                           -{" "}
-                          {formatDateLocale(member.yearlyMemberships[0].workYear.endDate)}
+                          {formatDateLocale(
+                            member.yearlyMemberships[0].workYear.endDate,
+                          )}
                         </p>
                       </>
                     )}
@@ -618,36 +630,44 @@ export default function MemberDetailPage() {
                 <h2 className="text-xl font-semibold">Lidmaatschap</h2>
               </CardHeader>
               <CardBody className="p-6">
-                <div className="space-y-4">
-                  {member.yearlyMemberships[0] && (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="inline-block rounded-lg px-3 py-1 font-medium text-white"
-                          style={{
-                            backgroundColor:
-                              member.yearlyMemberships[0].group.color ??
-                              "#3b82f6",
-                          }}
-                        >
-                          {member.yearlyMemberships[0].group.name}
+                <div className="flex flex-row items-start gap-8 space-y-4">
+                  <div className="flex-1">
+                    {member.yearlyMemberships[0] && (
+                      <>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="inline-block rounded-lg px-3 py-1 font-medium text-white"
+                            style={{
+                              backgroundColor:
+                                member.yearlyMemberships[0].group.color ??
+                                "#3b82f6",
+                            }}
+                          >
+                            {member.yearlyMemberships[0].group.name}
+                          </div>
+                          <Badge color="success" variant="flat">
+                            Actief lid
+                          </Badge>
                         </div>
-                        <Badge color="success" variant="flat">
-                          Actief lid
-                        </Badge>
-                      </div>
-                      <p>
-                        <strong>Werkjaar:</strong>{" "}
-                        {formatDateLocale(member.yearlyMemberships[0].workYear.startDate)}{" "}
-                        -{" "}
-                        {formatDateLocale(member.yearlyMemberships[0].workYear.endDate)}
-                      </p>
-                      <p>
-                        <strong>Lid sinds:</strong>{" "}
-                        {formatDateLocale(member.yearlyMemberships[0].workYear.startDate)}
-                      </p>
-                    </>
-                  )}
+                        <p>
+                          <strong>Werkjaar:</strong>{" "}
+                          {formatDateLocale(
+                            member.yearlyMemberships[0].workYear.startDate,
+                          )}{" "}
+                          -{" "}
+                          {formatDateLocale(
+                            member.yearlyMemberships[0].workYear.endDate,
+                          )}
+                        </p>
+                        <p>
+                          <strong>Lid sinds:</strong>{" "}
+                          {formatDateLocale(
+                            member.yearlyMemberships[0].workYear.startDate,
+                          )}
+                        </p>
+                      </>
+                    )}
+                  </div>
                 </div>
               </CardBody>
             </Card>
@@ -659,7 +679,9 @@ export default function MemberDetailPage() {
                 workYearId={member.yearlyMemberships[0].workYear.id}
                 campPrice={175}
                 isSubscribed={member.yearlyMemberships[0].campSubscription}
-                paymentReceived={member.yearlyMemberships[0].campPaymentReceived}
+                paymentReceived={
+                  member.yearlyMemberships[0].campPaymentReceived
+                }
                 paymentMethod={member.yearlyMemberships[0].campPaymentMethod}
                 paymentDate={member.yearlyMemberships[0].campPaymentDate}
               />
@@ -764,8 +786,7 @@ export default function MemberDetailPage() {
                     </p>
                     <p className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-green-600" />
-                      <strong>Telefoon:</strong>{" "}
-                      {medicalInfo.doctorPhoneNumber}
+                      <strong>Telefoon:</strong> {medicalInfo.doctorPhoneNumber}
                     </p>
                   </div>
                 </CardBody>
@@ -944,8 +965,8 @@ export default function MemberDetailPage() {
                   {/* Allergies */}
                   {Boolean(
                     medicalInfo.foodAllergies ??
-                    medicalInfo.substanceAllergies ??
-                    medicalInfo.medicationAllergies
+                      medicalInfo.substanceAllergies ??
+                      medicalInfo.medicationAllergies,
                   ) && (
                     <>
                       <Divider />

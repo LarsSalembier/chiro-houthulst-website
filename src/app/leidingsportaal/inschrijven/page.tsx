@@ -21,6 +21,7 @@ import {
   getCurrentWorkYear,
   registerNewMember,
   findGroupForMember,
+  getAllGroups,
 } from "./actions";
 import {
   type Gender,
@@ -29,15 +30,28 @@ import {
   type Group,
   type PaymentMethod,
 } from "~/server/db/schema";
-import { createCalendarDateFromDate, createDateFromCalendarDate } from "~/lib/date-utils";
+import {
+  createCalendarDateFromDate,
+  createDateFromCalendarDate,
+} from "~/lib/date-utils";
 import DDMMYYYYDateInput from "~/components/ui/dd-mm-yyyy-date-input";
+import Image from "next/image";
+import { QRCodeModal } from "~/components/ui/qr-code-modal";
 
 export default function InschrijvenPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [workYear, setWorkYear] = useState<WorkYear | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [manualGroup, setManualGroup] = useState<Group | null>(null);
+  const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrModalData, setQrModalData] = useState<{
+    src: string;
+    title: string;
+    altText: string;
+  } | null>(null);
 
   const breadcrumbItems = [
     { href: "/leidingsportaal", label: "Leidingsportaal" },
@@ -48,8 +62,12 @@ export default function InschrijvenPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const currentWorkYear = await getCurrentWorkYear();
+        const [currentWorkYear, groups] = await Promise.all([
+          getCurrentWorkYear(),
+          getAllGroups(),
+        ]);
         setWorkYear(currentWorkYear);
+        setAllGroups(groups);
       } catch (error) {
         console.error("Error loading data:", error);
       }
@@ -161,11 +179,11 @@ export default function InschrijvenPage() {
               ...parent.address,
               postalCode: parseInt(parent.address.postalCode, 10) || 0,
             },
-            addressId: 0,
           })),
           emergencyContact: value.emergencyContact,
           medicalInformation: value.medicalInformation,
           workYearId: workYear.id,
+          groupId: getFinalSelectedGroup()?.id,
           paymentReceived: value.payment.paymentReceived,
           paymentMethod: value.payment.paymentMethod,
           paymentDate: value.payment.paymentDate,
@@ -242,6 +260,21 @@ export default function InschrijvenPage() {
       console.error("Error finding group:", error);
       setSelectedGroup(null);
     }
+  };
+
+  // Get the final selected group (manual override or automatic)
+  const getFinalSelectedGroup = () => {
+    return manualGroup || selectedGroup;
+  };
+
+  const openQRModal = (src: string, title: string, altText: string) => {
+    setQrModalData({ src, title, altText });
+    setQrModalOpen(true);
+  };
+
+  const closeQRModal = () => {
+    setQrModalOpen(false);
+    setQrModalData(null);
   };
 
   return (
@@ -404,83 +437,119 @@ export default function InschrijvenPage() {
                   )}
                 </form.Field>
 
-                <form.Field
-                  name="member.emailAddress"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (value && value.trim().length > 255)
-                        return "E-mailadres mag maximaal 255 karakters bevatten";
-                      if (value && !z.string().email().safeParse(value).success)
-                        return "Geldig e-mailadres is verplicht";
-                      return undefined;
-                    },
-                  }}
-                >
+                <form.Field name="member.gdprPermissionToPublishPhotos">
                   {(field) => (
-                    <Input
-                      label="E-mailadres"
-                      type="email"
-                      value={field.state.value}
+                    <Checkbox
+                      isSelected={field.state.value}
                       onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                    />
-                  )}
-                </form.Field>
-
-                <form.Field
-                  name="member.phoneNumber"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (value && value.trim().length > 20)
-                        return "Telefoonnummer mag maximaal 20 karakters bevatten";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="Telefoonnummer"
-                      type="tel"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                    />
+                    >
+                      Toestemming voor het publiceren van foto&apos;s
+                    </Checkbox>
                   )}
                 </form.Field>
               </div>
 
-              {selectedGroup && (
-                <div
-                  className="rounded-lg p-4"
-                  style={{
-                    backgroundColor: selectedGroup.color
-                      ? `${selectedGroup.color}15`
-                      : "#f0f9ff",
-                  }}
-                >
-                  <p
-                    className="text-sm font-medium"
+              {/* Group Selection */}
+              <div className="space-y-4">
+                {/* Show automatic group prominently */}
+                {selectedGroup && (
+                  <div
+                    className="rounded-lg p-4"
                     style={{
-                      color: selectedGroup.color ?? "#0c4a6e",
+                      backgroundColor: selectedGroup.color
+                        ? `${selectedGroup.color}15`
+                        : "#f0f9ff",
                     }}
                   >
-                    <strong>Geselecteerde groep:</strong> {selectedGroup.name}
-                  </p>
-                </div>
-              )}
-
-              <form.Field name="member.gdprPermissionToPublishPhotos">
-                {(field) => (
-                  <Checkbox
-                    isSelected={field.state.value}
-                    onValueChange={field.handleChange}
-                  >
-                    Toestemming voor het publiceren van foto&apos;s
-                  </Checkbox>
+                    <p
+                      className="text-sm font-medium"
+                      style={{
+                        color: selectedGroup.color ?? "#0c4a6e",
+                      }}
+                    >
+                      <strong>Automatisch geselecteerde groep:</strong>{" "}
+                      {selectedGroup.name}
+                    </p>
+                  </div>
                 )}
-              </form.Field>
+
+                {/* Manual override dropdown */}
+                <div className="flex gap-2">
+                  <Select
+                    label="Handmatige groep selectie (optioneel)"
+                    placeholder="Kies een andere groep"
+                    selectedKeys={
+                      manualGroup ? [manualGroup.id.toString()] : []
+                    }
+                    onSelectionChange={(keys) => {
+                      const selectedKey = Array.from(keys)[0];
+                      if (selectedKey) {
+                        const group = allGroups.find(
+                          (g) => g.id.toString() === selectedKey,
+                        );
+                        setManualGroup(group || null);
+                      } else {
+                        setManualGroup(null);
+                      }
+                    }}
+                    className="flex-1"
+                  >
+                    {allGroups.map((group) => (
+                      <SelectItem key={group.id.toString()}>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="h-3 w-3 rounded-full"
+                            style={{ backgroundColor: group.color || "#ccc" }}
+                          />
+                          {group.name}
+                          {group === selectedGroup && (
+                            <span className="text-xs text-primary-600">
+                              (Automatisch)
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  {manualGroup && (
+                    <Button
+                      type="button"
+                      color="danger"
+                      variant="flat"
+                      size="sm"
+                      onPress={() => setManualGroup(null)}
+                      className="self-end"
+                    >
+                      Reset
+                    </Button>
+                  )}
+                </div>
+                {getFinalSelectedGroup() && (
+                  <div
+                    className="rounded-lg border-2 border-primary-200 p-3"
+                    style={{
+                      backgroundColor: getFinalSelectedGroup()?.color
+                        ? `${getFinalSelectedGroup()?.color}10`
+                        : "#f0f9ff",
+                    }}
+                  >
+                    <p
+                      className="text-sm font-semibold"
+                      style={{
+                        color: getFinalSelectedGroup()?.color ?? "#0c4a6e",
+                      }}
+                    >
+                      <strong>Finale groep:</strong>{" "}
+                      {getFinalSelectedGroup()?.name}
+                      {manualGroup && (
+                        <span className="ml-2 text-xs text-warning-600">
+                          (Handmatig geselecteerd)
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
+              </div>
             </CardBody>
           </Card>
 
@@ -1447,47 +1516,80 @@ export default function InschrijvenPage() {
               <h2 className="text-xl font-semibold">Betaling</h2>
             </CardHeader>
             <CardBody className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <form.Field name="payment.paymentReceived">
-                  {(field) => (
-                    <Checkbox
-                      isSelected={field.state.value}
-                      onValueChange={(checked) => {
-                        field.handleChange(checked);
-                        // Automatically set payment date to current date when payment is received
-                        if (checked) {
-                          form.setFieldValue("payment.paymentDate", new Date());
-                        } else {
-                          form.setFieldValue("payment.paymentDate", undefined);
-                        }
-                      }}
-                    >
-                      Betaling ontvangen
-                    </Checkbox>
-                  )}
-                </form.Field>
+              <div className="flex flex-row items-start gap-8">
+                {/* QR code for payment */}
+                <div className="flex-shrink-0">
+                  <Image
+                    src="/qr-code-inschrijving-jaar.png"
+                    alt="QR code voor betaling"
+                    className="h-32 w-32 cursor-pointer rounded-lg border object-contain shadow transition-shadow hover:shadow-lg"
+                    width={128}
+                    height={128}
+                    onClick={() =>
+                      openQRModal(
+                        "/qr-code-inschrijving-jaar.png",
+                        "QR Code voor Betaling",
+                        "QR code voor betaling",
+                      )
+                    }
+                  />
+                  <div className="mt-2 text-center text-sm">
+                    <p className="font-medium text-gray-700">Bedrag: 40 EUR</p>
+                    <p className="text-gray-600">BE71 0018 7690 8469</p>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <form.Field name="payment.paymentReceived">
+                      {(field) => (
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={(checked) => {
+                            field.handleChange(checked);
+                            // Automatically set payment date to current date when payment is received
+                            if (checked) {
+                              form.setFieldValue(
+                                "payment.paymentDate",
+                                new Date(),
+                              );
+                            } else {
+                              form.setFieldValue(
+                                "payment.paymentDate",
+                                undefined,
+                              );
+                            }
+                          }}
+                        >
+                          Betaling ontvangen
+                        </Checkbox>
+                      )}
+                    </form.Field>
 
-                <form.Field name="payment.paymentMethod">
-                  {(field) => (
-                    <Select
-                      label="Betaalmethode"
-                      selectedKeys={
-                        field.state.value ? [field.state.value] : []
-                      }
-                      onSelectionChange={(keys) => {
-                        const value = Array.from(keys)[0] as PaymentMethod;
-                        field.handleChange(value);
-                      }}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                    >
-                      <SelectItem key="CASH">Contant</SelectItem>
-                      <SelectItem key="BANK_TRANSFER">Overschrijving</SelectItem>
-                      <SelectItem key="PAYCONIQ">Payconiq</SelectItem>
-                      <SelectItem key="OTHER">Anders</SelectItem>
-                    </Select>
-                  )}
-                </form.Field>
+                    <form.Field name="payment.paymentMethod">
+                      {(field) => (
+                        <Select
+                          label="Betaalmethode"
+                          selectedKeys={
+                            field.state.value ? [field.state.value] : []
+                          }
+                          onSelectionChange={(keys) => {
+                            const value = Array.from(keys)[0] as PaymentMethod;
+                            field.handleChange(value);
+                          }}
+                          isInvalid={field.state.meta.errors.length > 0}
+                          errorMessage={field.state.meta.errors[0]}
+                        >
+                          <SelectItem key="CASH">Contant</SelectItem>
+                          <SelectItem key="BANK_TRANSFER">
+                            Overschrijving
+                          </SelectItem>
+                          <SelectItem key="PAYCONIQ">Payconiq</SelectItem>
+                          <SelectItem key="OTHER">Anders</SelectItem>
+                        </Select>
+                      )}
+                    </form.Field>
+                  </div>
+                </div>
               </div>
             </CardBody>
           </Card>
@@ -1512,6 +1614,17 @@ export default function InschrijvenPage() {
           </div>
         </form>
       </SignedIn>
+
+      {/* QR Code Modal */}
+      {qrModalData && (
+        <QRCodeModal
+          isOpen={qrModalOpen}
+          onClose={closeQRModal}
+          qrCodeSrc={qrModalData.src}
+          title={qrModalData.title}
+          altText={qrModalData.altText}
+        />
+      )}
     </>
   );
 }

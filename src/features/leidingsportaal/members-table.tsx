@@ -395,7 +395,11 @@ export default function ToponymsTable({
         case "createdAt":
           return <span>{formatDateLocale(member.createdAt)}</span>;
         case "updatedAt":
-          return <span>{member.updatedAt ? formatDateLocale(member.updatedAt) : ""}</span>;
+          return (
+            <span>
+              {member.updatedAt ? formatDateLocale(member.updatedAt) : ""}
+            </span>
+          );
         case "paymentReceived":
           return (
             <span
@@ -409,7 +413,11 @@ export default function ToponymsTable({
         case "paymentMethod":
           return <span>{member.paymentMethod}</span>;
         case "paymentDate":
-          return <span>{member.paymentDate ? formatDateLocale(member.paymentDate) : ""}</span>;
+          return (
+            <span>
+              {member.paymentDate ? formatDateLocale(member.paymentDate) : ""}
+            </span>
+          );
         default:
           return null;
       }

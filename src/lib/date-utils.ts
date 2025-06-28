@@ -29,8 +29,8 @@ export function formatTime(date: Date, locale = "nl-BE") {
  * This ensures the format is always DD-MM-YYYY regardless of locale settings
  */
 export function formatDateDDMMYYYY(date: Date): string {
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
   const year = date.getFullYear();
   return `${day}-${month}-${year}`;
 }
@@ -41,8 +41,8 @@ export function formatDateDDMMYYYY(date: Date): string {
 export function formatDateLocale(date: Date, locale = "nl-BE"): string {
   return date.toLocaleDateString(locale, {
     day: "2-digit",
-    month: "2-digit", 
-    year: "numeric"
+    month: "2-digit",
+    year: "numeric",
   });
 }
 
@@ -54,7 +54,7 @@ export function createCalendarDateFromDate(date: Date): CalendarDate {
   return new CalendarDate(
     date.getFullYear(),
     date.getMonth() + 1, // CalendarDate uses 1-indexed months
-    date.getDate()
+    date.getDate(),
   );
 }
 
@@ -67,7 +67,7 @@ export function createDateFromCalendarDate(calendarDate: CalendarDate): Date {
   const year = calendarDate.year;
   const month = calendarDate.month - 1; // Convert back to 0-indexed for Date constructor
   const day = calendarDate.day;
-  
+
   // Create date in local timezone to avoid timezone conversion issues
   return new Date(year, month, day);
 }

@@ -15,8 +15,6 @@ import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
 import SignInAsLeiding from "../sign-in-as-leiding";
 import { getGroupsWithMemberCount } from "./actions";
 import { requireLeidingAuth } from "~/lib/auth";
-import { GROUP_QUERIES } from "~/server/db/queries/group";
-import { WORK_YEAR_QUERIES } from "~/server/db/queries/work-year";
 import { formatDateLocale } from "~/lib/date-utils";
 
 export default async function GroepenPage() {
