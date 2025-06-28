@@ -1,7 +1,7 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
-import { UserPlus, Users, UserCheck, ArrowRight } from "lucide-react";
+import { UserPlus, Users, UserCheck, ArrowRight, Utensils } from "lucide-react";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import SignInAsLeiding from "./sign-in-as-leiding";
 import { requireLeidingAuth } from "~/lib/auth";
@@ -121,6 +121,35 @@ export default async function Leidingsportaal() {
                   endContent={<ArrowRight className="h-4 w-4" />}
                 >
                   Bekijk Groepen
+                </Button>
+              </CardBody>
+            </Card>
+
+            {/* Tafelverdeling */}
+            <Card className="flex cursor-pointer flex-col">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-orange-100 p-3">
+                    <Utensils className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold">Tafelverdeling</h2>
+                    <p className="text-sm text-gray-600">Kamp tafelverdeling</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardBody className="flex flex-1 flex-col pt-0">
+                <p className="mb-4 flex-1 text-gray-700">
+                  Genereer automatisch een evenwichtige verdeling van leden over
+                  tafels voor kamp, met variatie in groepen.
+                </p>
+                <Button
+                  color="warning"
+                  as="a"
+                  href="/leidingsportaal/tafelverdeling"
+                  endContent={<ArrowRight className="h-4 w-4" />}
+                >
+                  Bekijk Tafelverdeling
                 </Button>
               </CardBody>
             </Card>

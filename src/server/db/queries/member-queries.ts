@@ -419,7 +419,6 @@ export const MEMBER_QUERIES = {
         group: true,
         workYear: true,
       },
-      orderBy: [asc(schema.members.lastName), asc(schema.members.firstName)],
     });
   },
 
@@ -436,7 +435,6 @@ export const MEMBER_QUERIES = {
         group: true,
         workYear: true,
       },
-      orderBy: [asc(schema.members.lastName), asc(schema.members.firstName)],
     });
   },
 };
