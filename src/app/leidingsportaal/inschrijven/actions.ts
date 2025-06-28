@@ -61,7 +61,7 @@ export async function registerNewMember(memberData: FullNewMemberData) {
           }
         : undefined,
 
-      // Sanitize medical information data (basic sanitization only)
+      // Sanitize medical information data
       medicalInformation: memberData.medicalInformation
         ? {
             ...memberData.medicalInformation,
@@ -70,55 +70,33 @@ export async function registerNewMember(memberData: FullNewMemberData) {
             doctorLastName: memberData.medicalInformation.doctorLastName.trim(),
             doctorPhoneNumber:
               memberData.medicalInformation.doctorPhoneNumber.trim(),
-            // Handle optional text fields
-            pastMedicalHistory: emptyStringToUndefined(
-              memberData.medicalInformation.pastMedicalHistory,
-            ),
-            asthmaInformation: emptyStringToUndefined(
-              memberData.medicalInformation.asthmaInformation,
-            ),
-            bedwettingInformation: emptyStringToUndefined(
-              memberData.medicalInformation.bedwettingInformation,
-            ),
-            epilepsyInformation: emptyStringToUndefined(
-              memberData.medicalInformation.epilepsyInformation,
-            ),
-            heartConditionInformation: emptyStringToUndefined(
-              memberData.medicalInformation.heartConditionInformation,
-            ),
-            hayFeverInformation: emptyStringToUndefined(
-              memberData.medicalInformation.hayFeverInformation,
-            ),
-            skinConditionInformation: emptyStringToUndefined(
-              memberData.medicalInformation.skinConditionInformation,
-            ),
-            rheumatismInformation: emptyStringToUndefined(
-              memberData.medicalInformation.rheumatismInformation,
-            ),
-            sleepwalkingInformation: emptyStringToUndefined(
-              memberData.medicalInformation.sleepwalkingInformation,
-            ),
-            diabetesInformation: emptyStringToUndefined(
-              memberData.medicalInformation.diabetesInformation,
-            ),
-            foodAllergies: emptyStringToUndefined(
-              memberData.medicalInformation.foodAllergies,
-            ),
-            substanceAllergies: emptyStringToUndefined(
-              memberData.medicalInformation.substanceAllergies,
-            ),
-            medicationAllergies: emptyStringToUndefined(
-              memberData.medicalInformation.medicationAllergies,
-            ),
-            medication: emptyStringToUndefined(
-              memberData.medicalInformation.medication,
-            ),
-            otherMedicalConditions: emptyStringToUndefined(
-              memberData.medicalInformation.otherMedicalConditions,
-            ),
-            otherRemarks: emptyStringToUndefined(
-              memberData.medicalInformation.otherRemarks,
-            ),
+            asthmaDescription:
+              memberData.medicalInformation.asthmaDescription.trim(),
+            bedwettingDescription:
+              memberData.medicalInformation.bedwettingDescription.trim(),
+            epilepsyDescription:
+              memberData.medicalInformation.epilepsyDescription.trim(),
+            heartConditionDescription:
+              memberData.medicalInformation.heartConditionDescription.trim(),
+            hayFeverDescription:
+              memberData.medicalInformation.hayFeverDescription.trim(),
+            skinConditionDescription:
+              memberData.medicalInformation.skinConditionDescription.trim(),
+            rheumatismDescription:
+              memberData.medicalInformation.rheumatismDescription.trim(),
+            sleepwalkingDescription:
+              memberData.medicalInformation.sleepwalkingDescription.trim(),
+            diabetesDescription:
+              memberData.medicalInformation.diabetesDescription.trim(),
+            foodAllergies: memberData.medicalInformation.foodAllergies.trim(),
+            substanceAllergies:
+              memberData.medicalInformation.substanceAllergies.trim(),
+            medicationAllergies:
+              memberData.medicalInformation.medicationAllergies.trim(),
+            medication: memberData.medicalInformation.medication.trim(),
+            otherMedicalConditions:
+              memberData.medicalInformation.otherMedicalConditions.trim(),
+            otherRemarks: memberData.medicalInformation.otherRemarks.trim(),
           }
         : undefined,
     };
@@ -139,5 +117,14 @@ export async function findGroupForMember(
   } catch (error) {
     console.error("Error finding group for member:", error);
     return null;
+  }
+}
+
+export async function getAllGroups(): Promise<Group[]> {
+  try {
+    return await GROUP_QUERIES.getAll({ activeOnly: true });
+  } catch (error) {
+    console.error("Error getting all groups:", error);
+    return [];
   }
 }

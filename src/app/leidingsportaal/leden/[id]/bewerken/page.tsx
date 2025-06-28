@@ -12,14 +12,20 @@ import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { CalendarDate } from "@internationalized/date";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
-import { getFullMemberDetails, updateMember } from "../actions";
+import { getFullMemberDetails, updateMember, getAllGroups } from "../actions";
 import { findGroupForMember } from "~/app/leidingsportaal/inschrijven/actions";
-import { type Gender, type ParentRelationship, type PaymentMethod, type Group } from "~/server/db/schema";
+import {
+  type Gender,
+  type ParentRelationship,
+  type PaymentMethod,
+  type Group,
+} from "~/server/db/schema";
 import SignInAsLeiding from "~/app/leidingsportaal/sign-in-as-leiding";
 import DDMMYYYYDateInput from "~/components/ui/dd-mm-yyyy-date-input";
+import Image from "next/image";
+import { QRCodeModal } from "~/components/ui/qr-code-modal";
 
 export default function EditMemberPage() {
   const router = useRouter();
@@ -28,8 +34,19 @@ export default function EditMemberPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [memberData, setMemberData] = useState<Awaited<ReturnType<typeof getFullMemberDetails>> | null>(null);
-  const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
+  const [memberData, setMemberData] = useState<Awaited<
+    ReturnType<typeof getFullMemberDetails>
+  > | null>(null);
+  const [existingGroup, setExistingGroup] = useState<Group | null>(null);
+  const [automaticGroup, setAutomaticGroup] = useState<Group | null>(null);
+  const [manualGroup, setManualGroup] = useState<Group | null>(null);
+  const [allGroups, setAllGroups] = useState<Group[]>([]);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrModalData, setQrModalData] = useState<{
+    src: string;
+    title: string;
+    altText: string;
+  } | null>(null);
 
   const breadcrumbItems = [
     { href: "/leidingsportaal", label: "Leidingsportaal" },
@@ -135,6 +152,7 @@ export default function EditMemberPage() {
           emergencyContact: value.emergencyContact,
           medicalInformation: value.medicalInformation,
           payment: value.payment,
+          groupId: getFinalSelectedGroup()?.id,
         };
 
         await updateMember(Number(memberId), submitData);
@@ -150,9 +168,13 @@ export default function EditMemberPage() {
     const loadMember = async () => {
       setLoading(true);
       try {
-        const data = await getFullMemberDetails(memberId);
+        const [data, groups] = await Promise.all([
+          getFullMemberDetails(memberId),
+          getAllGroups(),
+        ]);
         setMemberData(data);
-      } catch (err) {
+        setAllGroups(groups);
+      } catch {
         setFormError("Kon lidgegevens niet laden.");
       } finally {
         setLoading(false);
@@ -170,18 +192,38 @@ export default function EditMemberPage() {
       form.setFieldValue("member.gender", memberData.gender);
       if (memberData.dateOfBirth) {
         // Handle both Date objects and date strings
-        const date = memberData.dateOfBirth instanceof Date 
-          ? memberData.dateOfBirth 
-          : new Date(memberData.dateOfBirth);
+        const date =
+          memberData.dateOfBirth instanceof Date
+            ? memberData.dateOfBirth
+            : new Date(memberData.dateOfBirth);
         form.setFieldValue("member.dateOfBirth", date);
       }
       form.setFieldValue("member.emailAddress", memberData.emailAddress ?? "");
       form.setFieldValue("member.phoneNumber", memberData.phoneNumber ?? "");
-      form.setFieldValue("member.gdprPermissionToPublishPhotos", memberData.gdprPermissionToPublishPhotos ?? true);
+      form.setFieldValue(
+        "member.gdprPermissionToPublishPhotos",
+        memberData.gdprPermissionToPublishPhotos ?? true,
+      );
 
-      // Set current group from member data
+      // Set existing group from member data (existing membership)
       if (memberData.yearlyMemberships?.[0]?.group) {
-        setCurrentGroup(memberData.yearlyMemberships[0].group);
+        setExistingGroup(memberData.yearlyMemberships[0].group);
+      }
+
+      // Calculate automatic group based on current age and gender
+      if (memberData.dateOfBirth && memberData.gender) {
+        const date =
+          memberData.dateOfBirth instanceof Date
+            ? memberData.dateOfBirth
+            : new Date(memberData.dateOfBirth);
+        findGroupForMember(date, memberData.gender)
+          .then((group) => {
+            setAutomaticGroup(group);
+          })
+          .catch((error) => {
+            console.error("Error finding group:", error);
+            setAutomaticGroup(null);
+          });
       }
 
       // Set parents data
@@ -205,59 +247,191 @@ export default function EditMemberPage() {
 
       // Set emergency contact data
       if (memberData.emergencyContact) {
-        form.setFieldValue("emergencyContact.firstName", memberData.emergencyContact.firstName ?? "");
-        form.setFieldValue("emergencyContact.lastName", memberData.emergencyContact.lastName ?? "");
-        form.setFieldValue("emergencyContact.phoneNumber", memberData.emergencyContact.phoneNumber ?? "");
-        form.setFieldValue("emergencyContact.relationship", memberData.emergencyContact.relationship ?? "");
+        form.setFieldValue(
+          "emergencyContact.firstName",
+          memberData.emergencyContact.firstName ?? "",
+        );
+        form.setFieldValue(
+          "emergencyContact.lastName",
+          memberData.emergencyContact.lastName ?? "",
+        );
+        form.setFieldValue(
+          "emergencyContact.phoneNumber",
+          memberData.emergencyContact.phoneNumber ?? "",
+        );
+        form.setFieldValue(
+          "emergencyContact.relationship",
+          memberData.emergencyContact.relationship ?? "",
+        );
       }
 
       // Set medical information data
       if (memberData.medicalInformation) {
-        form.setFieldValue("medicalInformation.doctorFirstName", memberData.medicalInformation.doctorFirstName ?? "");
-        form.setFieldValue("medicalInformation.doctorLastName", memberData.medicalInformation.doctorLastName ?? "");
-        form.setFieldValue("medicalInformation.doctorPhoneNumber", memberData.medicalInformation.doctorPhoneNumber ?? "");
-        form.setFieldValue("medicalInformation.tetanusVaccination", memberData.medicalInformation.tetanusVaccination ?? true);
-        form.setFieldValue("medicalInformation.asthma", memberData.medicalInformation.asthma ?? false);
-        form.setFieldValue("medicalInformation.asthmaDescription", memberData.medicalInformation.asthmaInformation ?? "");
-        form.setFieldValue("medicalInformation.bedwetting", memberData.medicalInformation.bedwetting ?? false);
-        form.setFieldValue("medicalInformation.bedwettingDescription", memberData.medicalInformation.bedwettingInformation ?? "");
-        form.setFieldValue("medicalInformation.epilepsy", memberData.medicalInformation.epilepsy ?? false);
-        form.setFieldValue("medicalInformation.epilepsyDescription", memberData.medicalInformation.epilepsyInformation ?? "");
-        form.setFieldValue("medicalInformation.heartCondition", memberData.medicalInformation.heartCondition ?? false);
-        form.setFieldValue("medicalInformation.heartConditionDescription", memberData.medicalInformation.heartConditionInformation ?? "");
-        form.setFieldValue("medicalInformation.hayFever", memberData.medicalInformation.hayFever ?? false);
-        form.setFieldValue("medicalInformation.hayFeverDescription", memberData.medicalInformation.hayFeverInformation ?? "");
-        form.setFieldValue("medicalInformation.skinCondition", memberData.medicalInformation.skinCondition ?? false);
-        form.setFieldValue("medicalInformation.skinConditionDescription", memberData.medicalInformation.skinConditionInformation ?? "");
-        form.setFieldValue("medicalInformation.rheumatism", memberData.medicalInformation.rheumatism ?? false);
-        form.setFieldValue("medicalInformation.rheumatismDescription", memberData.medicalInformation.rheumatismInformation ?? "");
-        form.setFieldValue("medicalInformation.sleepwalking", memberData.medicalInformation.sleepwalking ?? false);
-        form.setFieldValue("medicalInformation.sleepwalkingDescription", memberData.medicalInformation.sleepwalkingInformation ?? "");
-        form.setFieldValue("medicalInformation.diabetes", memberData.medicalInformation.diabetes ?? false);
-        form.setFieldValue("medicalInformation.diabetesDescription", memberData.medicalInformation.diabetesInformation ?? "");
-        form.setFieldValue("medicalInformation.hasFoodAllergies", !!memberData.medicalInformation.foodAllergies);
-        form.setFieldValue("medicalInformation.foodAllergies", memberData.medicalInformation.foodAllergies ?? "");
-        form.setFieldValue("medicalInformation.hasSubstanceAllergies", !!memberData.medicalInformation.substanceAllergies);
-        form.setFieldValue("medicalInformation.substanceAllergies", memberData.medicalInformation.substanceAllergies ?? "");
-        form.setFieldValue("medicalInformation.hasMedicationAllergies", !!memberData.medicalInformation.medicationAllergies);
-        form.setFieldValue("medicalInformation.medicationAllergies", memberData.medicalInformation.medicationAllergies ?? "");
-        form.setFieldValue("medicalInformation.hasMedication", !!memberData.medicalInformation.medication);
-        form.setFieldValue("medicalInformation.medication", memberData.medicalInformation.medication ?? "");
-        form.setFieldValue("medicalInformation.hasOtherMedicalConditions", !!memberData.medicalInformation.otherMedicalConditions);
-        form.setFieldValue("medicalInformation.otherMedicalConditions", memberData.medicalInformation.otherMedicalConditions ?? "");
-        form.setFieldValue("medicalInformation.getsTiredQuickly", memberData.medicalInformation.getsTiredQuickly ?? false);
-        form.setFieldValue("medicalInformation.canParticipateSports", memberData.medicalInformation.canParticipateSports ?? true);
-        form.setFieldValue("medicalInformation.canSwim", memberData.medicalInformation.canSwim ?? true);
-        form.setFieldValue("medicalInformation.otherRemarks", memberData.medicalInformation.otherRemarks ?? "");
-        form.setFieldValue("medicalInformation.permissionMedication", memberData.medicalInformation.permissionMedication ?? true);
+        form.setFieldValue(
+          "medicalInformation.doctorFirstName",
+          memberData.medicalInformation.doctorFirstName ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.doctorLastName",
+          memberData.medicalInformation.doctorLastName ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.doctorPhoneNumber",
+          memberData.medicalInformation.doctorPhoneNumber ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.tetanusVaccination",
+          memberData.medicalInformation.tetanusVaccination ?? true,
+        );
+        form.setFieldValue(
+          "medicalInformation.asthma",
+          memberData.medicalInformation.asthma ?? false,
+        );
+        form.setFieldValue(
+          "medicalInformation.asthmaDescription",
+          memberData.medicalInformation.asthmaInformation ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.bedwetting",
+          memberData.medicalInformation.bedwetting ?? false,
+        );
+        form.setFieldValue(
+          "medicalInformation.bedwettingDescription",
+          memberData.medicalInformation.bedwettingInformation ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.epilepsy",
+          memberData.medicalInformation.epilepsy ?? false,
+        );
+        form.setFieldValue(
+          "medicalInformation.epilepsyDescription",
+          memberData.medicalInformation.epilepsyInformation ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.heartCondition",
+          memberData.medicalInformation.heartCondition ?? false,
+        );
+        form.setFieldValue(
+          "medicalInformation.heartConditionDescription",
+          memberData.medicalInformation.heartConditionInformation ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.hayFever",
+          memberData.medicalInformation.hayFever ?? false,
+        );
+        form.setFieldValue(
+          "medicalInformation.hayFeverDescription",
+          memberData.medicalInformation.hayFeverInformation ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.skinCondition",
+          memberData.medicalInformation.skinCondition ?? false,
+        );
+        form.setFieldValue(
+          "medicalInformation.skinConditionDescription",
+          memberData.medicalInformation.skinConditionInformation ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.rheumatism",
+          memberData.medicalInformation.rheumatism ?? false,
+        );
+        form.setFieldValue(
+          "medicalInformation.rheumatismDescription",
+          memberData.medicalInformation.rheumatismInformation ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.sleepwalking",
+          memberData.medicalInformation.sleepwalking ?? false,
+        );
+        form.setFieldValue(
+          "medicalInformation.sleepwalkingDescription",
+          memberData.medicalInformation.sleepwalkingInformation ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.diabetes",
+          memberData.medicalInformation.diabetes ?? false,
+        );
+        form.setFieldValue(
+          "medicalInformation.diabetesDescription",
+          memberData.medicalInformation.diabetesInformation ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.hasFoodAllergies",
+          !!memberData.medicalInformation.foodAllergies,
+        );
+        form.setFieldValue(
+          "medicalInformation.foodAllergies",
+          memberData.medicalInformation.foodAllergies ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.hasSubstanceAllergies",
+          !!memberData.medicalInformation.substanceAllergies,
+        );
+        form.setFieldValue(
+          "medicalInformation.substanceAllergies",
+          memberData.medicalInformation.substanceAllergies ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.hasMedicationAllergies",
+          !!memberData.medicalInformation.medicationAllergies,
+        );
+        form.setFieldValue(
+          "medicalInformation.medicationAllergies",
+          memberData.medicalInformation.medicationAllergies ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.hasMedication",
+          !!memberData.medicalInformation.medication,
+        );
+        form.setFieldValue(
+          "medicalInformation.medication",
+          memberData.medicalInformation.medication ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.hasOtherMedicalConditions",
+          !!memberData.medicalInformation.otherMedicalConditions,
+        );
+        form.setFieldValue(
+          "medicalInformation.otherMedicalConditions",
+          memberData.medicalInformation.otherMedicalConditions ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.getsTiredQuickly",
+          memberData.medicalInformation.getsTiredQuickly ?? false,
+        );
+        form.setFieldValue(
+          "medicalInformation.canParticipateSports",
+          memberData.medicalInformation.canParticipateSports ?? true,
+        );
+        form.setFieldValue(
+          "medicalInformation.canSwim",
+          memberData.medicalInformation.canSwim ?? true,
+        );
+        form.setFieldValue(
+          "medicalInformation.otherRemarks",
+          memberData.medicalInformation.otherRemarks ?? "",
+        );
+        form.setFieldValue(
+          "medicalInformation.permissionMedication",
+          memberData.medicalInformation.permissionMedication ?? true,
+        );
       }
 
       // Set payment data
       if (memberData.yearlyMemberships?.[0]) {
-        form.setFieldValue("payment.paymentReceived", memberData.yearlyMemberships[0].paymentReceived ?? false);
-        form.setFieldValue("payment.paymentMethod", memberData.yearlyMemberships[0].paymentMethod ?? undefined);
+        form.setFieldValue(
+          "payment.paymentReceived",
+          memberData.yearlyMemberships[0].paymentReceived ?? false,
+        );
+        form.setFieldValue(
+          "payment.paymentMethod",
+          memberData.yearlyMemberships[0].paymentMethod ?? undefined,
+        );
         if (memberData.yearlyMemberships[0].paymentDate) {
-          form.setFieldValue("payment.paymentDate", new Date(memberData.yearlyMemberships[0].paymentDate));
+          form.setFieldValue(
+            "payment.paymentDate",
+            new Date(memberData.yearlyMemberships[0].paymentDate),
+          );
         }
       }
     }
@@ -288,7 +462,9 @@ export default function EditMemberPage() {
   const removeParent = (index: number) => {
     const currentParents = form.getFieldValue("parents");
     if (currentParents.length > 1) {
-      const updatedParents = currentParents.filter((_, i: number) => i !== index);
+      const updatedParents = currentParents.filter(
+        (_, i: number) => i !== index,
+      );
       if (
         currentParents[index]?.isPrimary &&
         updatedParents.length > 0 &&
@@ -302,46 +478,89 @@ export default function EditMemberPage() {
 
   const setPrimaryParent = (index: number) => {
     const currentParents = form.getFieldValue("parents");
-    const updatedParents = currentParents.map((parent: {
-      firstName: string;
-      lastName: string;
-      emailAddress: string;
-      phoneNumber: string;
-      relationship: ParentRelationship | undefined;
-      address: {
-        street: string;
-        houseNumber: string;
-        postalCode: string;
-        municipality: string;
-      };
-      isPrimary: boolean;
-    }, i: number) => ({
-      ...parent,
-      isPrimary: i === index,
-    }));
+    const updatedParents = currentParents.map(
+      (
+        parent: {
+          firstName: string;
+          lastName: string;
+          emailAddress: string;
+          phoneNumber: string;
+          relationship: ParentRelationship | undefined;
+          address: {
+            street: string;
+            houseNumber: string;
+            postalCode: string;
+            municipality: string;
+          };
+          isPrimary: boolean;
+        },
+        i: number,
+      ) => ({
+        ...parent,
+        isPrimary: i === index,
+      }),
+    );
     form.setFieldValue("parents", updatedParents);
   };
 
-  const handleGroupUpdate = async (dateOfBirth: Date | undefined, gender: Gender | undefined) => {
-    if (dateOfBirth && gender) {
-      try {
-        const group = await findGroupForMember(dateOfBirth, gender);
-        setCurrentGroup(group);
-      } catch (error) {
-        console.error("Error finding group:", error);
-        setCurrentGroup(null);
-      }
-    } else {
-      setCurrentGroup(null);
+  // Get the final selected group (manual override or automatic)
+  const getFinalSelectedGroup = () => {
+    // If manual group is selected, use that
+    if (manualGroup) {
+      return manualGroup;
     }
+
+    // If no manual selection, use existing group if it's different from automatic
+    // This preserves the current group assignment when editing
+    if (
+      existingGroup &&
+      automaticGroup &&
+      existingGroup.id !== automaticGroup.id
+    ) {
+      return existingGroup;
+    }
+
+    // If we have an existing group but no automatic group yet, use existing
+    if (existingGroup && !automaticGroup) {
+      return existingGroup;
+    }
+
+    // Otherwise use automatic group
+    return automaticGroup;
+  };
+
+  // Debug logging
+  console.log("Group states:", {
+    existingGroup: existingGroup?.name,
+    automaticGroup: automaticGroup?.name,
+    manualGroup: manualGroup?.name,
+    finalGroup: getFinalSelectedGroup()?.name,
+  });
+
+  const openQRModal = (src: string, title: string, altText: string) => {
+    setQrModalData({ src, title, altText });
+    setQrModalOpen(true);
+  };
+
+  const closeQRModal = () => {
+    setQrModalOpen(false);
+    setQrModalData(null);
   };
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center">Laden...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        Laden...
+      </div>
+    );
   }
 
   if (!memberData) {
-    return <div className="flex min-h-screen items-center justify-center text-red-600">{formError ?? "Lid niet gevonden"}</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-600">
+        {formError ?? "Lid niet gevonden"}
+      </div>
+    );
   }
 
   return (
@@ -439,13 +658,23 @@ export default function EditMemberPage() {
                       selectedKeys={
                         field.state.value ? [field.state.value] : []
                       }
-                      onSelectionChange={async (keys) => {
+                      onSelectionChange={(keys) => {
                         const value = Array.from(keys)[0] as Gender;
                         field.handleChange(value);
-                        
+
                         // Update group when gender changes
-                        const dateOfBirth = form.getFieldValue("member.dateOfBirth");
-                        await handleGroupUpdate(dateOfBirth, value);
+                        const dateOfBirth =
+                          form.getFieldValue("member.dateOfBirth");
+                        if (dateOfBirth && value) {
+                          findGroupForMember(dateOfBirth, value)
+                            .then((group) => {
+                              setAutomaticGroup(group);
+                            })
+                            .catch((error) => {
+                              console.error("Error finding group:", error);
+                              setAutomaticGroup(null);
+                            });
+                        }
                       }}
                       isInvalid={field.state.meta.errors.length > 0}
                       errorMessage={field.state.meta.errors[0]}
@@ -473,81 +702,25 @@ export default function EditMemberPage() {
                     <DDMMYYYYDateInput
                       label="Geboortedatum"
                       value={field.state.value}
-                      onChange={async (date: Date | undefined) => {
+                      onChange={(date: Date | undefined) => {
                         field.handleChange(date);
-                        
+
                         // Update group when birthdate changes
                         const gender = form.getFieldValue("member.gender");
-                        await handleGroupUpdate(date, gender);
+                        if (date && gender) {
+                          findGroupForMember(date, gender)
+                            .then((group) => {
+                              setAutomaticGroup(group);
+                            })
+                            .catch((error) => {
+                              console.error("Error finding group:", error);
+                              setAutomaticGroup(null);
+                            });
+                        }
                       }}
                       isInvalid={field.state.meta.errors.length > 0}
                       errorMessage={field.state.meta.errors[0]}
                       isRequired
-                    />
-                  )}
-                </form.Field>
-
-                {currentGroup && (
-                  <div
-                    className="rounded-lg p-4"
-                    style={{
-                      backgroundColor: currentGroup.color
-                        ? `${currentGroup.color}15`
-                        : "#f0f9ff",
-                    }}
-                  >
-                    <p
-                      className="text-sm font-medium"
-                      style={{
-                        color: currentGroup.color ?? "#0c4a6e",
-                      }}
-                    >
-                      <strong>Huidige groep:</strong> {currentGroup.name}
-                    </p>
-                  </div>
-                )}
-
-                <form.Field
-                  name="member.emailAddress"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (value && value.trim().length > 255)
-                        return "E-mailadres mag maximaal 255 karakters bevatten";
-                      if (value && !z.string().email().safeParse(value).success)
-                        return "Geldig e-mailadres is verplicht";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="E-mailadres"
-                      type="email"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                    />
-                  )}
-                </form.Field>
-
-                <form.Field
-                  name="member.phoneNumber"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (value && value.trim().length > 20)
-                        return "Telefoonnummer mag maximaal 20 karakters bevatten";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="Telefoonnummer"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
                     />
                   )}
                 </form.Field>
@@ -563,6 +736,103 @@ export default function EditMemberPage() {
                   </Checkbox>
                 )}
               </form.Field>
+            </CardBody>
+          </Card>
+
+          {/* Group Selection */}
+          <Card>
+            <CardHeader>
+              <h2 className="text-xl font-semibold">Groep</h2>
+            </CardHeader>
+            <CardBody className="space-y-4">
+              {/* Show automatic group prominently */}
+              {getFinalSelectedGroup() && (
+                <div
+                  className="rounded-lg p-4"
+                  style={{
+                    backgroundColor: getFinalSelectedGroup()?.color
+                      ? `${getFinalSelectedGroup()?.color}15`
+                      : "#f0f9ff",
+                  }}
+                >
+                  <p
+                    className="text-sm font-medium"
+                    style={{
+                      color: getFinalSelectedGroup()?.color ?? "#0c4a6e",
+                    }}
+                  >
+                    <strong>Geselecteerde groep:</strong>{" "}
+                    {getFinalSelectedGroup()?.name}
+                    {manualGroup && (
+                      <span className="ml-2 text-xs text-warning-600">
+                        (Handmatig geselecteerd)
+                      </span>
+                    )}
+                    {!manualGroup && automaticGroup && (
+                      <span className="ml-2 text-xs text-primary-600">
+                        (Automatisch)
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+
+              {/* Manual override dropdown */}
+              <div className="flex gap-2">
+                <Select
+                  label="Handmatige groep selectie (optioneel)"
+                  placeholder="Kies een andere groep"
+                  selectedKeys={manualGroup ? [manualGroup.id.toString()] : []}
+                  onSelectionChange={(keys) => {
+                    const selectedKey = Array.from(keys)[0];
+                    if (selectedKey) {
+                      const group = allGroups.find(
+                        (g) => g.id.toString() === selectedKey,
+                      );
+                      setManualGroup(group ?? null);
+                    } else {
+                      setManualGroup(null);
+                    }
+                  }}
+                  className="flex-1"
+                >
+                  {allGroups.map((group) => (
+                    <SelectItem key={group.id.toString()}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-3 w-3 rounded-full"
+                          style={{
+                            backgroundColor: group.color ?? "#ccc",
+                          }}
+                        />
+                        {group.name}
+                        {group === automaticGroup && (
+                          <span className="text-xs text-primary-600">
+                            (Automatisch)
+                          </span>
+                        )}
+                        {group === existingGroup && (
+                          <span className="text-xs text-warning-600">
+                            (Huidig)
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </Select>
+                {manualGroup && (
+                  <Button
+                    type="button"
+                    color="danger"
+                    variant="flat"
+                    size="sm"
+                    onPress={() => setManualGroup(null)}
+                    className="self-end"
+                  >
+                    Reset
+                  </Button>
+                )}
+              </div>
             </CardBody>
           </Card>
 
@@ -1529,47 +1799,79 @@ export default function EditMemberPage() {
               <h2 className="text-xl font-semibold">Betaling</h2>
             </CardHeader>
             <CardBody className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <form.Field name="payment.paymentReceived">
-                  {(field) => (
-                    <Checkbox
-                      isSelected={field.state.value}
-                      onValueChange={(checked) => {
-                        field.handleChange(checked);
-                        // Automatically set payment date to current date when payment is received
-                        if (checked) {
-                          form.setFieldValue("payment.paymentDate", new Date());
-                        } else {
-                          form.setFieldValue("payment.paymentDate", undefined);
-                        }
-                      }}
-                    >
-                      Betaling ontvangen
-                    </Checkbox>
-                  )}
-                </form.Field>
+              <div className="flex flex-row items-start gap-8">
+                <div className="flex-shrink-0">
+                  <Image
+                    src="/qr-code-inschrijving-jaar.png"
+                    alt="QR code voor betaling"
+                    className="h-32 w-32 cursor-pointer rounded-lg border object-contain shadow transition-shadow hover:shadow-lg"
+                    width={128}
+                    height={128}
+                    onClick={() =>
+                      openQRModal(
+                        "/qr-code-inschrijving-jaar.png",
+                        "QR Code voor Betaling",
+                        "QR code voor betaling",
+                      )
+                    }
+                  />
+                  <div className="mt-2 text-center text-sm">
+                    <p className="font-medium text-gray-700">Bedrag: 40 EUR</p>
+                    <p className="text-gray-600">BE71 0018 7690 8469</p>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <form.Field name="payment.paymentReceived">
+                      {(field) => (
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={(checked) => {
+                            field.handleChange(checked);
+                            // Automatically set payment date to current date when payment is received
+                            if (checked) {
+                              form.setFieldValue(
+                                "payment.paymentDate",
+                                new Date(),
+                              );
+                            } else {
+                              form.setFieldValue(
+                                "payment.paymentDate",
+                                undefined,
+                              );
+                            }
+                          }}
+                        >
+                          Betaling ontvangen
+                        </Checkbox>
+                      )}
+                    </form.Field>
 
-                <form.Field name="payment.paymentMethod">
-                  {(field) => (
-                    <Select
-                      label="Betaalmethode"
-                      selectedKeys={
-                        field.state.value ? [field.state.value] : []
-                      }
-                      onSelectionChange={(keys) => {
-                        const value = Array.from(keys)[0] as PaymentMethod;
-                        field.handleChange(value);
-                      }}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                    >
-                      <SelectItem key="CASH">Contant</SelectItem>
-                      <SelectItem key="BANK_TRANSFER">Overschrijving</SelectItem>
-                      <SelectItem key="PAYCONIQ">Payconiq</SelectItem>
-                      <SelectItem key="OTHER">Anders</SelectItem>
-                    </Select>
-                  )}
-                </form.Field>
+                    <form.Field name="payment.paymentMethod">
+                      {(field) => (
+                        <Select
+                          label="Betaalmethode"
+                          selectedKeys={
+                            field.state.value ? [field.state.value] : []
+                          }
+                          onSelectionChange={(keys) => {
+                            const value = Array.from(keys)[0] as PaymentMethod;
+                            field.handleChange(value);
+                          }}
+                          isInvalid={field.state.meta.errors.length > 0}
+                          errorMessage={field.state.meta.errors[0]}
+                        >
+                          <SelectItem key="CASH">Contant</SelectItem>
+                          <SelectItem key="BANK_TRANSFER">
+                            Overschrijving
+                          </SelectItem>
+                          <SelectItem key="PAYCONIQ">Payconiq</SelectItem>
+                          <SelectItem key="OTHER">Anders</SelectItem>
+                        </Select>
+                      )}
+                    </form.Field>
+                  </div>
+                </div>
               </div>
             </CardBody>
           </Card>
@@ -1594,6 +1896,17 @@ export default function EditMemberPage() {
           </div>
         </form>
       </SignedIn>
+
+      {/* QR Code Modal */}
+      {qrModalData && (
+        <QRCodeModal
+          isOpen={qrModalOpen}
+          onClose={closeQRModal}
+          qrCodeSrc={qrModalData.src}
+          title={qrModalData.title}
+          altText={qrModalData.altText}
+        />
+      )}
     </>
   );
-} 
+}

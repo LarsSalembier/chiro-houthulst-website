@@ -98,8 +98,12 @@ export default async function GroupDetailPage({ params }: PageProps) {
   const otherGenderCount = members.filter((m) => m.gender === "X").length;
 
   // Calculate camp statistics
-  const campSubscriptions = members.filter((m) => m.yearlyMembership?.campSubscription).length;
-  const campPaymentReceived = members.filter((m) => m.yearlyMembership?.campPaymentReceived).length;
+  const campSubscriptions = members.filter(
+    (m) => m.yearlyMembership?.campSubscription,
+  ).length;
+  const campPaymentReceived = members.filter(
+    (m) => m.yearlyMembership?.campPaymentReceived,
+  ).length;
   const campPaymentPending = campSubscriptions - campPaymentReceived;
 
   const averageAge =
@@ -227,7 +231,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
       <SignedIn>
         <div className="mx-auto max-w-6xl space-y-8">
           {/* Group Statistics Overview */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardBody className="p-6">
                 <div className="flex items-center gap-4">
@@ -292,24 +296,9 @@ export default async function GroupDetailPage({ params }: PageProps) {
                     <p className="text-sm text-gray-600">Kamp inschrijvingen</p>
                     <p className="text-2xl font-bold">{campSubscriptions}</p>
                     <p className="text-xs text-gray-500">
-                      {campPaymentReceived} betaald, {campPaymentPending} openstaand
+                      {campPaymentReceived} betaald, {campPaymentPending}{" "}
+                      openstaand
                     </p>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-
-            <Card>
-              <CardBody className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="rounded-lg bg-purple-100 p-3">
-                    <Award className="h-8 w-8 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Status</p>
-                    <Badge color="success" variant="flat" className="mt-1">
-                      Actief
-                    </Badge>
                   </div>
                 </div>
               </CardBody>
@@ -450,9 +439,14 @@ export default async function GroupDetailPage({ params }: PageProps) {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600">Totaal ingeschreven</p>
-                  <p className="text-3xl font-bold text-orange-600">{campSubscriptions}</p>
+                  <p className="text-3xl font-bold text-orange-600">
+                    {campSubscriptions}
+                  </p>
                   <p className="text-xs text-gray-500">
-                    {totalMembers > 0 ? Math.round((campSubscriptions / totalMembers) * 100) : 0}% van de groep
+                    {totalMembers > 0
+                      ? Math.round((campSubscriptions / totalMembers) * 100)
+                      : 0}
+                    % van de groep
                   </p>
                 </div>
 
@@ -463,9 +457,16 @@ export default async function GroupDetailPage({ params }: PageProps) {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600">Betaald</p>
-                  <p className="text-3xl font-bold text-green-600">{campPaymentReceived}</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    {campPaymentReceived}
+                  </p>
                   <p className="text-xs text-gray-500">
-                    {campSubscriptions > 0 ? Math.round((campPaymentReceived / campSubscriptions) * 100) : 0}% van inschrijvingen
+                    {campSubscriptions > 0
+                      ? Math.round(
+                          (campPaymentReceived / campSubscriptions) * 100,
+                        )
+                      : 0}
+                    % van inschrijvingen
                   </p>
                 </div>
 
@@ -476,9 +477,16 @@ export default async function GroupDetailPage({ params }: PageProps) {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600">Openstaand</p>
-                  <p className="text-3xl font-bold text-yellow-600">{campPaymentPending}</p>
+                  <p className="text-3xl font-bold text-yellow-600">
+                    {campPaymentPending}
+                  </p>
                   <p className="text-xs text-gray-500">
-                    {campSubscriptions > 0 ? Math.round((campPaymentPending / campSubscriptions) * 100) : 0}% van inschrijvingen
+                    {campSubscriptions > 0
+                      ? Math.round(
+                          (campPaymentPending / campSubscriptions) * 100,
+                        )
+                      : 0}
+                    % van inschrijvingen
                   </p>
                 </div>
               </div>
@@ -503,7 +511,9 @@ export default async function GroupDetailPage({ params }: PageProps) {
                                 : "border border-yellow-200 bg-yellow-50"
                             }`}
                           >
-                            <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                            <TableLink
+                              href={`/leidingsportaal/leden/${member.id}`}
+                            >
                               {member.firstName} {member.lastName}
                             </TableLink>
                             <Badge
@@ -546,12 +556,24 @@ export default async function GroupDetailPage({ params }: PageProps) {
                 <CardBody className="p-6">
                   <div className="space-y-4">
                     {(() => {
-                      const epilepsyMembers = members.filter(m => m.medicalInformation?.epilepsy);
-                      const heartMembers = members.filter(m => m.medicalInformation?.heartCondition);
-                      const asthmaMembers = members.filter(m => m.medicalInformation?.asthma);
-                      const diabetesMembers = members.filter(m => m.medicalInformation?.diabetes);
+                      const epilepsyMembers = members.filter(
+                        (m) => m.medicalInformation?.epilepsy,
+                      );
+                      const heartMembers = members.filter(
+                        (m) => m.medicalInformation?.heartCondition,
+                      );
+                      const asthmaMembers = members.filter(
+                        (m) => m.medicalInformation?.asthma,
+                      );
+                      const diabetesMembers = members.filter(
+                        (m) => m.medicalInformation?.diabetes,
+                      );
 
-                      const hasCriticalConditions = epilepsyMembers.length > 0 || heartMembers.length > 0 || asthmaMembers.length > 0 || diabetesMembers.length > 0;
+                      const hasCriticalConditions =
+                        epilepsyMembers.length > 0 ||
+                        heartMembers.length > 0 ||
+                        asthmaMembers.length > 0 ||
+                        diabetesMembers.length > 0;
 
                       if (!hasCriticalConditions) {
                         return (
@@ -566,15 +588,26 @@ export default async function GroupDetailPage({ params }: PageProps) {
                         <div className="space-y-4">
                           {epilepsyMembers.length > 0 && (
                             <div>
-                              <h4 className="mb-2 font-medium text-red-700">Epilepsie:</h4>
-                              {epilepsyMembers.map(member => (
-                                <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                  <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              <h4 className="mb-2 font-medium text-red-700">
+                                Epilepsie:
+                              </h4>
+                              {epilepsyMembers.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                                >
+                                  <TableLink
+                                    href={`/leidingsportaal/leden/${member.id}`}
+                                  >
                                     {member.firstName} {member.lastName}
                                   </TableLink>
-                                  {member.medicalInformation?.epilepsyInformation && (
+                                  {member.medicalInformation
+                                    ?.epilepsyInformation && (
                                     <p className="mt-1 text-sm text-gray-700">
-                                      {member.medicalInformation.epilepsyInformation}
+                                      {
+                                        member.medicalInformation
+                                          .epilepsyInformation
+                                      }
                                     </p>
                                   )}
                                 </div>
@@ -584,15 +617,26 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                           {heartMembers.length > 0 && (
                             <div>
-                              <h4 className="mb-2 font-medium text-red-700">Hartaandoening:</h4>
-                              {heartMembers.map(member => (
-                                <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                  <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              <h4 className="mb-2 font-medium text-red-700">
+                                Hartaandoening:
+                              </h4>
+                              {heartMembers.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                                >
+                                  <TableLink
+                                    href={`/leidingsportaal/leden/${member.id}`}
+                                  >
                                     {member.firstName} {member.lastName}
                                   </TableLink>
-                                  {member.medicalInformation?.heartConditionInformation && (
+                                  {member.medicalInformation
+                                    ?.heartConditionInformation && (
                                     <p className="mt-1 text-sm text-gray-700">
-                                      {member.medicalInformation.heartConditionInformation}
+                                      {
+                                        member.medicalInformation
+                                          .heartConditionInformation
+                                      }
                                     </p>
                                   )}
                                 </div>
@@ -602,15 +646,26 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                           {asthmaMembers.length > 0 && (
                             <div>
-                              <h4 className="mb-2 font-medium text-red-700">Astma:</h4>
-                              {asthmaMembers.map(member => (
-                                <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                  <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              <h4 className="mb-2 font-medium text-red-700">
+                                Astma:
+                              </h4>
+                              {asthmaMembers.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                                >
+                                  <TableLink
+                                    href={`/leidingsportaal/leden/${member.id}`}
+                                  >
                                     {member.firstName} {member.lastName}
                                   </TableLink>
-                                  {member.medicalInformation?.asthmaInformation && (
+                                  {member.medicalInformation
+                                    ?.asthmaInformation && (
                                     <p className="mt-1 text-sm text-gray-700">
-                                      {member.medicalInformation.asthmaInformation}
+                                      {
+                                        member.medicalInformation
+                                          .asthmaInformation
+                                      }
                                     </p>
                                   )}
                                 </div>
@@ -620,15 +675,26 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                           {diabetesMembers.length > 0 && (
                             <div>
-                              <h4 className="mb-2 font-medium text-red-700">Diabetes:</h4>
-                              {diabetesMembers.map(member => (
-                                <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                  <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              <h4 className="mb-2 font-medium text-red-700">
+                                Diabetes:
+                              </h4>
+                              {diabetesMembers.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                                >
+                                  <TableLink
+                                    href={`/leidingsportaal/leden/${member.id}`}
+                                  >
                                     {member.firstName} {member.lastName}
                                   </TableLink>
-                                  {member.medicalInformation?.diabetesInformation && (
+                                  {member.medicalInformation
+                                    ?.diabetesInformation && (
                                     <p className="mt-1 text-sm text-gray-700">
-                                      {member.medicalInformation.diabetesInformation}
+                                      {
+                                        member.medicalInformation
+                                          .diabetesInformation
+                                      }
                                     </p>
                                   )}
                                 </div>
@@ -638,13 +704,29 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                           {/* Other Medical Conditions */}
                           {(() => {
-                            const bedwettingMembers = members.filter(m => m.medicalInformation?.bedwetting);
-                            const skinMembers = members.filter(m => m.medicalInformation?.skinCondition);
-                            const rheumatismMembers = members.filter(m => m.medicalInformation?.rheumatism);
-                            const sleepwalkingMembers = members.filter(m => m.medicalInformation?.sleepwalking);
-                            const otherConditionsMembers = members.filter(m => m.medicalInformation?.otherMedicalConditions);
+                            const bedwettingMembers = members.filter(
+                              (m) => m.medicalInformation?.bedwetting,
+                            );
+                            const skinMembers = members.filter(
+                              (m) => m.medicalInformation?.skinCondition,
+                            );
+                            const rheumatismMembers = members.filter(
+                              (m) => m.medicalInformation?.rheumatism,
+                            );
+                            const sleepwalkingMembers = members.filter(
+                              (m) => m.medicalInformation?.sleepwalking,
+                            );
+                            const otherConditionsMembers = members.filter(
+                              (m) =>
+                                m.medicalInformation?.otherMedicalConditions,
+                            );
 
-                            const hasOtherConditions = bedwettingMembers.length > 0 || skinMembers.length > 0 || rheumatismMembers.length > 0 || sleepwalkingMembers.length > 0 || otherConditionsMembers.length > 0;
+                            const hasOtherConditions =
+                              bedwettingMembers.length > 0 ||
+                              skinMembers.length > 0 ||
+                              rheumatismMembers.length > 0 ||
+                              sleepwalkingMembers.length > 0 ||
+                              otherConditionsMembers.length > 0;
 
                             if (!hasOtherConditions) {
                               return null;
@@ -652,19 +734,32 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                             return (
                               <div className="mt-6 space-y-4">
-                                <h4 className="font-medium text-red-700">Andere medische aandoeningen:</h4>
-                                
+                                <h4 className="font-medium text-red-700">
+                                  Andere medische aandoeningen:
+                                </h4>
+
                                 {bedwettingMembers.length > 0 && (
                                   <div>
-                                    <h5 className="mb-2 text-sm font-medium text-red-600">Bedwateren:</h5>
-                                    {bedwettingMembers.map(member => (
-                                      <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                        <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                                    <h5 className="mb-2 text-sm font-medium text-red-600">
+                                      Bedwateren:
+                                    </h5>
+                                    {bedwettingMembers.map((member) => (
+                                      <div
+                                        key={member.id}
+                                        className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                                      >
+                                        <TableLink
+                                          href={`/leidingsportaal/leden/${member.id}`}
+                                        >
                                           {member.firstName} {member.lastName}
                                         </TableLink>
-                                        {member.medicalInformation?.bedwettingInformation && (
+                                        {member.medicalInformation
+                                          ?.bedwettingInformation && (
                                           <p className="mt-1 text-sm text-gray-700">
-                                            {member.medicalInformation.bedwettingInformation}
+                                            {
+                                              member.medicalInformation
+                                                .bedwettingInformation
+                                            }
                                           </p>
                                         )}
                                       </div>
@@ -674,15 +769,26 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                                 {skinMembers.length > 0 && (
                                   <div>
-                                    <h5 className="mb-2 text-sm font-medium text-red-600">Huidaandoening:</h5>
-                                    {skinMembers.map(member => (
-                                      <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                        <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                                    <h5 className="mb-2 text-sm font-medium text-red-600">
+                                      Huidaandoening:
+                                    </h5>
+                                    {skinMembers.map((member) => (
+                                      <div
+                                        key={member.id}
+                                        className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                                      >
+                                        <TableLink
+                                          href={`/leidingsportaal/leden/${member.id}`}
+                                        >
                                           {member.firstName} {member.lastName}
                                         </TableLink>
-                                        {member.medicalInformation?.skinConditionInformation && (
+                                        {member.medicalInformation
+                                          ?.skinConditionInformation && (
                                           <p className="mt-1 text-sm text-gray-700">
-                                            {member.medicalInformation.skinConditionInformation}
+                                            {
+                                              member.medicalInformation
+                                                .skinConditionInformation
+                                            }
                                           </p>
                                         )}
                                       </div>
@@ -692,15 +798,26 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                                 {rheumatismMembers.length > 0 && (
                                   <div>
-                                    <h5 className="mb-2 text-sm font-medium text-red-600">Reuma:</h5>
-                                    {rheumatismMembers.map(member => (
-                                      <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                        <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                                    <h5 className="mb-2 text-sm font-medium text-red-600">
+                                      Reuma:
+                                    </h5>
+                                    {rheumatismMembers.map((member) => (
+                                      <div
+                                        key={member.id}
+                                        className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                                      >
+                                        <TableLink
+                                          href={`/leidingsportaal/leden/${member.id}`}
+                                        >
                                           {member.firstName} {member.lastName}
                                         </TableLink>
-                                        {member.medicalInformation?.rheumatismInformation && (
+                                        {member.medicalInformation
+                                          ?.rheumatismInformation && (
                                           <p className="mt-1 text-sm text-gray-700">
-                                            {member.medicalInformation.rheumatismInformation}
+                                            {
+                                              member.medicalInformation
+                                                .rheumatismInformation
+                                            }
                                           </p>
                                         )}
                                       </div>
@@ -710,15 +827,26 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                                 {sleepwalkingMembers.length > 0 && (
                                   <div>
-                                    <h5 className="mb-2 text-sm font-medium text-red-600">Slaapwandelen:</h5>
-                                    {sleepwalkingMembers.map(member => (
-                                      <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                        <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                                    <h5 className="mb-2 text-sm font-medium text-red-600">
+                                      Slaapwandelen:
+                                    </h5>
+                                    {sleepwalkingMembers.map((member) => (
+                                      <div
+                                        key={member.id}
+                                        className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                                      >
+                                        <TableLink
+                                          href={`/leidingsportaal/leden/${member.id}`}
+                                        >
                                           {member.firstName} {member.lastName}
                                         </TableLink>
-                                        {member.medicalInformation?.sleepwalkingInformation && (
+                                        {member.medicalInformation
+                                          ?.sleepwalkingInformation && (
                                           <p className="mt-1 text-sm text-gray-700">
-                                            {member.medicalInformation.sleepwalkingInformation}
+                                            {
+                                              member.medicalInformation
+                                                .sleepwalkingInformation
+                                            }
                                           </p>
                                         )}
                                       </div>
@@ -728,14 +856,24 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                                 {otherConditionsMembers.length > 0 && (
                                   <div>
-                                    <h5 className="mb-2 text-sm font-medium text-red-600">Andere aandoeningen:</h5>
-                                    {otherConditionsMembers.map(member => (
-                                      <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                        <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                                    <h5 className="mb-2 text-sm font-medium text-red-600">
+                                      Andere aandoeningen:
+                                    </h5>
+                                    {otherConditionsMembers.map((member) => (
+                                      <div
+                                        key={member.id}
+                                        className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                                      >
+                                        <TableLink
+                                          href={`/leidingsportaal/leden/${member.id}`}
+                                        >
                                           {member.firstName} {member.lastName}
                                         </TableLink>
                                         <p className="mt-1 text-sm text-gray-700">
-                                          {member.medicalInformation?.otherMedicalConditions}
+                                          {
+                                            member.medicalInformation
+                                              ?.otherMedicalConditions
+                                          }
                                         </p>
                                       </div>
                                     ))}
@@ -762,12 +900,24 @@ export default async function GroupDetailPage({ params }: PageProps) {
                 <CardBody className="p-6">
                   <div className="space-y-4">
                     {(() => {
-                      const foodAllergyMembers = members.filter(m => m.medicalInformation?.foodAllergies);
-                      const substanceAllergyMembers = members.filter(m => m.medicalInformation?.substanceAllergies);
-                      const medicationAllergyMembers = members.filter(m => m.medicalInformation?.medicationAllergies);
-                      const hayFeverMembers = members.filter(m => m.medicalInformation?.hayFever);
+                      const foodAllergyMembers = members.filter(
+                        (m) => m.medicalInformation?.foodAllergies,
+                      );
+                      const substanceAllergyMembers = members.filter(
+                        (m) => m.medicalInformation?.substanceAllergies,
+                      );
+                      const medicationAllergyMembers = members.filter(
+                        (m) => m.medicalInformation?.medicationAllergies,
+                      );
+                      const hayFeverMembers = members.filter(
+                        (m) => m.medicalInformation?.hayFever,
+                      );
 
-                      const hasAllergies = foodAllergyMembers.length > 0 || substanceAllergyMembers.length > 0 || medicationAllergyMembers.length > 0 || hayFeverMembers.length > 0;
+                      const hasAllergies =
+                        foodAllergyMembers.length > 0 ||
+                        substanceAllergyMembers.length > 0 ||
+                        medicationAllergyMembers.length > 0 ||
+                        hayFeverMembers.length > 0;
 
                       if (!hasAllergies) {
                         return (
@@ -782,10 +932,17 @@ export default async function GroupDetailPage({ params }: PageProps) {
                         <div className="space-y-4">
                           {foodAllergyMembers.length > 0 && (
                             <div>
-                              <h4 className="mb-2 font-medium text-orange-700">Voedselallergieën:</h4>
-                              {foodAllergyMembers.map(member => (
-                                <div key={member.id} className="mb-2 rounded-lg border border-orange-200 bg-orange-50 p-3">
-                                  <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              <h4 className="mb-2 font-medium text-orange-700">
+                                Voedselallergieën:
+                              </h4>
+                              {foodAllergyMembers.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="mb-2 rounded-lg border border-orange-200 bg-orange-50 p-3"
+                                >
+                                  <TableLink
+                                    href={`/leidingsportaal/leden/${member.id}`}
+                                  >
                                     {member.firstName} {member.lastName}
                                   </TableLink>
                                   <p className="mt-1 text-sm text-gray-700">
@@ -798,14 +955,24 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                           {substanceAllergyMembers.length > 0 && (
                             <div>
-                              <h4 className="mb-2 font-medium text-orange-700">Stofallergieën:</h4>
-                              {substanceAllergyMembers.map(member => (
-                                <div key={member.id} className="mb-2 rounded-lg border border-orange-200 bg-orange-50 p-3">
-                                  <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              <h4 className="mb-2 font-medium text-orange-700">
+                                Stofallergieën:
+                              </h4>
+                              {substanceAllergyMembers.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="mb-2 rounded-lg border border-orange-200 bg-orange-50 p-3"
+                                >
+                                  <TableLink
+                                    href={`/leidingsportaal/leden/${member.id}`}
+                                  >
                                     {member.firstName} {member.lastName}
                                   </TableLink>
                                   <p className="mt-1 text-sm text-gray-700">
-                                    {member.medicalInformation?.substanceAllergies}
+                                    {
+                                      member.medicalInformation
+                                        ?.substanceAllergies
+                                    }
                                   </p>
                                 </div>
                               ))}
@@ -814,14 +981,24 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                           {medicationAllergyMembers.length > 0 && (
                             <div>
-                              <h4 className="mb-2 font-medium text-orange-700">Medicatieallergieën:</h4>
-                              {medicationAllergyMembers.map(member => (
-                                <div key={member.id} className="mb-2 rounded-lg border border-orange-200 bg-orange-50 p-3">
-                                  <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              <h4 className="mb-2 font-medium text-orange-700">
+                                Medicatieallergieën:
+                              </h4>
+                              {medicationAllergyMembers.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="mb-2 rounded-lg border border-orange-200 bg-orange-50 p-3"
+                                >
+                                  <TableLink
+                                    href={`/leidingsportaal/leden/${member.id}`}
+                                  >
                                     {member.firstName} {member.lastName}
                                   </TableLink>
                                   <p className="mt-1 text-sm text-gray-700">
-                                    {member.medicalInformation?.medicationAllergies}
+                                    {
+                                      member.medicalInformation
+                                        ?.medicationAllergies
+                                    }
                                   </p>
                                 </div>
                               ))}
@@ -830,15 +1007,26 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                           {hayFeverMembers.length > 0 && (
                             <div>
-                              <h4 className="mb-2 font-medium text-orange-700">Hooikoorts:</h4>
-                              {hayFeverMembers.map(member => (
-                                <div key={member.id} className="mb-2 rounded-lg border border-orange-200 bg-orange-50 p-3">
-                                  <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              <h4 className="mb-2 font-medium text-orange-700">
+                                Hooikoorts:
+                              </h4>
+                              {hayFeverMembers.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="mb-2 rounded-lg border border-orange-200 bg-orange-50 p-3"
+                                >
+                                  <TableLink
+                                    href={`/leidingsportaal/leden/${member.id}`}
+                                  >
                                     {member.firstName} {member.lastName}
                                   </TableLink>
-                                  {member.medicalInformation?.hayFeverInformation && (
+                                  {member.medicalInformation
+                                    ?.hayFeverInformation && (
                                     <p className="mt-1 text-sm text-gray-700">
-                                      {member.medicalInformation.hayFeverInformation}
+                                      {
+                                        member.medicalInformation
+                                          .hayFeverInformation
+                                      }
                                     </p>
                                   )}
                                 </div>
@@ -866,11 +1054,20 @@ export default async function GroupDetailPage({ params }: PageProps) {
                 <CardBody className="p-6">
                   <div className="space-y-4">
                     {(() => {
-                      const cannotSwimMembers = members.filter(m => !m.medicalInformation?.canSwim);
-                      const cannotSportsMembers = members.filter(m => !m.medicalInformation?.canParticipateSports);
-                      const tiredMembers = members.filter(m => m.medicalInformation?.getsTiredQuickly);
+                      const cannotSwimMembers = members.filter(
+                        (m) => !m.medicalInformation?.canSwim,
+                      );
+                      const cannotSportsMembers = members.filter(
+                        (m) => !m.medicalInformation?.canParticipateSports,
+                      );
+                      const tiredMembers = members.filter(
+                        (m) => m.medicalInformation?.getsTiredQuickly,
+                      );
 
-                      const hasLimitations = cannotSwimMembers.length > 0 || cannotSportsMembers.length > 0 || tiredMembers.length > 0;
+                      const hasLimitations =
+                        cannotSwimMembers.length > 0 ||
+                        cannotSportsMembers.length > 0 ||
+                        tiredMembers.length > 0;
 
                       if (!hasLimitations) {
                         return (
@@ -885,10 +1082,17 @@ export default async function GroupDetailPage({ params }: PageProps) {
                         <div className="space-y-4">
                           {cannotSwimMembers.length > 0 && (
                             <div>
-                              <h4 className="mb-2 font-medium text-blue-700">Kan niet zwemmen:</h4>
-                              {cannotSwimMembers.map(member => (
-                                <div key={member.id} className="mb-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
-                                  <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              <h4 className="mb-2 font-medium text-blue-700">
+                                Kan niet zwemmen:
+                              </h4>
+                              {cannotSwimMembers.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="mb-2 rounded-lg border border-blue-200 bg-blue-50 p-3"
+                                >
+                                  <TableLink
+                                    href={`/leidingsportaal/leden/${member.id}`}
+                                  >
                                     {member.firstName} {member.lastName}
                                   </TableLink>
                                 </div>
@@ -898,10 +1102,17 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                           {cannotSportsMembers.length > 0 && (
                             <div>
-                              <h4 className="mb-2 font-medium text-blue-700">Kan niet sporten:</h4>
-                              {cannotSportsMembers.map(member => (
-                                <div key={member.id} className="mb-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
-                                  <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              <h4 className="mb-2 font-medium text-blue-700">
+                                Kan niet sporten:
+                              </h4>
+                              {cannotSportsMembers.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="mb-2 rounded-lg border border-blue-200 bg-blue-50 p-3"
+                                >
+                                  <TableLink
+                                    href={`/leidingsportaal/leden/${member.id}`}
+                                  >
                                     {member.firstName} {member.lastName}
                                   </TableLink>
                                 </div>
@@ -911,10 +1122,17 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                           {tiredMembers.length > 0 && (
                             <div>
-                              <h4 className="mb-2 font-medium text-blue-700">Wordt snel moe:</h4>
-                              {tiredMembers.map(member => (
-                                <div key={member.id} className="mb-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
-                                  <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                              <h4 className="mb-2 font-medium text-blue-700">
+                                Wordt snel moe:
+                              </h4>
+                              {tiredMembers.map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="mb-2 rounded-lg border border-blue-200 bg-blue-50 p-3"
+                                >
+                                  <TableLink
+                                    href={`/leidingsportaal/leden/${member.id}`}
+                                  >
                                     {member.firstName} {member.lastName}
                                   </TableLink>
                                 </div>
@@ -945,23 +1163,34 @@ export default async function GroupDetailPage({ params }: PageProps) {
                         Vaccinaties
                       </h4>
                       {(() => {
-                        const notVaccinatedMembers = members.filter(m => !m.medicalInformation?.tetanusVaccination);
+                        const notVaccinatedMembers = members.filter(
+                          (m) => !m.medicalInformation?.tetanusVaccination,
+                        );
 
                         if (notVaccinatedMembers.length === 0) {
                           return (
                             <div className="flex items-center gap-2 text-green-600">
                               <CheckCircle className="h-4 w-4" />
-                              <span className="text-sm">Alle leden gevaccineerd</span>
+                              <span className="text-sm">
+                                Alle leden gevaccineerd
+                              </span>
                             </div>
                           );
                         }
 
                         return (
                           <div>
-                            <h5 className="mb-2 text-sm font-medium text-red-700">Niet gevaccineerd tegen tetanus:</h5>
-                            {notVaccinatedMembers.map(member => (
-                              <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                            <h5 className="mb-2 text-sm font-medium text-red-700">
+                              Niet gevaccineerd tegen tetanus:
+                            </h5>
+                            {notVaccinatedMembers.map((member) => (
+                              <div
+                                key={member.id}
+                                className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                              >
+                                <TableLink
+                                  href={`/leidingsportaal/leden/${member.id}`}
+                                >
                                   {member.firstName} {member.lastName}
                                 </TableLink>
                               </div>
@@ -978,16 +1207,24 @@ export default async function GroupDetailPage({ params }: PageProps) {
                         Medicatie
                       </h4>
                       {(() => {
-                        const medicationMembers = members.filter(m => m.medicalInformation?.medication);
-                        const noPermissionMembers = members.filter(m => !m.medicalInformation?.permissionMedication);
+                        const medicationMembers = members.filter(
+                          (m) => m.medicalInformation?.medication,
+                        );
+                        const noPermissionMembers = members.filter(
+                          (m) => !m.medicalInformation?.permissionMedication,
+                        );
 
-                        const hasMedicationIssues = medicationMembers.length > 0 || noPermissionMembers.length > 0;
+                        const hasMedicationIssues =
+                          medicationMembers.length > 0 ||
+                          noPermissionMembers.length > 0;
 
                         if (!hasMedicationIssues) {
                           return (
                             <div className="flex items-center gap-2 text-green-600">
                               <CheckCircle className="h-4 w-4" />
-                              <span className="text-sm">Geen medicatie-gerelateerde problemen</span>
+                              <span className="text-sm">
+                                Geen medicatie-gerelateerde problemen
+                              </span>
                             </div>
                           );
                         }
@@ -996,10 +1233,17 @@ export default async function GroupDetailPage({ params }: PageProps) {
                           <div className="space-y-4">
                             {medicationMembers.length > 0 && (
                               <div>
-                                <h5 className="mb-2 text-sm font-medium text-orange-700">Regelmatige medicatie:</h5>
-                                {medicationMembers.map(member => (
-                                  <div key={member.id} className="mb-2 rounded-lg border border-orange-200 bg-orange-50 p-3">
-                                    <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                                <h5 className="mb-2 text-sm font-medium text-orange-700">
+                                  Regelmatige medicatie:
+                                </h5>
+                                {medicationMembers.map((member) => (
+                                  <div
+                                    key={member.id}
+                                    className="mb-2 rounded-lg border border-orange-200 bg-orange-50 p-3"
+                                  >
+                                    <TableLink
+                                      href={`/leidingsportaal/leden/${member.id}`}
+                                    >
                                       {member.firstName} {member.lastName}
                                     </TableLink>
                                     <p className="mt-1 text-sm text-gray-700">
@@ -1012,10 +1256,17 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
                             {noPermissionMembers.length > 0 && (
                               <div>
-                                <h5 className="mb-2 text-sm font-medium text-red-700">Geen toestemming medicatie:</h5>
-                                {noPermissionMembers.map(member => (
-                                  <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                    <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                                <h5 className="mb-2 text-sm font-medium text-red-700">
+                                  Geen toestemming medicatie:
+                                </h5>
+                                {noPermissionMembers.map((member) => (
+                                  <div
+                                    key={member.id}
+                                    className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                                  >
+                                    <TableLink
+                                      href={`/leidingsportaal/leden/${member.id}`}
+                                    >
                                       {member.firstName} {member.lastName}
                                     </TableLink>
                                   </div>
@@ -1034,23 +1285,34 @@ export default async function GroupDetailPage({ params }: PageProps) {
                         Foto toestemmingen
                       </h4>
                       {(() => {
-                        const noPhotoPermissionMembers = members.filter(m => !m.gdprPermissionToPublishPhotos);
+                        const noPhotoPermissionMembers = members.filter(
+                          (m) => !m.gdprPermissionToPublishPhotos,
+                        );
 
                         if (noPhotoPermissionMembers.length === 0) {
                           return (
                             <div className="flex items-center gap-2 text-green-600">
                               <CheckCircle className="h-4 w-4" />
-                              <span className="text-sm">Alle leden geven toestemming voor foto&apos;s</span>
+                              <span className="text-sm">
+                                Alle leden geven toestemming voor foto&apos;s
+                              </span>
                             </div>
                           );
                         }
 
                         return (
                           <div>
-                            <h5 className="mb-2 text-sm font-medium text-red-700">Geen toestemming voor foto&apos;s:</h5>
-                            {noPhotoPermissionMembers.map(member => (
-                              <div key={member.id} className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                                <TableLink href={`/leidingsportaal/leden/${member.id}`}>
+                            <h5 className="mb-2 text-sm font-medium text-red-700">
+                              Geen toestemming voor foto&apos;s:
+                            </h5>
+                            {noPhotoPermissionMembers.map((member) => (
+                              <div
+                                key={member.id}
+                                className="mb-2 rounded-lg border border-red-200 bg-red-50 p-3"
+                              >
+                                <TableLink
+                                  href={`/leidingsportaal/leden/${member.id}`}
+                                >
                                   {member.firstName} {member.lastName}
                                 </TableLink>
                               </div>
