@@ -32,9 +32,9 @@ export async function registerNewMember(memberData: FullNewMemberData) {
       lastName: memberData.lastName.trim(),
       emailAddress: emptyStringToUndefined(memberData.emailAddress),
       phoneNumber: emptyStringToUndefined(memberData.phoneNumber),
-      
+
       // Sanitize parents data
-      parents: memberData.parents.map(parent => ({
+      parents: memberData.parents.map((parent) => ({
         ...parent,
         firstName: parent.firstName.trim(),
         lastName: parent.lastName.trim(),
@@ -45,42 +45,82 @@ export async function registerNewMember(memberData: FullNewMemberData) {
           houseNumber: parent.address.houseNumber.trim(),
           postalCode: parent.address.postalCode,
           municipality: parent.address.municipality.trim(),
-        }
+        },
       })),
-      
+
       // Sanitize emergency contact data
-      emergencyContact: memberData.emergencyContact ? {
-        ...memberData.emergencyContact,
-        firstName: memberData.emergencyContact.firstName.trim(),
-        lastName: memberData.emergencyContact.lastName.trim(),
-        phoneNumber: memberData.emergencyContact.phoneNumber.trim(),
-        relationship: emptyStringToUndefined(memberData.emergencyContact.relationship),
-      } : undefined,
-      
+      emergencyContact: memberData.emergencyContact
+        ? {
+            ...memberData.emergencyContact,
+            firstName: memberData.emergencyContact.firstName.trim(),
+            lastName: memberData.emergencyContact.lastName.trim(),
+            phoneNumber: memberData.emergencyContact.phoneNumber.trim(),
+            relationship: emptyStringToUndefined(
+              memberData.emergencyContact.relationship,
+            ),
+          }
+        : undefined,
+
       // Sanitize medical information data (basic sanitization only)
-      medicalInformation: memberData.medicalInformation ? {
-        ...memberData.medicalInformation,
-        doctorFirstName: memberData.medicalInformation.doctorFirstName.trim(),
-        doctorLastName: memberData.medicalInformation.doctorLastName.trim(),
-        doctorPhoneNumber: memberData.medicalInformation.doctorPhoneNumber.trim(),
-        // Handle optional text fields
-        pastMedicalHistory: emptyStringToUndefined(memberData.medicalInformation.pastMedicalHistory),
-        asthmaInformation: emptyStringToUndefined(memberData.medicalInformation.asthmaInformation),
-        bedwettingInformation: emptyStringToUndefined(memberData.medicalInformation.bedwettingInformation),
-        epilepsyInformation: emptyStringToUndefined(memberData.medicalInformation.epilepsyInformation),
-        heartConditionInformation: emptyStringToUndefined(memberData.medicalInformation.heartConditionInformation),
-        hayFeverInformation: emptyStringToUndefined(memberData.medicalInformation.hayFeverInformation),
-        skinConditionInformation: emptyStringToUndefined(memberData.medicalInformation.skinConditionInformation),
-        rheumatismInformation: emptyStringToUndefined(memberData.medicalInformation.rheumatismInformation),
-        sleepwalkingInformation: emptyStringToUndefined(memberData.medicalInformation.sleepwalkingInformation),
-        diabetesInformation: emptyStringToUndefined(memberData.medicalInformation.diabetesInformation),
-        foodAllergies: emptyStringToUndefined(memberData.medicalInformation.foodAllergies),
-        substanceAllergies: emptyStringToUndefined(memberData.medicalInformation.substanceAllergies),
-        medicationAllergies: emptyStringToUndefined(memberData.medicalInformation.medicationAllergies),
-        medication: emptyStringToUndefined(memberData.medicalInformation.medication),
-        otherMedicalConditions: emptyStringToUndefined(memberData.medicalInformation.otherMedicalConditions),
-        otherRemarks: emptyStringToUndefined(memberData.medicalInformation.otherRemarks),
-      } : undefined,
+      medicalInformation: memberData.medicalInformation
+        ? {
+            ...memberData.medicalInformation,
+            doctorFirstName:
+              memberData.medicalInformation.doctorFirstName.trim(),
+            doctorLastName: memberData.medicalInformation.doctorLastName.trim(),
+            doctorPhoneNumber:
+              memberData.medicalInformation.doctorPhoneNumber.trim(),
+            // Handle optional text fields
+            pastMedicalHistory: emptyStringToUndefined(
+              memberData.medicalInformation.pastMedicalHistory,
+            ),
+            asthmaInformation: emptyStringToUndefined(
+              memberData.medicalInformation.asthmaInformation,
+            ),
+            bedwettingInformation: emptyStringToUndefined(
+              memberData.medicalInformation.bedwettingInformation,
+            ),
+            epilepsyInformation: emptyStringToUndefined(
+              memberData.medicalInformation.epilepsyInformation,
+            ),
+            heartConditionInformation: emptyStringToUndefined(
+              memberData.medicalInformation.heartConditionInformation,
+            ),
+            hayFeverInformation: emptyStringToUndefined(
+              memberData.medicalInformation.hayFeverInformation,
+            ),
+            skinConditionInformation: emptyStringToUndefined(
+              memberData.medicalInformation.skinConditionInformation,
+            ),
+            rheumatismInformation: emptyStringToUndefined(
+              memberData.medicalInformation.rheumatismInformation,
+            ),
+            sleepwalkingInformation: emptyStringToUndefined(
+              memberData.medicalInformation.sleepwalkingInformation,
+            ),
+            diabetesInformation: emptyStringToUndefined(
+              memberData.medicalInformation.diabetesInformation,
+            ),
+            foodAllergies: emptyStringToUndefined(
+              memberData.medicalInformation.foodAllergies,
+            ),
+            substanceAllergies: emptyStringToUndefined(
+              memberData.medicalInformation.substanceAllergies,
+            ),
+            medicationAllergies: emptyStringToUndefined(
+              memberData.medicalInformation.medicationAllergies,
+            ),
+            medication: emptyStringToUndefined(
+              memberData.medicalInformation.medication,
+            ),
+            otherMedicalConditions: emptyStringToUndefined(
+              memberData.medicalInformation.otherMedicalConditions,
+            ),
+            otherRemarks: emptyStringToUndefined(
+              memberData.medicalInformation.otherRemarks,
+            ),
+          }
+        : undefined,
     };
 
     return await MEMBER_MUTATIONS.registerMember(sanitizedData);

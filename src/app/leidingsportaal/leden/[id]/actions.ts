@@ -1,9 +1,22 @@
 "use server";
 
-import { MEMBER_QUERIES, MEMBER_MUTATIONS } from "~/server/db/queries/member-queries";
+import {
+  MEMBER_QUERIES,
+  MEMBER_MUTATIONS,
+} from "~/server/db/queries/member-queries";
 import { ADDRESS_MUTATIONS } from "~/server/db/queries/address-queries";
 import { GROUP_QUERIES } from "~/server/db/queries/group-queries";
-import { type PaymentMethod, type Gender, type ParentRelationship, members, emergencyContacts, medicalInformation, membersParents, parents, yearlyMemberships } from "~/server/db/schema";
+import {
+  type PaymentMethod,
+  type Gender,
+  type ParentRelationship,
+  members,
+  emergencyContacts,
+  medicalInformation,
+  membersParents,
+  parents,
+  yearlyMemberships,
+} from "~/server/db/schema";
 import { db } from "~/server/db/db";
 import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -86,7 +99,7 @@ interface UpdateMemberData {
 
 // Helper function to convert empty strings to null
 function emptyStringToNull(value: string | undefined): string | null {
-  return value?.trim() === "" ? null : value?.trim() ?? null;
+  return value?.trim() === "" ? null : (value?.trim() ?? null);
 }
 
 export async function getFullMemberDetails(memberId: number) {
@@ -167,28 +180,57 @@ export async function updateMember(memberId: number, data: UpdateMemberData) {
         doctorPhoneNumber: data.medicalInformation.doctorPhoneNumber.trim(),
         tetanusVaccination: data.medicalInformation.tetanusVaccination,
         asthma: data.medicalInformation.asthma,
-        asthmaInformation: data.medicalInformation.asthma ? emptyStringToNull(data.medicalInformation.asthmaDescription) : null,
+        asthmaInformation: data.medicalInformation.asthma
+          ? emptyStringToNull(data.medicalInformation.asthmaDescription)
+          : null,
         bedwetting: data.medicalInformation.bedwetting,
-        bedwettingInformation: data.medicalInformation.bedwetting ? emptyStringToNull(data.medicalInformation.bedwettingDescription) : null,
+        bedwettingInformation: data.medicalInformation.bedwetting
+          ? emptyStringToNull(data.medicalInformation.bedwettingDescription)
+          : null,
         epilepsy: data.medicalInformation.epilepsy,
-        epilepsyInformation: data.medicalInformation.epilepsy ? emptyStringToNull(data.medicalInformation.epilepsyDescription) : null,
+        epilepsyInformation: data.medicalInformation.epilepsy
+          ? emptyStringToNull(data.medicalInformation.epilepsyDescription)
+          : null,
         heartCondition: data.medicalInformation.heartCondition,
-        heartConditionInformation: data.medicalInformation.heartCondition ? emptyStringToNull(data.medicalInformation.heartConditionDescription) : null,
+        heartConditionInformation: data.medicalInformation.heartCondition
+          ? emptyStringToNull(data.medicalInformation.heartConditionDescription)
+          : null,
         hayFever: data.medicalInformation.hayFever,
-        hayFeverInformation: data.medicalInformation.hayFever ? emptyStringToNull(data.medicalInformation.hayFeverDescription) : null,
+        hayFeverInformation: data.medicalInformation.hayFever
+          ? emptyStringToNull(data.medicalInformation.hayFeverDescription)
+          : null,
         skinCondition: data.medicalInformation.skinCondition,
-        skinConditionInformation: data.medicalInformation.skinCondition ? emptyStringToNull(data.medicalInformation.skinConditionDescription) : null,
+        skinConditionInformation: data.medicalInformation.skinCondition
+          ? emptyStringToNull(data.medicalInformation.skinConditionDescription)
+          : null,
         rheumatism: data.medicalInformation.rheumatism,
-        rheumatismInformation: data.medicalInformation.rheumatism ? emptyStringToNull(data.medicalInformation.rheumatismDescription) : null,
+        rheumatismInformation: data.medicalInformation.rheumatism
+          ? emptyStringToNull(data.medicalInformation.rheumatismDescription)
+          : null,
         sleepwalking: data.medicalInformation.sleepwalking,
-        sleepwalkingInformation: data.medicalInformation.sleepwalking ? emptyStringToNull(data.medicalInformation.sleepwalkingDescription) : null,
+        sleepwalkingInformation: data.medicalInformation.sleepwalking
+          ? emptyStringToNull(data.medicalInformation.sleepwalkingDescription)
+          : null,
         diabetes: data.medicalInformation.diabetes,
-        diabetesInformation: data.medicalInformation.diabetes ? emptyStringToNull(data.medicalInformation.diabetesDescription) : null,
-        foodAllergies: data.medicalInformation.hasFoodAllergies ? emptyStringToNull(data.medicalInformation.foodAllergies) : null,
-        substanceAllergies: data.medicalInformation.hasSubstanceAllergies ? emptyStringToNull(data.medicalInformation.substanceAllergies) : null,
-        medicationAllergies: data.medicalInformation.hasMedicationAllergies ? emptyStringToNull(data.medicalInformation.medicationAllergies) : null,
-        medication: data.medicalInformation.hasMedication ? emptyStringToNull(data.medicalInformation.medication) : null,
-        otherMedicalConditions: data.medicalInformation.hasOtherMedicalConditions ? emptyStringToNull(data.medicalInformation.otherMedicalConditions) : null,
+        diabetesInformation: data.medicalInformation.diabetes
+          ? emptyStringToNull(data.medicalInformation.diabetesDescription)
+          : null,
+        foodAllergies: data.medicalInformation.hasFoodAllergies
+          ? emptyStringToNull(data.medicalInformation.foodAllergies)
+          : null,
+        substanceAllergies: data.medicalInformation.hasSubstanceAllergies
+          ? emptyStringToNull(data.medicalInformation.substanceAllergies)
+          : null,
+        medicationAllergies: data.medicalInformation.hasMedicationAllergies
+          ? emptyStringToNull(data.medicalInformation.medicationAllergies)
+          : null,
+        medication: data.medicalInformation.hasMedication
+          ? emptyStringToNull(data.medicalInformation.medication)
+          : null,
+        otherMedicalConditions: data.medicalInformation
+          .hasOtherMedicalConditions
+          ? emptyStringToNull(data.medicalInformation.otherMedicalConditions)
+          : null,
         getsTiredQuickly: data.medicalInformation.getsTiredQuickly,
         canParticipateSports: data.medicalInformation.canParticipateSports,
         canSwim: data.medicalInformation.canSwim,
@@ -222,8 +264,10 @@ export async function updateMember(memberId: number, data: UpdateMemberData) {
         .execute();
 
       // Create a map of current parent IDs for easy lookup
-      const currentParentIds = new Set(currentMemberParents.map(mp => mp.parentId));
-      
+      const currentParentIds = new Set(
+        currentMemberParents.map((mp) => mp.parentId),
+      );
+
       // Process each parent in the new data
       for (const parentData of data.parents) {
         // Find or create address
@@ -272,7 +316,7 @@ export async function updateMember(memberId: number, data: UpdateMemberData) {
             })
             .returning()
             .execute();
-          
+
           if (!newParent) throw new Error("Failed to create parent");
           parent = newParent;
         }
@@ -298,7 +342,7 @@ export async function updateMember(memberId: number, data: UpdateMemberData) {
       // Remove parents that are no longer in the list
       for (const parentId of currentParentIds) {
         await MEMBER_MUTATIONS.removeParentFromMember(memberId, parentId);
-        
+
         // Check if this parent is used by other members
         const otherMembers = await tx
           .select()
@@ -319,7 +363,7 @@ export async function updateMember(memberId: number, data: UpdateMemberData) {
 
           if (parent) {
             await tx.delete(parents).where(eq(parents.id, parentId)).execute();
-            
+
             // Check if address is used by other parents
             const otherParents = await tx
               .select()
@@ -369,14 +413,6 @@ export async function updateMember(memberId: number, data: UpdateMemberData) {
   revalidatePath(`/leidingsportaal/leden/${memberId}`);
   revalidatePath(`/leidingsportaal/leden`);
   revalidatePath(`/leidingsportaal/groepen`);
-  
-  // If group changed, revalidate the specific group pages
-  if (groupChanged && oldGroupId) {
-    revalidatePath(`/leidingsportaal/groepen/${oldGroupId}`);
-  }
-  if (groupChanged && newGroupId) {
-    revalidatePath(`/leidingsportaal/groepen/${newGroupId}`);
-  }
 
   return result;
 }
@@ -387,11 +423,7 @@ export async function subscribeToCamp(
   workYearId: number,
   paymentMethod?: PaymentMethod,
 ) {
-  await MEMBER_QUERIES.subscribeToCamp(
-    memberId,
-    workYearId,
-    paymentMethod,
-  );
+  await MEMBER_QUERIES.subscribeToCamp(memberId, workYearId, paymentMethod);
   revalidatePath(`/leidingsportaal/leden/${memberId}`);
 }
 
