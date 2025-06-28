@@ -78,12 +78,14 @@ export default function TableDistribution({
         groupDistribution: {},
       }));
 
-      // Group members by their group and sort by group age
+      // Group members by their group and shuffle each group
       const membersByGroup: Record<number, Member[]> = {};
       sortedGroups.forEach(group => {
         const groupMembers = members.filter(m => m.groupId === group.id);
         if (groupMembers.length > 0) {
-          membersByGroup[group.id] = groupMembers;
+          // Shuffle the members within each group
+          const shuffledMembers = [...groupMembers].sort(() => Math.random() - 0.5);
+          membersByGroup[group.id] = shuffledMembers;
         }
       });
 

@@ -251,3 +251,18 @@ export async function getAllGroups(): Promise<Group[]> {
     return [];
   }
 }
+
+export async function removeMember(memberId: number) {
+  try {
+    await MEMBER_QUERIES.removeMember(memberId);
+
+    // Revalidate relevant paths after successful removal
+    revalidatePath(`/leidingsportaal/leden`);
+    revalidatePath(`/leidingsportaal/groepen`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing member:", error);
+    throw new Error("Failed to remove member");
+  }
+}

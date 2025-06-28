@@ -326,10 +326,78 @@ export const MEMBER_QUERIES = {
     );
 
     try {
-      await db
-        .delete(schema.members)
-        .where(eq(schema.members.id, id))
-        .execute();
+      await db.transaction(async (tx) => {
+        // 1. Get member with all related data
+        const member = await tx.query.members.findFirst({
+          where: eq(schema.members.id, id),
+          with: {
+            membersParents: {
+              with: {
+                parent: {
+                  with: {
+                    address: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        if (!member) {
+          throw new Error("Member not found");
+        }
+
+        // 2. Handle parent relationships and cleanup
+        for (const memberParent of member.membersParents) {
+          const parent = memberParent.parent;
+          
+          // Check if this parent has other children
+          const otherChildren = await tx.query.membersParents.findMany({
+            where: and(
+              eq(schema.membersParents.parentId, parent.id),
+              ne(schema.membersParents.memberId, id),
+            ),
+          });
+
+          // Remove the specific member-parent relationship
+          await tx
+            .delete(schema.membersParents)
+            .where(
+              and(
+                eq(schema.membersParents.memberId, id),
+                eq(schema.membersParents.parentId, parent.id),
+              ),
+            )
+            .execute();
+
+          // If parent has no other children, remove the parent
+          if (otherChildren.length === 0) {
+            await tx
+              .delete(schema.parents)
+              .where(eq(schema.parents.id, parent.id))
+              .execute();
+
+            // Check if address is used by other parents
+            const otherParentsWithSameAddress = await tx.query.parents.findMany({
+              where: eq(schema.parents.addressId, parent.addressId),
+            });
+
+            // If no other parents use this address, remove it
+            if (otherParentsWithSameAddress.length === 0) {
+              await tx
+                .delete(schema.addresses)
+                .where(eq(schema.addresses.id, parent.addressId))
+                .execute();
+            }
+          }
+        }
+
+        // 3. Delete the member (this will cascade to emergency contact, medical info, yearly memberships, etc.)
+        await tx
+          .delete(schema.members)
+          .where(eq(schema.members.id, id))
+          .execute();
+      });
     } catch (error) {
       console.error(`Error deleting member with ID ${id}:`, error);
       throw new Error("Fout bij het verwijderen van het lid.");
