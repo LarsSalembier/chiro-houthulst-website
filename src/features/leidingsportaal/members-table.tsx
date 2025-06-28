@@ -143,7 +143,7 @@ interface MembersTableProps {
   hideGroupColumn?: boolean;
 }
 
-export default function ToponymsTable({
+export default function MembersTable({
   members,
   hideGroupColumn = false,
 }: MembersTableProps) {
@@ -158,7 +158,7 @@ export default function ToponymsTable({
     : initialVisibleColumns;
 
   const renderCell = useCallback(
-    (member: MemberTableData, columnKey: keyof MemberTableData | "actions") => {
+    (member: MemberTableData, columnKey: keyof MemberTableData) => {
       switch (columnKey) {
         case "id":
           return <span>{member.id}</span>;

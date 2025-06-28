@@ -1,13 +1,14 @@
 "use client";
 
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Badge } from "@heroui/badge";
 import { Divider } from "@heroui/divider";
 import { Chip } from "@heroui/chip";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@heroui/modal";
 import { Breadcrumbs, BreadcrumbItem } from "@heroui/breadcrumbs";
 import {
   AlertTriangle,
@@ -42,10 +43,11 @@ import {
   Dumbbell,
   ShieldCheck,
   FileText,
+  Trash2,
 } from "lucide-react";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import SignInAsLeiding from "../../sign-in-as-leiding";
-import { getFullMemberDetails } from "./actions";
+import { getFullMemberDetails, removeMember } from "./actions";
 import {
   type Member,
   type Group,
@@ -123,10 +125,13 @@ interface MemberWithDetails extends Member {
 
 export default function MemberDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const memberId = parseInt(params.id as string, 10);
   const [member, setMember] = useState<MemberWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const breadcrumbItems = [
     { href: "/leidingsportaal", label: "Leidingsportaal" },
@@ -156,6 +161,27 @@ export default function MemberDetailPage() {
       void loadMember();
     }
   }, [memberId]);
+
+  const handleDeleteClick = () => {
+    onOpen();
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!member) return;
+    
+    setIsDeleting(true);
+    try {
+      await removeMember(member.id);
+      onClose();
+      // Redirect to members list
+      router.push("/leidingsportaal/leden");
+    } catch (error) {
+      console.error("Error deleting member:", error);
+      alert("Er is een fout opgetreden bij het verwijderen van het lid.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -251,7 +277,7 @@ export default function MemberDetailPage() {
             <BreadcrumbsWrapper items={breadcrumbItems} />
           </div>
 
-          {/* Header Section with Edit Button */}
+          {/* Header Section with Edit and Delete Buttons */}
           <BlogTextNoAnimation>
             <div className="flex items-start justify-between">
               <div>
@@ -267,18 +293,67 @@ export default function MemberDetailPage() {
                     : ""}
                 </p>
               </div>
-              <Button
-                color="primary"
-                size="lg"
-                onPress={() =>
-                  (window.location.href = `/leidingsportaal/leden/${memberId}/bewerken`)
-                }
-                className="px-8"
-              >
-                Bewerken
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  color="primary"
+                  size="lg"
+                  onPress={() =>
+                    (window.location.href = `/leidingsportaal/leden/${memberId}/bewerken`)
+                  }
+                  className="px-8"
+                >
+                  Bewerken
+                </Button>
+                <Button
+                  color="danger"
+                  size="lg"
+                  variant="flat"
+                  onPress={handleDeleteClick}
+                  className="px-8"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Verwijderen
+                </Button>
+              </div>
             </div>
           </BlogTextNoAnimation>
+
+          {/* Delete Confirmation Modal */}
+          <Modal isOpen={isOpen} onClose={onClose}>
+            <ModalContent>
+              <ModalHeader className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                Lid verwijderen
+              </ModalHeader>
+              <ModalBody>
+                <p>
+                  Weet je zeker dat je <strong>{member?.firstName} {member?.lastName}</strong> wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.
+                </p>
+                <p className="mt-2 text-sm text-gray-600">
+                  Dit zal ook alle gerelateerde gegevens verwijderen:
+                </p>
+                <ul className="mt-2 list-inside list-disc text-sm text-gray-600">
+                  <li>Ouders (alleen als ze geen andere kinderen hebben)</li>
+                  <li>Medische informatie</li>
+                  <li>Noodcontact</li>
+                  <li>Lidmaatschappen</li>
+                  <li>Evenement inschrijvingen</li>
+                </ul>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="flat" onPress={onClose}>
+                  Annuleren
+                </Button>
+                <Button
+                  color="danger"
+                  onPress={handleConfirmDelete}
+                  isLoading={isDeleting}
+                >
+                  Verwijderen
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
 
           {/* Important Medical Information Alert */}
           {hasImportantMedicalInfo && (
