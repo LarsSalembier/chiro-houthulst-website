@@ -1,7 +1,7 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
-import { UserPlus, Users, UserCheck, ArrowRight, Utensils } from "lucide-react";
+import { UserPlus, Users, UserCheck, ArrowRight, Utensils, Tent } from "lucide-react";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import SignInAsLeiding from "./sign-in-as-leiding";
 import { requireLeidingAuth } from "~/lib/auth";
@@ -30,7 +30,7 @@ export default async function Leidingsportaal() {
 
       <SignedIn>
         <div className="mx-auto max-w-6xl px-4">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {/* Nieuwe Inschrijving */}
             <Card className="flex cursor-pointer flex-col">
               <CardHeader className="pb-4">
@@ -125,12 +125,41 @@ export default async function Leidingsportaal() {
               </CardBody>
             </Card>
 
-            {/* Tafelverdeling */}
+            {/* Kamp */}
             <Card className="flex cursor-pointer flex-col">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
                   <div className="rounded-lg bg-orange-100 p-3">
-                    <Utensils className="h-8 w-8 text-orange-600" />
+                    <Tent className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold">Kamp</h2>
+                    <p className="text-sm text-gray-600">Kamp statistieken</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardBody className="flex flex-1 flex-col pt-0">
+                <p className="mb-4 flex-1 text-gray-700">
+                  Bekijk alle kamp-gerelateerde gegevens, inschrijvingen,
+                  betalingen en statistieken per groep.
+                </p>
+                <Button
+                  color="warning"
+                  as="a"
+                  href="/leidingsportaal/kamp"
+                  endContent={<ArrowRight className="h-4 w-4" />}
+                >
+                  Bekijk Kamp
+                </Button>
+              </CardBody>
+            </Card>
+
+            {/* Tafelverdeling */}
+            <Card className="flex cursor-pointer flex-col">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-indigo-100 p-3">
+                    <Utensils className="h-8 w-8 text-indigo-600" />
                   </div>
                   <div>
                     <h2 className="text-xl font-semibold">Tafelverdeling</h2>
@@ -144,7 +173,8 @@ export default async function Leidingsportaal() {
                   tafels voor kamp, met variatie in groepen.
                 </p>
                 <Button
-                  color="warning"
+                  color="primary"
+                  variant="bordered"
                   as="a"
                   href="/leidingsportaal/tafelverdeling"
                   endContent={<ArrowRight className="h-4 w-4" />}
