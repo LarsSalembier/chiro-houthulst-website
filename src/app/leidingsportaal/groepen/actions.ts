@@ -2,7 +2,6 @@
 
 import { WORK_YEAR_QUERIES } from "~/server/db/queries/work-year-queries";
 import { GROUP_QUERIES } from "~/server/db/queries/group-queries";
-import { type WorkYear } from "~/server/db/schema";
 
 export async function getGroupsWithMemberCount() {
   try {

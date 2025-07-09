@@ -7,20 +7,13 @@ import { Chip } from "@heroui/chip";
 import {
   Tent,
   Users,
-  Calendar,
   Euro,
   CheckCircle,
   Clock,
-  AlertTriangle,
   BarChart3,
-  TrendingUp,
-  UserCheck,
-  UserX,
   Download,
   Printer,
   MapPin,
-  Phone,
-  Mail,
   FileText,
   CreditCard,
   Banknote,
@@ -35,7 +28,7 @@ import { WORK_YEAR_QUERIES } from "~/server/db/queries/work-year-queries";
 import { MEMBER_QUERIES } from "~/server/db/queries/member-queries";
 import { GROUP_QUERIES } from "~/server/db/queries/group-queries";
 import TableLink from "~/components/ui/table-link";
-import { formatDateLocale } from "~/lib/date-utils";
+import { type Group, type YearlyMembership } from "~/server/db/schema";
 
 export default async function KampPage() {
   // Check if user has leiding role - this will redirect if not authorized
@@ -57,9 +50,8 @@ export default async function KampPage() {
   }
 
   // Get all camp subscriptions for the current work year
-  const campSubscriptions = await MEMBER_QUERIES.getCampSubscriptionsForWorkYear(
-    workYear.id,
-  );
+  const campSubscriptions =
+    await MEMBER_QUERIES.getCampSubscriptionsForWorkYear(workYear.id);
 
   // Get all groups for reference
   const groups = await GROUP_QUERIES.getAll({ activeOnly: true });
@@ -70,37 +62,53 @@ export default async function KampPage() {
     (sub) => sub.campPaymentReceived,
   ).length;
   const pendingPayments = totalSubscriptions - paidSubscriptions;
-  const paymentPercentage = totalSubscriptions > 0 
-    ? Math.round((paidSubscriptions / totalSubscriptions) * 100) 
-    : 0;
+  const paymentPercentage =
+    totalSubscriptions > 0
+      ? Math.round((paidSubscriptions / totalSubscriptions) * 100)
+      : 0;
 
   // Calculate payment method statistics
-  const paymentMethods = campSubscriptions.reduce((acc, sub) => {
-    if (sub.campPaymentMethod) {
-      acc[sub.campPaymentMethod] = (acc[sub.campPaymentMethod] || 0) + 1;
-    }
-    return acc;
-  }, {} as Record<string, number>);
+  const paymentMethods = campSubscriptions.reduce(
+    (acc, sub) => {
+      if (sub.campPaymentMethod) {
+        acc[sub.campPaymentMethod] = (acc[sub.campPaymentMethod] ?? 0) + 1;
+      }
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   // Group subscriptions by group
-  const subscriptionsByGroup = groups.reduce((acc, group) => {
-    const groupSubscriptions = campSubscriptions.filter(
-      (sub) => sub.groupId === group.id,
-    );
-    if (groupSubscriptions.length > 0) {
-      acc[group.id] = {
-        group,
-        subscriptions: groupSubscriptions,
-        total: groupSubscriptions.length,
-        paid: groupSubscriptions.filter((sub) => sub.campPaymentReceived).length,
-      };
-    }
-    return acc;
-  }, {} as Record<number, { group: any; subscriptions: any[]; total: number; paid: number }>);
+  const subscriptionsByGroup = groups.reduce(
+    (acc, group) => {
+      const groupSubscriptions = campSubscriptions.filter(
+        (sub) => sub.groupId === group.id,
+      );
+      if (groupSubscriptions.length > 0) {
+        acc[group.id] = {
+          group,
+          subscriptions: groupSubscriptions,
+          total: groupSubscriptions.length,
+          paid: groupSubscriptions.filter((sub) => sub.campPaymentReceived)
+            .length,
+        };
+      }
+      return acc;
+    },
+    {} as Record<
+      number,
+      {
+        group: Group;
+        subscriptions: YearlyMembership[];
+        total: number;
+        paid: number;
+      }
+    >,
+  );
 
   // Calculate revenue
-  const totalRevenue = paidSubscriptions * (workYear.campPrice || 175);
-  const pendingRevenue = pendingPayments * (workYear.campPrice || 175);
+  const totalRevenue = paidSubscriptions * (workYear.campPrice ?? 175);
+  const pendingRevenue = pendingPayments * (workYear.campPrice ?? 175);
 
   const breadcrumbItems = [
     { href: "/leidingsportaal", label: "Leidingsportaal" },
@@ -109,21 +117,31 @@ export default async function KampPage() {
 
   const getPaymentMethodLabel = (method: string) => {
     switch (method) {
-      case "CASH": return "Contant";
-      case "BANK_TRANSFER": return "Overschrijving";
-      case "PAYCONIQ": return "Payconiq";
-      case "OTHER": return "Anders";
-      default: return method;
+      case "CASH":
+        return "Contant";
+      case "BANK_TRANSFER":
+        return "Overschrijving";
+      case "PAYCONIQ":
+        return "Payconiq";
+      case "OTHER":
+        return "Anders";
+      default:
+        return method;
     }
   };
 
   const getPaymentMethodIcon = (method: string) => {
     switch (method) {
-      case "CASH": return <Banknote className="h-4 w-4" />;
-      case "BANK_TRANSFER": return <CreditCard className="h-4 w-4" />;
-      case "PAYCONIQ": return <Smartphone className="h-4 w-4" />;
-      case "OTHER": return <Settings className="h-4 w-4" />;
-      default: return <Euro className="h-4 w-4" />;
+      case "CASH":
+        return <Banknote className="h-4 w-4" />;
+      case "BANK_TRANSFER":
+        return <CreditCard className="h-4 w-4" />;
+      case "PAYCONIQ":
+        return <Smartphone className="h-4 w-4" />;
+      case "OTHER":
+        return <Settings className="h-4 w-4" />;
+      default:
+        return <Euro className="h-4 w-4" />;
     }
   };
 
@@ -138,7 +156,7 @@ export default async function KampPage() {
               <Tent className="h-16 w-16 text-orange-600" />
             </div>
             <div className="flex flex-col justify-center">
-              <h1 className="!mb-0 !mt-0 mb-0 !pb-0 !pt-0 pb-0 text-4xl font-bold leading-tight">
+              <h1 className="!mb-0 !mt-0 !pb-0 !pt-0 text-4xl font-bold leading-tight">
                 Kamp {workYear.startDate.getFullYear()}
               </h1>
             </div>
@@ -179,7 +197,9 @@ export default async function KampPage() {
                   <div>
                     <p className="text-sm text-gray-600">Betaald</p>
                     <p className="text-2xl font-bold">{paidSubscriptions}</p>
-                    <p className="text-xs text-gray-500">{paymentPercentage}%</p>
+                    <p className="text-xs text-gray-500">
+                      {paymentPercentage}%
+                    </p>
                   </div>
                 </div>
               </CardBody>
@@ -195,7 +215,12 @@ export default async function KampPage() {
                     <p className="text-sm text-gray-600">Openstaand</p>
                     <p className="text-2xl font-bold">{pendingPayments}</p>
                     <p className="text-xs text-gray-500">
-                      {totalSubscriptions > 0 ? Math.round((pendingPayments / totalSubscriptions) * 100) : 0}%
+                      {totalSubscriptions > 0
+                        ? Math.round(
+                            (pendingPayments / totalSubscriptions) * 100,
+                          )
+                        : 0}
+                      %
                     </p>
                   </div>
                 </div>
@@ -240,7 +265,8 @@ export default async function KampPage() {
                       €{workYear.campPrice ?? 175} per lid
                     </p>
                     <p className="text-sm text-gray-600">
-                      €{workYear.campPrice ? workYear.campPrice - 10 : 165} voor tweede kind
+                      €{workYear.campPrice ? workYear.campPrice - 10 : 165} voor
+                      tweede kind
                     </p>
                   </div>
 
@@ -274,7 +300,10 @@ export default async function KampPage() {
                 <div className="space-y-4">
                   {Object.entries(paymentMethods).length > 0 ? (
                     Object.entries(paymentMethods).map(([method, count]) => (
-                      <div key={method} className="flex items-center justify-between rounded-lg border p-3">
+                      <div
+                        key={method}
+                        className="flex items-center justify-between rounded-lg border p-3"
+                      >
                         <div className="flex items-center gap-3">
                           {getPaymentMethodIcon(method)}
                           <span className="font-medium">
@@ -287,7 +316,9 @@ export default async function KampPage() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500">Nog geen betalingsmethoden geregistreerd</p>
+                    <p className="text-gray-500">
+                      Nog geen betalingsmethoden geregistreerd
+                    </p>
                   )}
                 </div>
               </CardBody>
@@ -311,18 +342,26 @@ export default async function KampPage() {
                       key={group.id}
                       className="rounded-lg border p-4"
                       style={{
-                        borderColor: group.color ? `${group.color}40` : "#e5e7eb",
-                        backgroundColor: group.color ? `${group.color}10` : "#f9fafb",
+                        borderColor: group.color
+                          ? `${group.color}40`
+                          : "#e5e7eb",
+                        backgroundColor: group.color
+                          ? `${group.color}10`
+                          : "#f9fafb",
                       }}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div
                             className="h-4 w-4 rounded-full"
-                            style={{ backgroundColor: group.color ?? "#6b7280" }}
+                            style={{
+                              backgroundColor: group.color ?? "#6b7280",
+                            }}
                           />
                           <div>
-                            <p className="font-medium text-gray-900">{group.name}</p>
+                            <p className="font-medium text-gray-900">
+                              {group.name}
+                            </p>
                             <p className="text-sm text-gray-600">
                               {paid}/{total} betaald
                             </p>
@@ -373,13 +412,19 @@ export default async function KampPage() {
                   campSubscriptions
                     .sort((a, b) => {
                       // Sort by group age (oldest first), then by name
-                      const groupAgeDiff = (b.group.minimumAgeInDays ?? 0) - (a.group.minimumAgeInDays ?? 0);
+                      const groupAgeDiff =
+                        (b.group.minimumAgeInDays ?? 0) -
+                        (a.group.minimumAgeInDays ?? 0);
                       if (groupAgeDiff !== 0) return groupAgeDiff;
-                      
-                      const lastNameDiff = a.member.lastName.localeCompare(b.member.lastName);
+
+                      const lastNameDiff = a.member.lastName.localeCompare(
+                        b.member.lastName,
+                      );
                       if (lastNameDiff !== 0) return lastNameDiff;
-                      
-                      return a.member.firstName.localeCompare(b.member.firstName);
+
+                      return a.member.firstName.localeCompare(
+                        b.member.firstName,
+                      );
                     })
                     .map((subscription) => (
                       <div
@@ -393,23 +438,37 @@ export default async function KampPage() {
                         <div className="flex items-center gap-4">
                           <div
                             className="h-3 w-3 rounded-full"
-                            style={{ backgroundColor: subscription.group.color ?? "#6b7280" }}
+                            style={{
+                              backgroundColor:
+                                subscription.group.color ?? "#6b7280",
+                            }}
                           />
                           <div>
-                            <TableLink href={`/leidingsportaal/leden/${subscription.memberId}`}>
-                              {subscription.member.firstName} {subscription.member.lastName}
+                            <TableLink
+                              href={`/leidingsportaal/leden/${subscription.memberId}`}
+                            >
+                              {subscription.member.firstName}{" "}
+                              {subscription.member.lastName}
                             </TableLink>
-                            <p className="text-sm text-gray-600">{subscription.group.name}</p>
+                            <p className="text-sm text-gray-600">
+                              {subscription.group.name}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           {subscription.campPaymentMethod && (
                             <Chip size="sm" variant="flat">
-                              {getPaymentMethodLabel(subscription.campPaymentMethod)}
+                              {getPaymentMethodLabel(
+                                subscription.campPaymentMethod,
+                              )}
                             </Chip>
                           )}
                           <Badge
-                            color={subscription.campPaymentReceived ? "success" : "warning"}
+                            color={
+                              subscription.campPaymentReceived
+                                ? "success"
+                                : "warning"
+                            }
                             variant="flat"
                           >
                             {subscription.campPaymentReceived ? (
@@ -428,9 +487,11 @@ export default async function KampPage() {
                       </div>
                     ))
                 ) : (
-                  <div className="text-center py-8">
+                  <div className="py-8 text-center">
                     <Tent className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-gray-500">Nog geen kamp inschrijvingen</p>
+                    <p className="mt-2 text-gray-500">
+                      Nog geen kamp inschrijvingen
+                    </p>
                   </div>
                 )}
               </div>
@@ -440,4 +501,4 @@ export default async function KampPage() {
       </SignedIn>
     </>
   );
-} 
+}

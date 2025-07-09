@@ -30,8 +30,10 @@ export async function registerNewMember(memberData: FullNewMemberData) {
       // Sanitize member data
       firstName: memberData.firstName.trim(),
       lastName: memberData.lastName.trim(),
-      emailAddress: emptyStringToUndefined(memberData.emailAddress),
-      phoneNumber: emptyStringToUndefined(memberData.phoneNumber),
+      emailAddress: emptyStringToUndefined(
+        memberData.emailAddress ?? undefined,
+      ),
+      phoneNumber: emptyStringToUndefined(memberData.phoneNumber ?? undefined),
 
       // Sanitize parents data
       parents: memberData.parents.map((parent) => ({
@@ -56,7 +58,7 @@ export async function registerNewMember(memberData: FullNewMemberData) {
             lastName: memberData.emergencyContact.lastName.trim(),
             phoneNumber: memberData.emergencyContact.phoneNumber.trim(),
             relationship: emptyStringToUndefined(
-              memberData.emergencyContact.relationship,
+              memberData.emergencyContact.relationship ?? undefined,
             ),
           }
         : undefined,

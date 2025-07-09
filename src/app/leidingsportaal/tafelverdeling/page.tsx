@@ -1,17 +1,11 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Button } from "@heroui/button";
 import { Badge } from "@heroui/badge";
-import { Divider } from "@heroui/divider";
 import {
   Users,
   Utensils,
-  RefreshCw,
-  Download,
-  Printer,
   Users2,
   BarChart3,
-  Target,
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
@@ -23,7 +17,7 @@ import { MEMBER_QUERIES } from "~/server/db/queries/member-queries";
 import { GROUP_QUERIES } from "~/server/db/queries/group-queries";
 import { requireLeidingAuth } from "~/lib/auth";
 import TableDistribution from "~/features/leidingsportaal/table-distribution";
-import type { Group, WorkYear } from "~/server/db/schema";
+import type { Group } from "~/server/db/schema";
 
 export default async function TableDistributionPage() {
   // Check if user has leiding role - this will redirect if not authorized
@@ -45,9 +39,8 @@ export default async function TableDistributionPage() {
   }
 
   // Get all camp subscriptions for the current work year
-  const campSubscriptions = await MEMBER_QUERIES.getCampSubscriptionsForWorkYear(
-    workYear.id,
-  );
+  const campSubscriptions =
+    await MEMBER_QUERIES.getCampSubscriptionsForWorkYear(workYear.id);
 
   // Get all groups for reference
   const groups = await GROUP_QUERIES.getAll({ activeOnly: true });
@@ -58,19 +51,25 @@ export default async function TableDistributionPage() {
   );
 
   // Group members by their group
-  const membersByGroup = groups.reduce((acc: Record<number, { group: Group; members: any[]; count: number }>, group: Group) => {
-    const groupMembers = paidSubscriptions.filter(
-      (sub) => sub.groupId === group.id,
-    );
-    if (groupMembers.length > 0) {
-      acc[group.id] = {
-        group,
-        members: groupMembers,
-        count: groupMembers.length,
-      };
-    }
-    return acc;
-  }, {});
+  const membersByGroup = groups.reduce(
+    (
+      acc: Record<number, { group: Group; members: any[]; count: number }>,
+      group: Group,
+    ) => {
+      const groupMembers = paidSubscriptions.filter(
+        (sub) => sub.groupId === group.id,
+      );
+      if (groupMembers.length > 0) {
+        acc[group.id] = {
+          group,
+          members: groupMembers,
+          count: groupMembers.length,
+        };
+      }
+      return acc;
+    },
+    {},
+  );
 
   const breadcrumbItems = [
     { href: "/leidingsportaal", label: "Leidingsportaal" },
@@ -89,7 +88,7 @@ export default async function TableDistributionPage() {
             </div>
             <div className="flex flex-col justify-center">
               <h1
-                className="!mb-0 !mt-0 mb-0 !pb-0 !pt-0 pb-0 text-4xl font-bold leading-tight"
+                className="!mb-0 !mt-0 !pb-0 !pt-0 text-4xl font-bold leading-tight"
                 style={{ margin: 0, padding: 0 }}
               >
                 Tafelverdeling Kamp
@@ -123,7 +122,9 @@ export default async function TableDistributionPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Totaal ingeschreven</p>
-                    <p className="text-2xl font-bold">{campSubscriptions.length}</p>
+                    <p className="text-2xl font-bold">
+                      {campSubscriptions.length}
+                    </p>
                   </div>
                 </div>
               </CardBody>
@@ -137,7 +138,9 @@ export default async function TableDistributionPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Betaald</p>
-                    <p className="text-2xl font-bold">{paidSubscriptions.length}</p>
+                    <p className="text-2xl font-bold">
+                      {paidSubscriptions.length}
+                    </p>
                   </div>
                 </div>
               </CardBody>
@@ -192,7 +195,9 @@ export default async function TableDistributionPage() {
                     className="flex items-center justify-between rounded-lg border p-4"
                     style={{
                       borderColor: group.color ? `${group.color}40` : "#e5e7eb",
-                      backgroundColor: group.color ? `${group.color}10` : "#f9fafb",
+                      backgroundColor: group.color
+                        ? `${group.color}10`
+                        : "#f9fafb",
                     }}
                   >
                     <div className="flex items-center gap-3">
@@ -201,7 +206,9 @@ export default async function TableDistributionPage() {
                         style={{ backgroundColor: group.color ?? "#6b7280" }}
                       />
                       <div>
-                        <p className="font-medium text-gray-900">{group.name}</p>
+                        <p className="font-medium text-gray-900">
+                          {group.name}
+                        </p>
                         <p className="text-sm text-gray-600">
                           {count} {count === 1 ? "lid" : "leden"}
                         </p>
@@ -211,8 +218,10 @@ export default async function TableDistributionPage() {
                       color="primary"
                       variant="flat"
                       style={{
-                        backgroundColor: group.color ? `${group.color}20` : undefined,
-                        color: group.color ? group.color : undefined,
+                        backgroundColor: group.color
+                          ? `${group.color}20`
+                          : undefined,
+                        color: group.color ?? undefined,
                       }}
                     >
                       {count}
@@ -238,7 +247,8 @@ export default async function TableDistributionPage() {
                   Geen betaalde kampinschrijvingen
                 </h3>
                 <p className="text-gray-600">
-                  Er zijn nog geen betaalde kampinschrijvingen om te verdelen over tafels.
+                  Er zijn nog geen betaalde kampinschrijvingen om te verdelen
+                  over tafels.
                 </p>
               </CardBody>
             </Card>
@@ -247,4 +257,4 @@ export default async function TableDistributionPage() {
       </SignedIn>
     </>
   );
-} 
+}
