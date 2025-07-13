@@ -1,6 +1,5 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Button } from "@heroui/button";
 import { Badge } from "@heroui/badge";
 import { Divider } from "@heroui/divider";
 import {
@@ -20,7 +19,6 @@ import {
   Users2,
   BarChart3,
   TrendingUp,
-  Award,
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
@@ -201,7 +199,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
             </div>
             <div className="flex flex-col justify-center">
               <h1
-                className="!mb-0 !mt-0 mb-0 !pb-0 !pt-0 pb-0 text-4xl font-bold leading-tight"
+                className="!mb-0 !mt-0 !pb-0 !pt-0 text-4xl font-bold leading-tight"
                 style={{ margin: 0, padding: 0 }}
               >
                 {group.name}

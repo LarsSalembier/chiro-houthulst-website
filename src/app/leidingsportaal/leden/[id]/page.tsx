@@ -8,8 +8,14 @@ import { Button } from "@heroui/button";
 import { Badge } from "@heroui/badge";
 import { Divider } from "@heroui/divider";
 import { Chip } from "@heroui/chip";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@heroui/modal";
-import { Breadcrumbs, BreadcrumbItem } from "@heroui/breadcrumbs";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+} from "@heroui/modal";
 import {
   AlertTriangle,
   Waves,
@@ -18,11 +24,8 @@ import {
   Droplets,
   Zap,
   Activity,
-  Bed,
-  Brain,
   Bone,
   Moon,
-  Shield,
   Check,
   X,
   User,
@@ -36,7 +39,6 @@ import {
   AlertCircle,
   Thermometer,
   Eye,
-  BrainCircuit,
   HeartHandshake,
   Baby,
   Clock,
@@ -168,7 +170,7 @@ export default function MemberDetailPage() {
 
   const handleConfirmDelete = async () => {
     if (!member) return;
-    
+
     setIsDeleting(true);
     try {
       await removeMember(member.id);
@@ -327,7 +329,11 @@ export default function MemberDetailPage() {
               </ModalHeader>
               <ModalBody>
                 <p>
-                  Weet je zeker dat je <strong>{member?.firstName} {member?.lastName}</strong> wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.
+                  Weet je zeker dat je{" "}
+                  <strong>
+                    {member?.firstName} {member?.lastName}
+                  </strong>{" "}
+                  wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.
                 </p>
                 <p className="mt-2 text-sm text-gray-600">
                   Dit zal ook alle gerelateerde gegevens verwijderen:

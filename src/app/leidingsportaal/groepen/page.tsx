@@ -1,15 +1,7 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
-import { Badge } from "@heroui/badge";
-import {
-  Users,
-  Plus,
-  Calendar,
-  UserCheck,
-  ArrowRight,
-  Users2,
-} from "lucide-react";
+import { Plus, UserCheck, ArrowRight, Users2 } from "lucide-react";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
 import SignInAsLeiding from "../sign-in-as-leiding";

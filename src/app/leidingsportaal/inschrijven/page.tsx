@@ -1,4 +1,3 @@
-/* eslint-disable */
 "use client";
 
 import { SignedIn, SignedOut } from "@clerk/nextjs";
@@ -13,7 +12,6 @@ import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { CalendarDate } from "@internationalized/date";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
 import SignInAsLeiding from "../sign-in-as-leiding";
@@ -30,10 +28,6 @@ import {
   type Group,
   type PaymentMethod,
 } from "~/server/db/schema";
-import {
-  createCalendarDateFromDate,
-  createDateFromCalendarDate,
-} from "~/lib/date-utils";
 import DDMMYYYYDateInput from "~/components/ui/dd-mm-yyyy-date-input";
 import Image from "next/image";
 import { QRCodeModal } from "~/components/ui/qr-code-modal";
@@ -264,7 +258,7 @@ export default function InschrijvenPage() {
 
   // Get the final selected group (manual override or automatic)
   const getFinalSelectedGroup = () => {
-    return manualGroup || selectedGroup;
+    return manualGroup ?? selectedGroup;
   };
 
   const openQRModal = (src: string, title: string, altText: string) => {
@@ -487,7 +481,7 @@ export default function InschrijvenPage() {
                         const group = allGroups.find(
                           (g) => g.id.toString() === selectedKey,
                         );
-                        setManualGroup(group || null);
+                        setManualGroup(group ?? null);
                       } else {
                         setManualGroup(null);
                       }
@@ -499,7 +493,7 @@ export default function InschrijvenPage() {
                         <div className="flex items-center gap-2">
                           <div
                             className="h-3 w-3 rounded-full"
-                            style={{ backgroundColor: group.color || "#ccc" }}
+                            style={{ backgroundColor: group.color ?? "#ccc" }}
                           />
                           {group.name}
                           {group === selectedGroup && (

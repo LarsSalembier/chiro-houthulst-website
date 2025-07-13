@@ -3,19 +3,15 @@ import * as schema from "~/server/db/schema";
 import {
   type Member,
   type NewMember,
-  InsertMemberSchema,
   type NewEmergencyContact,
   type NewMedicalInformation,
   type NewParent,
   type NewAddress,
-  InsertParentSchema,
 } from "~/server/db/schema";
-import { ADDRESS_MUTATIONS } from "./address-queries"; // Importeer address mutaties
-import { GROUP_QUERIES } from "./group-queries"; // Om groep te vinden
+import { ADDRESS_MUTATIONS } from "./address-queries";
+import { GROUP_QUERIES } from "./group-queries";
 import { db } from "../db";
-import { z } from "zod";
 
-// Type voor complexe member data input
 export type FullNewMemberData = NewMember & {
   parents: Array<
     Omit<NewParent, "addressId"> & { address: NewAddress; isPrimary: boolean }
@@ -60,15 +56,14 @@ export type FullNewMemberData = NewMember & {
     otherRemarks: string;
     permissionMedication: boolean;
   };
-  workYearId: number; // Het werkjaar waarvoor ingeschreven wordt
-  groupId?: number; // Optionele groep ID voor handmatige selectie
+  workYearId: number;
+  groupId?: number;
   paymentReceived: boolean;
   paymentMethod?: schema.PaymentMethod;
   paymentDate?: Date;
 };
 
 export const MEMBER_QUERIES = {
-  // Haal alle leden op voor een specifiek werkjaar, eventueel gefilterd op groep
   getMembersForWorkYear: async (workYearId: number, groupId?: number) => {
     const members = await db.query.members.findMany({
       with: {
@@ -111,7 +106,6 @@ export const MEMBER_QUERIES = {
     }));
   },
 
-  // Haal een specifiek lid op met alle gerelateerde gegevens
   getFullMemberDetails: async (
     memberId: number,
   ): Promise<
@@ -174,7 +168,6 @@ export const MEMBER_QUERIES = {
     return { ...member, parents };
   },
 
-  // Zoek leden op naam (voornaam, achternaam, of beide)
   searchMembersByName: async (searchTerm: string) => {
     const terms = searchTerm
       .trim()
@@ -350,7 +343,7 @@ export const MEMBER_QUERIES = {
         // 2. Handle parent relationships and cleanup
         for (const memberParent of member.membersParents) {
           const parent = memberParent.parent;
-          
+
           // Check if this parent has other children
           const otherChildren = await tx.query.membersParents.findMany({
             where: and(
@@ -378,9 +371,11 @@ export const MEMBER_QUERIES = {
               .execute();
 
             // Check if address is used by other parents
-            const otherParentsWithSameAddress = await tx.query.parents.findMany({
-              where: eq(schema.parents.addressId, parent.addressId),
-            });
+            const otherParentsWithSameAddress = await tx.query.parents.findMany(
+              {
+                where: eq(schema.parents.addressId, parent.addressId),
+              },
+            );
 
             // If no other parents use this address, remove it
             if (otherParentsWithSameAddress.length === 0) {
