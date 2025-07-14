@@ -1,7 +1,14 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
-import { UserPlus, Users, UserCheck, ArrowRight, Utensils, Tent } from "lucide-react";
+import {
+  UserPlus,
+  Users,
+  UserCheck,
+  ArrowRight,
+  Utensils,
+  Tent,
+} from "lucide-react";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import SignInAsLeiding from "./sign-in-as-leiding";
 import { requireLeidingAuth } from "~/lib/auth";
@@ -73,9 +80,7 @@ export default async function Leidingsportaal() {
                     <Users className="h-8 w-8 text-green-600" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold">
-                      Volledige Ledenlijst
-                    </h2>
+                    <h2 className="text-xl font-semibold">Ledenoverzicht</h2>
                     <p className="text-sm text-gray-600">Bekijk alle leden</p>
                   </div>
                 </div>
@@ -91,7 +96,7 @@ export default async function Leidingsportaal() {
                   href="/leidingsportaal/leden"
                   endContent={<ArrowRight className="h-4 w-4" />}
                 >
-                  Bekijk Ledenlijst
+                  Bekijk ledenoverzicht
                 </Button>
               </CardBody>
             </Card>

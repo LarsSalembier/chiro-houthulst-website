@@ -106,6 +106,49 @@ export const MEMBER_QUERIES = {
     }));
   },
 
+  getCampMembersForWorkYear: async (workYearId: number, groupId?: number) => {
+    const members = await db.query.members.findMany({
+      with: {
+        yearlyMemberships: {
+          where: and(
+            eq(schema.yearlyMemberships.workYearId, workYearId),
+            groupId ? eq(schema.yearlyMemberships.groupId, groupId) : undefined,
+            eq(schema.yearlyMemberships.campSubscription, true),
+          ),
+          with: {
+            group: true,
+          },
+        },
+        membersParents: {
+          with: {
+            parent: {
+              with: {
+                address: true,
+              },
+            },
+          },
+        },
+        medicalInformation: true,
+        emergencyContact: true,
+      },
+      orderBy: [asc(schema.members.lastName), asc(schema.members.firstName)],
+    });
+
+    // Filter members to only include those with camp subscriptions for the specified criteria
+    const filteredMembers = members.filter(
+      (member) => member.yearlyMemberships.length > 0,
+    );
+
+    return filteredMembers.map((m) => ({
+      ...m,
+      parents: m.membersParents.map((mp) => ({
+        ...mp.parent,
+        isPrimary: mp.isPrimary,
+      })),
+      yearlyMembership: m.yearlyMemberships[0],
+    }));
+  },
+
   getFullMemberDetails: async (
     memberId: number,
   ): Promise<
