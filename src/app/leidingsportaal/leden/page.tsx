@@ -1,24 +1,90 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { Card, CardBody } from "@heroui/card";
+import { Users, BarChart3, Tent, CheckCircle } from "lucide-react";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
 import { WORK_YEAR_QUERIES } from "~/server/db/queries/work-year-queries";
 import SignInAsLeiding from "../sign-in-as-leiding";
 import { MEMBER_QUERIES } from "~/server/db/queries/member-queries";
-import MembersTable from "~/features/leidingsportaal/members-table";
+import ChiroOverviewTabs from "~/features/leidingsportaal/ChiroOverviewTabs";
 import { requireLeidingAuth } from "~/lib/auth";
 
-export default async function LedenPage() {
+export default async function ChiroOverviewPage() {
   // Check if user has leiding role - this will redirect if not authorized
   await requireLeidingAuth();
 
-  const workyear = await WORK_YEAR_QUERIES.getByDate();
+  const workYear = await WORK_YEAR_QUERIES.getByDate();
 
-  if (!workyear) {
-    return <BlogTextNoAnimation>Geen werkjaar gevonden</BlogTextNoAnimation>;
+  if (!workYear) {
+    return (
+      <BlogTextNoAnimation>
+        <div className="py-12 text-center">
+          <h1 className="mb-4 text-2xl font-bold">Geen actief werkjaar</h1>
+          <p className="text-gray-600">
+            Er is momenteel geen actief werkjaar gevonden.
+          </p>
+        </div>
+      </BlogTextNoAnimation>
+    );
   }
 
-  const members = await MEMBER_QUERIES.getMembersForWorkYear(workyear?.id);
+  const members = await MEMBER_QUERIES.getMembersForWorkYear(workYear.id);
 
+  // Calculate overall statistics
+  const totalMembers = members.length;
+  const boysCount = members.filter((m) => m.gender === "M").length;
+  const girlsCount = members.filter((m) => m.gender === "F").length;
+  const otherGenderCount = members.filter((m) => m.gender === "X").length;
+
+  // Camp statistics
+  const campSubscriptions = members.filter(
+    (m) => m.yearlyMembership?.campSubscription,
+  ).length;
+  const campPaymentReceived = members.filter(
+    (m) => m.yearlyMembership?.campPaymentReceived,
+  ).length;
+  const campPaymentPending = campSubscriptions - campPaymentReceived;
+
+  // Payment statistics
+  const paymentReceived = members.filter(
+    (m) => m.yearlyMembership?.paymentReceived,
+  ).length;
+  const paymentPending = totalMembers - paymentReceived;
+
+  // Group statistics
+  const groupStats = members.reduce(
+    (acc, member) => {
+      const groupName = member.yearlyMembership?.group?.name ?? "Onbekend";
+      acc[groupName] ??= {
+        name: groupName,
+        count: 0,
+        color: member.yearlyMembership?.group?.color ?? "#3b82f6",
+      };
+      acc[groupName].count++;
+      return acc;
+    },
+    {} as Record<string, { name: string; count: number; color: string }>,
+  );
+
+  const sortedGroups = Object.values(groupStats).sort(
+    (a, b) => b.count - a.count,
+  );
+
+  // Calculate average age
+  const averageAge =
+    totalMembers > 0
+      ? Math.round(
+          members.reduce((sum, m) => {
+            const age = Math.floor(
+              (Date.now() - m.dateOfBirth.getTime()) /
+                (1000 * 60 * 60 * 24 * 365.25),
+            );
+            return sum + age;
+          }, 0) / totalMembers,
+        )
+      : 0;
+
+  // Prepare member data for the table
   const memberTabularData = members.map((member) => ({
     ...member,
     name: `${member.firstName} ${member.lastName}`,
@@ -67,14 +133,18 @@ export default async function LedenPage() {
       member.medicalInformation?.permissionMedication ?? false,
     emailAddress: member.emailAddress ?? "",
     phoneNumber: member.phoneNumber ?? "",
+    gdprPermissionToPublishPhotos: member.gdprPermissionToPublishPhotos,
     paymentReceived: member.yearlyMembership?.paymentReceived ?? false,
     paymentMethod: member.yearlyMembership?.paymentMethod ?? "",
     paymentDate: member.yearlyMembership?.paymentDate ?? undefined,
   }));
 
+  // Get work year name (format: "2023-2024")
+  const workYearName = `${workYear.startDate.getFullYear()}-${workYear.endDate.getFullYear()}`;
+
   const breadcrumbItems = [
     { href: "/leidingsportaal", label: "Leidingsportaal" },
-    { label: "Leden" },
+    { label: "Ledenoverzicht" },
   ];
 
   return (
@@ -82,24 +152,121 @@ export default async function LedenPage() {
       <BreadcrumbsWrapper items={breadcrumbItems} />
 
       <BlogTextNoAnimation>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1>Volledige ledenlijst</h1>
-            <p className="text-gray-600">
-              Bekijk en beheer alle geregistreerde leden voor het huidige
-              werkjaar.
-            </p>
+        <div className="mb-8">
+          <div className="flex items-center gap-4">
+            <div className="rounded-lg bg-blue-100 p-4">
+              <Users className="h-16 w-16 text-blue-600" />
+            </div>
+            <div className="flex flex-col justify-center">
+              <h1
+                className="!mb-0 !mt-0 !pb-0 !pt-0 text-4xl font-bold leading-tight"
+                style={{ margin: 0, padding: 0 }}
+              >
+                Ledenoverzicht
+              </h1>
+              <p
+                className="!mb-0 mt-1 !pb-0 text-base text-gray-600"
+                style={{ marginBottom: 0, paddingBottom: 0 }}
+              >
+                Werkjaar {workYearName} • {totalMembers} leden
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <SignedOut>
-              <SignInAsLeiding />
-            </SignedOut>
-          </div>
+        </div>
+
+        <div className="mb-8 flex gap-4">
+          <SignedOut>
+            <SignInAsLeiding />
+          </SignedOut>
         </div>
       </BlogTextNoAnimation>
 
       <SignedIn>
-        <MembersTable members={memberTabularData} />
+        <div className="mx-auto max-w-7xl space-y-8">
+          {/* Overview Statistics */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardBody className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="rounded-lg bg-blue-100 p-3">
+                    <Users className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Totaal leden</p>
+                    <p className="text-2xl font-bold">{totalMembers}</p>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+
+            <Card>
+              <CardBody className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="rounded-lg bg-green-100 p-3">
+                    <BarChart3 className="h-8 w-8 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Gemiddelde leeftijd</p>
+                    <p className="text-2xl font-bold">{averageAge} jaar</p>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+
+            <Card>
+              <CardBody className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="rounded-lg bg-orange-100 p-3">
+                    <Tent className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Kampinschrijvingen</p>
+                    <p className="text-2xl font-bold">{campSubscriptions}</p>
+                    <p className="text-xs text-gray-500">
+                      {campPaymentReceived} betaald, {campPaymentPending}{" "}
+                      openstaand
+                    </p>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+
+            <Card>
+              <CardBody className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="rounded-lg bg-purple-100 p-3">
+                    <CheckCircle className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Lidgeld betaald</p>
+                    <p className="text-2xl font-bold">{paymentReceived}</p>
+                    <p className="text-xs text-gray-500">
+                      {paymentPending} nog openstaand
+                    </p>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+
+          <ChiroOverviewTabs
+            members={members}
+            memberTabularData={memberTabularData}
+            totalMembers={totalMembers}
+            boysCount={boysCount}
+            girlsCount={girlsCount}
+            otherGenderCount={otherGenderCount}
+            campSubscriptions={campSubscriptions}
+            campPaymentReceived={campPaymentReceived}
+            campPaymentPending={campPaymentPending}
+            paymentReceived={paymentReceived}
+            paymentPending={paymentPending}
+            averageAge={averageAge}
+            medicalConditions={null} // Removed medicalConditions
+            sortedGroups={sortedGroups}
+            workYearName={workYearName}
+          />
+        </div>
       </SignedIn>
     </>
   );
