@@ -28,7 +28,6 @@ import {
 } from "lucide-react";
 import MembersTable from "./members-table";
 import GroupMedicalInfo from "./GroupMedicalInfo";
-import MedicalPrintView from "./MedicalPrintView";
 import type { Member, Group } from "~/server/db/schema";
 
 interface MemberWithMedical extends Member {
@@ -450,22 +449,6 @@ export default function KampTabs({
         }
       >
         <MembersTable members={campMemberData} hideGroupColumn={false} />
-      </Tab>
-
-      <Tab
-        key="print"
-        title={
-          <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Medisch print
-          </div>
-        }
-      >
-        <MedicalPrintView
-          members={campMembers}
-          title="Medische informatie - Kamp deelnemers"
-          type="camp"
-        />
       </Tab>
     </Tabs>
   );

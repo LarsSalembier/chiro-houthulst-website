@@ -28,7 +28,6 @@ import {
 } from "lucide-react";
 import MembersTable from "~/features/leidingsportaal/members-table";
 import GroupMedicalInfo from "~/features/leidingsportaal/GroupMedicalInfo";
-import MedicalPrintView from "~/features/leidingsportaal/MedicalPrintView";
 import type { Member, Group } from "~/server/db/schema";
 
 interface MemberWithMedical extends Member {
