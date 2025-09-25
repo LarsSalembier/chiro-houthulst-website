@@ -29,13 +29,13 @@ export function hasLeidingOrAdminRole(user: User | null): boolean {
  */
 export async function requireLeidingAuth() {
   const { userId } = await auth();
-  
+
   if (!userId) {
     redirect("/sign-in");
   }
 
   const user = await currentUser();
-  
+
   if (!user || !hasLeidingOrAdminRole(user)) {
     redirect("/unauthorized");
   }
@@ -49,13 +49,13 @@ export async function requireLeidingAuth() {
  */
 export async function requireAdminAuth() {
   const { userId } = await auth();
-  
+
   if (!userId) {
     redirect("/sign-in");
   }
 
   const user = await currentUser();
-  
+
   if (!user || !hasAdminRole(user)) {
     redirect("/unauthorized");
   }
@@ -69,13 +69,13 @@ export async function requireAdminAuth() {
  */
 export async function getLeidingUser() {
   const { userId } = await auth();
-  
+
   if (!userId) {
     return null;
   }
 
   const user = await currentUser();
-  
+
   if (!user || !hasLeidingOrAdminRole(user)) {
     return null;
   }
@@ -89,16 +89,16 @@ export async function getLeidingUser() {
  */
 export async function getAdminUser() {
   const { userId } = await auth();
-  
+
   if (!userId) {
     return null;
   }
 
   const user = await currentUser();
-  
+
   if (!user || !hasAdminRole(user)) {
     return null;
   }
 
   return { userId, user };
-} 
+}

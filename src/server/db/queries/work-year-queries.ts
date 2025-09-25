@@ -1,4 +1,4 @@
-import { asc, desc, eq, lte, gte, and, ne } from "drizzle-orm";
+import { asc, desc, eq, lte, gte, and, ne, isNull, or } from "drizzle-orm";
 import { workYears, type NewWorkYear, type WorkYear } from "~/server/db/schema";
 import { db } from "../db";
 import { isForeignKeyViolationError } from "./query-utils";
@@ -28,7 +28,10 @@ export const WORK_YEAR_QUERIES = {
 
   getByDate: async (date: Date = new Date()): Promise<WorkYear | null> => {
     const result = await db.query.workYears.findFirst({
-      where: and(lte(workYears.startDate, date), gte(workYears.endDate, date)),
+      where: and(
+        lte(workYears.startDate, date),
+        or(gte(workYears.endDate, date), isNull(workYears.endDate)),
+      ),
       orderBy: [desc(workYears.startDate)],
     });
     return result ?? null;
@@ -40,23 +43,39 @@ export const WORK_YEAR_QUERIES = {
     });
     return result ?? null;
   },
+
+  getCurrent: async (): Promise<WorkYear | null> => {
+    // Get the active work year (no end date set)
+    const result = await db.query.workYears.findFirst({
+      where: isNull(workYears.endDate),
+      orderBy: [desc(workYears.startDate)],
+    });
+    return result ?? null;
+  },
+
+  getActive: async (): Promise<WorkYear[]> => {
+    return await db.query.workYears.findMany({
+      where: isNull(workYears.endDate),
+      orderBy: [desc(workYears.startDate)],
+    });
+  },
 };
 
 export const WORK_YEAR_MUTATIONS = {
   create: async (data: NewWorkYear): Promise<WorkYear> => {
-    if (data.endDate <= data.startDate) {
+    if (data.endDate && data.endDate <= data.startDate) {
       throw new Error("End date must be after start date");
     }
 
-    const existing = await db.query.workYears.findFirst({
-      where: and(
-        lte(workYears.startDate, data.endDate),
-        gte(workYears.endDate, data.startDate),
-      ),
+    // Check if there's already an active work year
+    const activeWorkYear = await db.query.workYears.findFirst({
+      where: isNull(workYears.endDate),
     });
 
-    if (existing) {
-      throw new Error("Work year overlaps with existing work year");
+    if (activeWorkYear && !data.endDate) {
+      throw new Error(
+        "There is already an active work year. Please end the current work year first.",
+      );
     }
 
     const [newWorkYear] = await db
@@ -82,7 +101,10 @@ export const WORK_YEAR_MUTATIONS = {
     const existing = await db.query.workYears.findFirst({
       where: and(
         lte(workYears.startDate, data.endDate ?? new Date()),
-        gte(workYears.endDate, data.startDate ?? new Date()),
+        or(
+          gte(workYears.endDate, data.startDate ?? new Date()),
+          isNull(workYears.endDate),
+        ),
         ne(workYears.id, id),
       ),
     });
@@ -94,6 +116,16 @@ export const WORK_YEAR_MUTATIONS = {
     const [updatedWorkYear] = await db
       .update(workYears)
       .set(data)
+      .where(eq(workYears.id, id))
+      .returning()
+      .execute();
+    return updatedWorkYear ?? null;
+  },
+
+  endWorkYear: async (id: number, endDate: Date): Promise<WorkYear | null> => {
+    const [updatedWorkYear] = await db
+      .update(workYears)
+      .set({ endDate })
       .where(eq(workYears.id, id))
       .returning()
       .execute();

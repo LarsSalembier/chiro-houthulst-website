@@ -196,7 +196,7 @@ export const workYears = createTable(
   {
     id: serial("id").primaryKey(),
     startDate: date("start_date", { mode: "date" }).notNull(),
-    endDate: date("end_date", { mode: "date" }).notNull(),
+    endDate: date("end_date", { mode: "date" }),
     membershipFee: doublePrecision("membership_fee").notNull(),
     campPrice: doublePrecision("camp_price"),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -217,7 +217,7 @@ export const workYearsRelations = relations(workYears, ({ many }) => ({
 export const SelectWorkYearSchema = createSelectSchema(workYears);
 export const InsertWorkYearSchema = createInsertSchema(workYears, {
   startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
+  endDate: z.coerce.date().optional(),
   membershipFee: z.coerce.number().nonnegative(),
   campPrice: z.coerce.number().nonnegative().optional(),
 }).omit({ id: true, createdAt: true, updatedAt: true });

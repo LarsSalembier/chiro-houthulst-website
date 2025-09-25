@@ -81,6 +81,28 @@ export const GROUP_QUERIES = {
 
     return potentialGroups[0] ?? null;
   },
+
+  canBeDeleted: async (id: number): Promise<boolean> => {
+    // Check if group has any yearly memberships
+    const hasMembers = await db.query.yearlyMemberships.findFirst({
+      where: eq(yearlyMemberships.groupId, id),
+    });
+
+    if (hasMembers) {
+      return false;
+    }
+
+    // Check if group is linked to any events
+    const hasEvents = await db.query.eventGroups.findFirst({
+      where: eq(eventGroups.groupId, id),
+    });
+
+    if (hasEvents) {
+      return false;
+    }
+
+    return true;
+  },
 };
 
 export const GROUP_MUTATIONS = {
