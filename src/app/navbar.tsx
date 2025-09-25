@@ -57,6 +57,7 @@ export default function Navbar() {
               aria-hidden="true"
               focusable="false"
               role="presentation"
+              color="black"
             />
             <p className="hidden font-semibold text-inherit sm:flex">
               Sint-Jan Houthulst

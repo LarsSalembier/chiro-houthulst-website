@@ -8,23 +8,61 @@ import SignInAsLeiding from "../sign-in-as-leiding";
 import { MEMBER_QUERIES } from "~/server/db/queries/member-queries";
 import ChiroOverviewTabs from "~/features/leidingsportaal/ChiroOverviewTabs";
 import { requireLeidingAuth } from "~/lib/auth";
+import EndWorkYearButton from "~/components/work-years/EndWorkYearButton";
+import StartWorkYearButton from "~/components/work-years/StartWorkYearButton";
+import { currentUser } from "@clerk/nextjs/server";
+import { getAllGroups } from "../admin/actions";
 
 export default async function ChiroOverviewPage() {
   // Check if user has leiding role - this will redirect if not authorized
   await requireLeidingAuth();
 
+  const user = await currentUser();
+  const isAdmin = user?.publicMetadata?.role === "admin";
+
   const workYear = await WORK_YEAR_QUERIES.getByDate();
+  const allGroups = await getAllGroups();
+
+  const breadcrumbItems = [
+    { href: "/leidingsportaal", label: "Leidingsportaal" },
+    { label: "Ledenoverzicht" },
+  ];
 
   if (!workYear) {
     return (
-      <BlogTextNoAnimation>
-        <div className="py-12 text-center">
-          <h1 className="mb-4 text-2xl font-bold">Geen actief werkjaar</h1>
-          <p className="text-gray-600">
-            Er is momenteel geen actief werkjaar gevonden.
-          </p>
-        </div>
-      </BlogTextNoAnimation>
+      <>
+        <BreadcrumbsWrapper items={breadcrumbItems} />
+        <BlogTextNoAnimation>
+          <div className="mb-8">
+            <div className="flex items-center gap-4">
+              <div className="rounded-lg bg-blue-100 p-4">
+                <Users className="h-16 w-16 text-blue-600" />
+              </div>
+              <div className="flex flex-col justify-center">
+                <h1 className="!mb-0 !mt-0 !pb-0 !pt-0 text-4xl font-bold leading-tight">
+                  Ledenoverzicht
+                </h1>
+                <p className="!mb-0 mt-1 !pb-0 text-base text-gray-600">
+                  Geen actief werkjaar
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mx-auto max-w-4xl">
+            <div className="rounded-lg border border-orange-200 bg-orange-50 p-8 text-center">
+              <h2 className="mb-4 text-2xl font-semibold text-orange-800">
+                Geen actief werkjaar
+              </h2>
+              <p className="mb-6 text-orange-700">
+                Er is momenteel geen actief werkjaar. Start eerst een nieuw
+                werkjaar voordat je het ledenoverzicht kunt bekijken.
+              </p>
+              {isAdmin && <StartWorkYearButton groups={allGroups} />}
+            </div>
+          </div>
+        </BlogTextNoAnimation>
+      </>
     );
   }
 
@@ -140,12 +178,7 @@ export default async function ChiroOverviewPage() {
   }));
 
   // Get work year name (format: "2023-2024")
-  const workYearName = `${workYear.startDate.getFullYear()}-${workYear.endDate.getFullYear()}`;
-
-  const breadcrumbItems = [
-    { href: "/leidingsportaal", label: "Leidingsportaal" },
-    { label: "Ledenoverzicht" },
-  ];
+  const workYearName = `${workYear.startDate.getFullYear()}-${workYear.endDate?.getFullYear() ?? new Date().getFullYear()}`;
 
   return (
     <>
@@ -178,6 +211,11 @@ export default async function ChiroOverviewPage() {
           <SignedOut>
             <SignInAsLeiding />
           </SignedOut>
+          <SignedIn>
+            {isAdmin && workYear && (
+              <EndWorkYearButton currentWorkYear={workYear} />
+            )}
+          </SignedIn>
         </div>
       </BlogTextNoAnimation>
 

@@ -1,0 +1,1 @@
+ALTER TABLE "chirohouthulst-website_events" DROP COLUMN "event_type";

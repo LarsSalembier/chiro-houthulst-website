@@ -31,9 +31,13 @@ import {
 import DDMMYYYYDateInput from "~/components/ui/dd-mm-yyyy-date-input";
 import Image from "next/image";
 import { QRCodeModal } from "~/components/ui/qr-code-modal";
+import StartWorkYearButton from "~/components/work-years/StartWorkYearButton";
+import { useUser } from "@clerk/nextjs";
 
 export default function InschrijvenPage() {
   const router = useRouter();
+  const { user } = useUser();
+  const isAdmin = user?.publicMetadata?.role === "admin";
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [workYear, setWorkYear] = useState<WorkYear | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
@@ -289,1324 +293,1378 @@ export default function InschrijvenPage() {
       </BlogTextNoAnimation>
 
       <SignedIn>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            void form.handleSubmit();
-          }}
-          className="mx-auto max-w-4xl space-y-8"
-        >
-          {/* Member Information */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-xl font-semibold">Gegevens van het lid</h2>
-            </CardHeader>
-            <CardBody className="space-y-4">
-              {formError && (
-                <div className="rounded-lg bg-danger-50 p-4">
-                  <p className="text-sm text-danger-700">{formError}</p>
-                </div>
+        {!workYear ? (
+          <div className="mx-auto max-w-4xl">
+            <div className="rounded-lg border border-orange-200 bg-orange-50 p-8 text-center">
+              <h2 className="mb-4 text-2xl font-semibold text-orange-800">
+                Geen actief werkjaar
+              </h2>
+              <p className="mb-6 text-orange-700">
+                Er is momenteel geen actief werkjaar. Start eerst een nieuw
+                werkjaar voordat je leden kunt inschrijven.
+              </p>
+              {isAdmin && <StartWorkYearButton groups={allGroups} />}
+              {!isAdmin && (
+                <p className="text-sm text-gray-600">
+                  Een admin moet eerst een werkjaar starten voordat je leden
+                  kunt inschrijven.
+                </p>
               )}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <form.Field
-                  name="member.firstName"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value?.trim()) return "Voornaam is verplicht";
-                      if (value.trim().length > 100)
-                        return "Voornaam mag maximaal 100 karakters bevatten";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="Voornaam"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      isRequired
-                    />
-                  )}
-                </form.Field>
+            </div>
+          </div>
+        ) : (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              void form.handleSubmit();
+            }}
+            className="mx-auto max-w-4xl space-y-8"
+          >
+            {/* Member Information */}
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">Gegevens van het lid</h2>
+              </CardHeader>
+              <CardBody className="space-y-4">
+                {formError && (
+                  <div className="rounded-lg bg-danger-50 p-4">
+                    <p className="text-sm text-danger-700">{formError}</p>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <form.Field
+                    name="member.firstName"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value?.trim()) return "Voornaam is verplicht";
+                        if (value.trim().length > 100)
+                          return "Voornaam mag maximaal 100 karakters bevatten";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <Input
+                        label="Voornaam"
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        isRequired
+                      />
+                    )}
+                  </form.Field>
 
-                <form.Field
-                  name="member.lastName"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value?.trim()) return "Achternaam is verplicht";
-                      if (value.trim().length > 100)
-                        return "Achternaam mag maximaal 100 karakters bevatten";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="Achternaam"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      isRequired
-                    />
-                  )}
-                </form.Field>
+                  <form.Field
+                    name="member.lastName"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value?.trim()) return "Achternaam is verplicht";
+                        if (value.trim().length > 100)
+                          return "Achternaam mag maximaal 100 karakters bevatten";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <Input
+                        label="Achternaam"
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        isRequired
+                      />
+                    )}
+                  </form.Field>
 
-                <form.Field
-                  name="member.gender"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value) return "Geslacht is verplicht";
-                      if (!["M", "F", "X"].includes(value))
-                        return "Ongeldige waarde voor geslacht";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Select
-                      label="Geslacht"
-                      selectedKeys={
-                        field.state.value ? [field.state.value] : []
-                      }
-                      onSelectionChange={async (keys) => {
-                        const value = Array.from(keys)[0] as Gender;
-                        field.handleChange(value);
+                  <form.Field
+                    name="member.gender"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value) return "Geslacht is verplicht";
+                        if (!["M", "F", "X"].includes(value))
+                          return "Ongeldige waarde voor geslacht";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <Select
+                        label="Geslacht"
+                        selectedKeys={
+                          field.state.value ? [field.state.value] : []
+                        }
+                        onSelectionChange={async (keys) => {
+                          const value = Array.from(keys)[0] as Gender;
+                          field.handleChange(value);
 
-                        // Revalidate group when gender changes
-                        const dateOfBirth =
-                          form.getFieldValue("member.dateOfBirth");
-                        if (dateOfBirth) {
-                          try {
-                            const group = await findGroupForMember(
-                              dateOfBirth,
-                              value,
-                            );
-                            setSelectedGroup(group);
-                          } catch (error) {
-                            console.error("Error finding group:", error);
-                            setSelectedGroup(null);
+                          // Revalidate group when gender changes
+                          const dateOfBirth =
+                            form.getFieldValue("member.dateOfBirth");
+                          if (dateOfBirth) {
+                            try {
+                              const group = await findGroupForMember(
+                                dateOfBirth,
+                                value,
+                              );
+                              setSelectedGroup(group);
+                            } catch (error) {
+                              console.error("Error finding group:", error);
+                              setSelectedGroup(null);
+                            }
                           }
-                        }
-                      }}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      isRequired
-                    >
-                      <SelectItem key="M">Jongen</SelectItem>
-                      <SelectItem key="F">Meisje</SelectItem>
-                      <SelectItem key="X">Anders</SelectItem>
-                    </Select>
-                  )}
-                </form.Field>
+                        }}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        isRequired
+                      >
+                        <SelectItem key="M">Jongen</SelectItem>
+                        <SelectItem key="F">Meisje</SelectItem>
+                        <SelectItem key="X">Anders</SelectItem>
+                      </Select>
+                    )}
+                  </form.Field>
 
-                <form.Field
-                  name="member.dateOfBirth"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value) return "Geboortedatum is verplicht";
-                      if (!(value instanceof Date) || isNaN(value.getTime()))
-                        return "Ongeldige geboortedatum";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <DDMMYYYYDateInput
-                      label="Geboortedatum"
-                      value={field.state.value}
-                      onChange={(date: Date | undefined) => {
-                        field.handleChange(date);
-                        if (date) {
-                          void handleDateOfBirthChange(date);
-                        }
-                      }}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      isRequired
-                    />
-                  )}
-                </form.Field>
-
-                <form.Field name="member.gdprPermissionToPublishPhotos">
-                  {(field) => (
-                    <Checkbox
-                      isSelected={field.state.value}
-                      onValueChange={field.handleChange}
-                    >
-                      Toestemming voor het publiceren van foto&apos;s
-                    </Checkbox>
-                  )}
-                </form.Field>
-              </div>
-
-              {/* Group Selection */}
-              <div className="space-y-4">
-                {/* Show automatic group prominently */}
-                {selectedGroup && (
-                  <div
-                    className="rounded-lg p-4"
-                    style={{
-                      backgroundColor: selectedGroup.color
-                        ? `${selectedGroup.color}15`
-                        : "#f0f9ff",
+                  <form.Field
+                    name="member.dateOfBirth"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value) return "Geboortedatum is verplicht";
+                        if (!(value instanceof Date) || isNaN(value.getTime()))
+                          return "Ongeldige geboortedatum";
+                        return undefined;
+                      },
                     }}
                   >
-                    <p
-                      className="text-sm font-medium"
-                      style={{
-                        color: selectedGroup.color ?? "#0c4a6e",
-                      }}
-                    >
-                      <strong>Automatisch geselecteerde groep:</strong>{" "}
-                      {selectedGroup.name}
-                    </p>
-                  </div>
-                )}
+                    {(field) => (
+                      <DDMMYYYYDateInput
+                        label="Geboortedatum"
+                        value={field.state.value}
+                        onChange={(date: Date | undefined) => {
+                          field.handleChange(date);
+                          if (date) {
+                            void handleDateOfBirthChange(date);
+                          }
+                        }}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        isRequired
+                      />
+                    )}
+                  </form.Field>
 
-                {/* Manual override dropdown */}
-                <div className="flex gap-2">
-                  <Select
-                    label="Handmatige groep selectie (optioneel)"
-                    placeholder="Kies een andere groep"
-                    selectedKeys={
-                      manualGroup ? [manualGroup.id.toString()] : []
-                    }
-                    onSelectionChange={(keys) => {
-                      const selectedKey = Array.from(keys)[0];
-                      if (selectedKey) {
-                        const group = allGroups.find(
-                          (g) => g.id.toString() === selectedKey,
-                        );
-                        setManualGroup(group ?? null);
-                      } else {
-                        setManualGroup(null);
-                      }
-                    }}
-                    className="flex-1"
-                  >
-                    {allGroups.map((group) => (
-                      <SelectItem key={group.id.toString()}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-3 w-3 rounded-full"
-                            style={{ backgroundColor: group.color ?? "#ccc" }}
-                          />
-                          {group.name}
-                          {group === selectedGroup && (
-                            <span className="text-xs text-primary-600">
-                              (Automatisch)
-                            </span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </Select>
-                  {manualGroup && (
-                    <Button
-                      type="button"
-                      color="danger"
-                      variant="flat"
-                      size="sm"
-                      onPress={() => setManualGroup(null)}
-                      className="self-end"
-                    >
-                      Reset
-                    </Button>
-                  )}
+                  <form.Field name="member.gdprPermissionToPublishPhotos">
+                    {(field) => (
+                      <Checkbox
+                        isSelected={field.state.value}
+                        onValueChange={field.handleChange}
+                      >
+                        Toestemming voor het publiceren van foto&apos;s
+                      </Checkbox>
+                    )}
+                  </form.Field>
                 </div>
-                {getFinalSelectedGroup() && (
-                  <div
-                    className="rounded-lg border-2 border-primary-200 p-3"
-                    style={{
-                      backgroundColor: getFinalSelectedGroup()?.color
-                        ? `${getFinalSelectedGroup()?.color}10`
-                        : "#f0f9ff",
-                    }}
-                  >
-                    <p
-                      className="text-sm font-semibold"
+
+                {/* Group Selection */}
+                <div className="space-y-4">
+                  {/* Show automatic group prominently */}
+                  {selectedGroup && (
+                    <div
+                      className="rounded-lg p-4"
                       style={{
-                        color: getFinalSelectedGroup()?.color ?? "#0c4a6e",
+                        backgroundColor: selectedGroup.color
+                          ? `${selectedGroup.color}15`
+                          : "#f0f9ff",
                       }}
                     >
-                      <strong>Finale groep:</strong>{" "}
-                      {getFinalSelectedGroup()?.name}
-                      {manualGroup && (
-                        <span className="ml-2 text-xs text-warning-600">
-                          (Handmatig geselecteerd)
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardBody>
-          </Card>
+                      <p
+                        className="text-sm font-medium"
+                        style={{
+                          color: selectedGroup.color ?? "#0c4a6e",
+                        }}
+                      >
+                        <strong>Automatisch geselecteerde groep:</strong>{" "}
+                        {selectedGroup.name}
+                      </p>
+                    </div>
+                  )}
 
-          {/* Parents Information */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Ouders</h2>
-              </div>
-            </CardHeader>
-            <CardBody className="space-y-6">
-              <form.Subscribe selector={(state) => state.values.parents}>
-                {(parents) => (
-                  <>
-                    {parents.map((parent, parentIndex) => (
-                      <div key={parentIndex} className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-medium">
-                            Ouder {parentIndex + 1}
-                            {parent.isPrimary && (
-                              <span className="ml-2 text-sm font-medium text-primary-600">
-                                (Primaire ouder)
+                  {/* Manual override dropdown */}
+                  <div className="flex gap-2">
+                    <Select
+                      label="Handmatige groep selectie (optioneel)"
+                      placeholder="Kies een andere groep"
+                      selectedKeys={
+                        manualGroup ? [manualGroup.id.toString()] : []
+                      }
+                      onSelectionChange={(keys) => {
+                        const selectedKey = Array.from(keys)[0];
+                        if (selectedKey) {
+                          const group = allGroups.find(
+                            (g) => g.id.toString() === selectedKey,
+                          );
+                          setManualGroup(group ?? null);
+                        } else {
+                          setManualGroup(null);
+                        }
+                      }}
+                      className="flex-1"
+                    >
+                      {allGroups.map((group) => (
+                        <SelectItem key={group.id.toString()}>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="h-3 w-3 rounded-full"
+                              style={{ backgroundColor: group.color ?? "#ccc" }}
+                            />
+                            {group.name}
+                            {group === selectedGroup && (
+                              <span className="text-xs text-primary-600">
+                                (Automatisch)
                               </span>
                             )}
-                          </h3>
-                          <div className="flex gap-2">
-                            {!parent.isPrimary && (
-                              <Button
-                                type="button"
-                                color="primary"
-                                variant="flat"
-                                size="sm"
-                                onPress={() => setPrimaryParent(parentIndex)}
-                              >
-                                Stel in als primaire ouder
-                              </Button>
-                            )}
-                            {parents.length > 1 && (
-                              <Button
-                                type="button"
-                                color="danger"
-                                variant="flat"
-                                size="sm"
-                                onPress={() => removeParent(parentIndex)}
-                              >
-                                Verwijderen
-                              </Button>
-                            )}
                           </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                          <form.Field
-                            name={`parents[${parentIndex}].firstName`}
-                            validators={{
-                              onChange: ({ value }) => {
-                                if (!value?.trim())
-                                  return "Voornaam is verplicht";
-                                if (value.trim().length > 100)
-                                  return "Voornaam mag maximaal 100 karakters bevatten";
-                                return undefined;
-                              },
-                            }}
-                          >
-                            {(field) => (
-                              <Input
-                                label="Voornaam"
-                                value={field.state.value}
-                                onValueChange={field.handleChange}
-                                isInvalid={field.state.meta.errors.length > 0}
-                                errorMessage={field.state.meta.errors[0]}
-                                isRequired
-                              />
-                            )}
-                          </form.Field>
-
-                          <form.Field
-                            name={`parents[${parentIndex}].lastName`}
-                            validators={{
-                              onChange: ({ value }) => {
-                                if (!value?.trim())
-                                  return "Achternaam is verplicht";
-                                if (value.trim().length > 100)
-                                  return "Achternaam mag maximaal 100 karakters bevatten";
-                                return undefined;
-                              },
-                            }}
-                          >
-                            {(field) => (
-                              <Input
-                                label="Achternaam"
-                                value={field.state.value}
-                                onValueChange={field.handleChange}
-                                isInvalid={field.state.meta.errors.length > 0}
-                                errorMessage={field.state.meta.errors[0]}
-                                isRequired
-                              />
-                            )}
-                          </form.Field>
-
-                          <form.Field
-                            name={`parents[${parentIndex}].emailAddress`}
-                            validators={{
-                              onChange: ({ value }) => {
-                                if (!value?.trim())
-                                  return "E-mailadres is verplicht";
-                                if (value.trim().length > 255)
-                                  return "E-mailadres mag maximaal 255 karakters bevatten";
-                                if (
-                                  !z.string().email().safeParse(value).success
-                                ) {
-                                  return "Geldig e-mailadres is verplicht";
-                                }
-                                return undefined;
-                              },
-                            }}
-                          >
-                            {(field) => (
-                              <Input
-                                label="E-mailadres"
-                                type="email"
-                                value={field.state.value}
-                                onValueChange={field.handleChange}
-                                isInvalid={field.state.meta.errors.length > 0}
-                                errorMessage={field.state.meta.errors[0]}
-                                isRequired
-                              />
-                            )}
-                          </form.Field>
-
-                          <form.Field
-                            name={`parents[${parentIndex}].phoneNumber`}
-                            validators={{
-                              onChange: ({ value }) => {
-                                if (!value?.trim())
-                                  return "Telefoonnummer is verplicht";
-                                if (value.trim().length > 20)
-                                  return "Telefoonnummer mag maximaal 20 karakters bevatten";
-                                return undefined;
-                              },
-                            }}
-                          >
-                            {(field) => (
-                              <Input
-                                label="Telefoonnummer"
-                                type="tel"
-                                value={field.state.value}
-                                onValueChange={field.handleChange}
-                                isInvalid={field.state.meta.errors.length > 0}
-                                errorMessage={field.state.meta.errors[0]}
-                                isRequired
-                              />
-                            )}
-                          </form.Field>
-
-                          <form.Field
-                            name={`parents[${parentIndex}].relationship`}
-                            validators={{
-                              onChange: ({ value }) => {
-                                if (!value) return "Relatie is verplicht";
-                                if (
-                                  ![
-                                    "MOTHER",
-                                    "FATHER",
-                                    "PLUSMOTHER",
-                                    "PLUSFATHER",
-                                    "GUARDIAN",
-                                  ].includes(value)
-                                )
-                                  return "Ongeldige waarde voor relatie";
-                                return undefined;
-                              },
-                            }}
-                          >
-                            {(field) => (
-                              <Select
-                                label="Relatie"
-                                selectedKeys={
-                                  field.state.value ? [field.state.value] : []
-                                }
-                                onSelectionChange={(keys) => {
-                                  const value = Array.from(
-                                    keys,
-                                  )[0] as ParentRelationship;
-                                  field.handleChange(value);
-                                }}
-                                isInvalid={field.state.meta.errors.length > 0}
-                                errorMessage={field.state.meta.errors[0]}
-                                isRequired
-                              >
-                                <SelectItem key="FATHER">Vader</SelectItem>
-                                <SelectItem key="MOTHER">Moeder</SelectItem>
-                                <SelectItem key="PLUSFATHER">
-                                  Plusvader
-                                </SelectItem>
-                                <SelectItem key="PLUSMOTHER">
-                                  Plusmoeder
-                                </SelectItem>
-                                <SelectItem key="GUARDIAN">Voogd</SelectItem>
-                              </Select>
-                            )}
-                          </form.Field>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                          <form.Field
-                            name={`parents[${parentIndex}].address.street`}
-                            validators={{
-                              onChange: ({ value }) => {
-                                if (!value?.trim())
-                                  return "Straat is verplicht";
-                                if (value.trim().length > 100)
-                                  return "Straat mag maximaal 100 karakters bevatten";
-                                return undefined;
-                              },
-                            }}
-                          >
-                            {(field) => (
-                              <Input
-                                label="Straat"
-                                value={field.state.value}
-                                onValueChange={field.handleChange}
-                                isInvalid={field.state.meta.errors.length > 0}
-                                errorMessage={field.state.meta.errors[0]}
-                                isRequired
-                              />
-                            )}
-                          </form.Field>
-
-                          <form.Field
-                            name={`parents[${parentIndex}].address.houseNumber`}
-                            validators={{
-                              onChange: ({ value }) => {
-                                if (!value?.trim())
-                                  return "Huisnummer is verplicht";
-                                if (value.trim().length > 10)
-                                  return "Huisnummer mag maximaal 10 karakters bevatten";
-                                return undefined;
-                              },
-                            }}
-                          >
-                            {(field) => (
-                              <Input
-                                label="Huisnummer"
-                                value={field.state.value}
-                                onValueChange={field.handleChange}
-                                isInvalid={field.state.meta.errors.length > 0}
-                                errorMessage={field.state.meta.errors[0]}
-                                isRequired
-                              />
-                            )}
-                          </form.Field>
-
-                          <form.Field
-                            name={`parents[${parentIndex}].address.postalCode`}
-                            validators={{
-                              onChange: ({ value }) => {
-                                if (!value?.trim())
-                                  return "Postcode is verplicht";
-                                const postalCode = parseInt(value.trim(), 10);
-                                if (isNaN(postalCode))
-                                  return "Postcode moet een geldig nummer zijn";
-                                if (postalCode < 1000 || postalCode > 9999)
-                                  return "Postcode moet tussen 1000 en 9999 liggen";
-                                return undefined;
-                              },
-                            }}
-                          >
-                            {(field) => (
-                              <Input
-                                label="Postcode"
-                                value={field.state.value}
-                                onValueChange={field.handleChange}
-                                isInvalid={field.state.meta.errors.length > 0}
-                                errorMessage={field.state.meta.errors[0]}
-                                isRequired
-                              />
-                            )}
-                          </form.Field>
-
-                          <form.Field
-                            name={`parents[${parentIndex}].address.municipality`}
-                            validators={{
-                              onChange: ({ value }) => {
-                                if (!value?.trim())
-                                  return "Gemeente is verplicht";
-                                if (value.trim().length > 50)
-                                  return "Gemeente mag maximaal 50 karakters bevatten";
-                                return undefined;
-                              },
-                            }}
-                          >
-                            {(field) => (
-                              <Input
-                                label="Gemeente"
-                                value={field.state.value}
-                                onValueChange={field.handleChange}
-                                isInvalid={field.state.meta.errors.length > 0}
-                                errorMessage={field.state.meta.errors[0]}
-                                isRequired
-                              />
-                            )}
-                          </form.Field>
-                        </div>
-
-                        {parentIndex < parents.length - 1 && <Divider />}
-                      </div>
-                    ))}
-
-                    <div className="flex justify-center pt-4">
+                        </SelectItem>
+                      ))}
+                    </Select>
+                    {manualGroup && (
                       <Button
                         type="button"
-                        color="primary"
+                        color="danger"
                         variant="flat"
-                        onPress={addParent}
+                        size="sm"
+                        onPress={() => setManualGroup(null)}
+                        className="self-end"
                       >
-                        Ouder toevoegen
+                        Reset
                       </Button>
-                    </div>
-                  </>
-                )}
-              </form.Subscribe>
-            </CardBody>
-          </Card>
-
-          {/* Emergency Contact */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-xl font-semibold">Noodcontact</h2>
-            </CardHeader>
-            <CardBody className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <form.Field
-                  name="emergencyContact.firstName"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value?.trim()) return "Voornaam is verplicht";
-                      if (value.trim().length > 100)
-                        return "Voornaam mag maximaal 100 karakters bevatten";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="Voornaam"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      isRequired
-                    />
-                  )}
-                </form.Field>
-
-                <form.Field
-                  name="emergencyContact.lastName"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value?.trim()) return "Achternaam is verplicht";
-                      if (value.trim().length > 100)
-                        return "Achternaam mag maximaal 100 karakters bevatten";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="Achternaam"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      isRequired
-                    />
-                  )}
-                </form.Field>
-
-                <form.Field
-                  name="emergencyContact.phoneNumber"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value?.trim()) return "Telefoonnummer is verplicht";
-                      if (value.trim().length > 20)
-                        return "Telefoonnummer mag maximaal 20 karakters bevatten";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="Telefoonnummer"
-                      type="tel"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      isRequired
-                    />
-                  )}
-                </form.Field>
-
-                <form.Field
-                  name="emergencyContact.relationship"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value?.trim()) return "Relatie is verplicht";
-                      if (value.trim().length > 50)
-                        return "Relatie mag maximaal 50 karakters bevatten";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="Relatie (oma, zus ...)"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      isRequired
-                    />
-                  )}
-                </form.Field>
-              </div>
-            </CardBody>
-          </Card>
-
-          {/* Medical Information */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-xl font-semibold">Medische informatie</h2>
-            </CardHeader>
-            <CardBody className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <form.Field
-                  name="medicalInformation.doctorFirstName"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value?.trim())
-                        return "Voornaam van dokter is verplicht";
-                      if (value.trim().length > 100)
-                        return "Voornaam mag maximaal 100 karakters bevatten";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="Voornaam dokter"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      isRequired
-                    />
-                  )}
-                </form.Field>
-                <form.Field
-                  name="medicalInformation.doctorLastName"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value?.trim())
-                        return "Achternaam van dokter is verplicht";
-                      if (value.trim().length > 100)
-                        return "Achternaam mag maximaal 100 karakters bevatten";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="Achternaam dokter"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      isRequired
-                    />
-                  )}
-                </form.Field>
-                <form.Field
-                  name="medicalInformation.doctorPhoneNumber"
-                  validators={{
-                    onChange: ({ value }) => {
-                      if (!value?.trim())
-                        return "Telefoonnummer van dokter is verplicht";
-                      if (value.trim().length > 20)
-                        return "Telefoonnummer mag maximaal 20 karakters bevatten";
-                      return undefined;
-                    },
-                  }}
-                >
-                  {(field) => (
-                    <Input
-                      label="Telefoonnummer dokter"
-                      type="tel"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      isRequired
-                    />
-                  )}
-                </form.Field>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                <form.Field name="medicalInformation.tetanusVaccination">
-                  {(field) => (
-                    <Checkbox
-                      isSelected={field.state.value}
-                      onValueChange={field.handleChange}
-                    >
-                      Tetanusvaccinatie
-                    </Checkbox>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.asthma">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Astma
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.asthmaDescription">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf astma"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf de astma en eventuele triggers..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.bedwetting">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Bedplassen
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.bedwettingDescription">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf bedplassen"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf frequentie en eventuele maatregelen..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.epilepsy">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Epilepsie
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.epilepsyDescription">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf epilepsie"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf type aanvallen en medicatie..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.heartCondition">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Hartafwijking
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.heartConditionDescription">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf hartafwijking"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf de hartafwijking en eventuele beperkingen..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.hayFever">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Hooikoorts
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.hayFeverDescription">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf hooikoorts"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf triggers en eventuele medicatie..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.skinCondition">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Huidaandoening
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.skinConditionDescription">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf huidaandoening"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf de huidaandoening en eventuele verzorging..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.rheumatism">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Reuma
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.rheumatismDescription">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf reuma"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf de reuma en eventuele beperkingen..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.sleepwalking">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Slaapwandelen
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.sleepwalkingDescription">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf slaapwandelen"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf frequentie en eventuele maatregelen..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.diabetes">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Diabetes
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.diabetesDescription">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf diabetes"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf type diabetes en eventuele medicatie..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.getsTiredQuickly">
-                  {(field) => (
-                    <Checkbox
-                      isSelected={field.state.value}
-                      onValueChange={field.handleChange}
-                    >
-                      Snel moe
-                    </Checkbox>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.canParticipateSports">
-                  {(field) => (
-                    <Checkbox
-                      isSelected={field.state.value}
-                      onValueChange={field.handleChange}
-                    >
-                      Kan sporten
-                    </Checkbox>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.canSwim">
-                  {(field) => (
-                    <Checkbox
-                      isSelected={field.state.value}
-                      onValueChange={field.handleChange}
-                    >
-                      Kan zwemmen
-                    </Checkbox>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.permissionMedication">
-                  {(field) => (
-                    <Checkbox
-                      isSelected={field.state.value}
-                      onValueChange={field.handleChange}
-                    >
-                      Toestemming medicatie
-                    </Checkbox>
-                  )}
-                </form.Field>
-              </div>
-
-              {/* Medical conditions with text fields */}
-              <div className="space-y-4">
-                <form.Field name="medicalInformation.hasFoodAllergies">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Heeft voedselallergieën
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.foodAllergies">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf voedselallergieën"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf eventuele voedselallergieën..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.hasSubstanceAllergies">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Heeft stofallergieën
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.substanceAllergies">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf stofallergieën"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf eventuele stofallergieën..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.hasMedicationAllergies">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Heeft medicijnallergieën
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.medicationAllergies">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf medicijnallergieën"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf eventuele medicijnallergieën..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.hasMedication">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Gebruikt medicatie
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.medication">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf medicatie"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf eventuele medicatie..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.hasOtherMedicalConditions">
-                  {(field) => (
-                    <div className="space-y-2">
-                      <Checkbox
-                        isSelected={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        Heeft andere medische aandoeningen
-                      </Checkbox>
-                      {field.state.value && (
-                        <form.Field name="medicalInformation.otherMedicalConditions">
-                          {(descField) => (
-                            <Textarea
-                              label="Beschrijf andere medische aandoeningen"
-                              value={descField.state.value}
-                              onValueChange={descField.handleChange}
-                              isInvalid={descField.state.meta.errors.length > 0}
-                              errorMessage={descField.state.meta.errors[0]}
-                              placeholder="Beschrijf andere medische aandoeningen..."
-                            />
-                          )}
-                        </form.Field>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-
-                <form.Field name="medicalInformation.otherRemarks">
-                  {(field) => (
-                    <Textarea
-                      label="Andere opmerkingen"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                      isInvalid={field.state.meta.errors.length > 0}
-                      errorMessage={field.state.meta.errors[0]}
-                      placeholder="Andere belangrijke opmerkingen..."
-                    />
-                  )}
-                </form.Field>
-              </div>
-            </CardBody>
-          </Card>
-
-          {/* Payment Information */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-xl font-semibold">Betaling</h2>
-            </CardHeader>
-            <CardBody className="space-y-4">
-              <div className="flex flex-row items-start gap-8">
-                {/* QR code for payment */}
-                <div className="flex-shrink-0">
-                  <Image
-                    src="/qr-code-inschrijving-jaar.png"
-                    alt="QR code voor betaling"
-                    className="h-32 w-32 cursor-pointer rounded-lg border object-contain shadow transition-shadow hover:shadow-lg"
-                    width={128}
-                    height={128}
-                    onClick={() =>
-                      openQRModal(
-                        "/qr-code-inschrijving-jaar.png",
-                        "QR Code voor Betaling",
-                        "QR code voor betaling",
-                      )
-                    }
-                  />
-                  <div className="mt-2 text-center text-sm">
-                    <p className="font-medium text-gray-700">Bedrag: 40 EUR</p>
-                    <p className="text-gray-600">BE71 0018 7690 8469</p>
+                    )}
                   </div>
+                  {getFinalSelectedGroup() && (
+                    <div
+                      className="rounded-lg border-2 border-primary-200 p-3"
+                      style={{
+                        backgroundColor: getFinalSelectedGroup()?.color
+                          ? `${getFinalSelectedGroup()?.color}10`
+                          : "#f0f9ff",
+                      }}
+                    >
+                      <p
+                        className="text-sm font-semibold"
+                        style={{
+                          color: getFinalSelectedGroup()?.color ?? "#0c4a6e",
+                        }}
+                      >
+                        <strong>Finale groep:</strong>{" "}
+                        {getFinalSelectedGroup()?.name}
+                        {manualGroup && (
+                          <span className="ml-2 text-xs text-warning-600">
+                            (Handmatig geselecteerd)
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div className="flex-1">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <form.Field name="payment.paymentReceived">
-                      {(field) => (
+              </CardBody>
+            </Card>
+
+            {/* Parents Information */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold">Ouders</h2>
+                </div>
+              </CardHeader>
+              <CardBody className="space-y-6">
+                <form.Subscribe selector={(state) => state.values.parents}>
+                  {(parents) => (
+                    <>
+                      {parents.map((parent, parentIndex) => (
+                        <div key={parentIndex} className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-medium">
+                              Ouder {parentIndex + 1}
+                              {parent.isPrimary && (
+                                <span className="ml-2 text-sm font-medium text-primary-600">
+                                  (Primaire ouder)
+                                </span>
+                              )}
+                            </h3>
+                            <div className="flex gap-2">
+                              {!parent.isPrimary && (
+                                <Button
+                                  type="button"
+                                  color="primary"
+                                  variant="flat"
+                                  size="sm"
+                                  onPress={() => setPrimaryParent(parentIndex)}
+                                >
+                                  Stel in als primaire ouder
+                                </Button>
+                              )}
+                              {parents.length > 1 && (
+                                <Button
+                                  type="button"
+                                  color="danger"
+                                  variant="flat"
+                                  size="sm"
+                                  onPress={() => removeParent(parentIndex)}
+                                >
+                                  Verwijderen
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <form.Field
+                              name={`parents[${parentIndex}].firstName`}
+                              validators={{
+                                onChange: ({ value }) => {
+                                  if (!value?.trim())
+                                    return "Voornaam is verplicht";
+                                  if (value.trim().length > 100)
+                                    return "Voornaam mag maximaal 100 karakters bevatten";
+                                  return undefined;
+                                },
+                              }}
+                            >
+                              {(field) => (
+                                <Input
+                                  label="Voornaam"
+                                  value={field.state.value}
+                                  onValueChange={field.handleChange}
+                                  isInvalid={field.state.meta.errors.length > 0}
+                                  errorMessage={field.state.meta.errors[0]}
+                                  isRequired
+                                />
+                              )}
+                            </form.Field>
+
+                            <form.Field
+                              name={`parents[${parentIndex}].lastName`}
+                              validators={{
+                                onChange: ({ value }) => {
+                                  if (!value?.trim())
+                                    return "Achternaam is verplicht";
+                                  if (value.trim().length > 100)
+                                    return "Achternaam mag maximaal 100 karakters bevatten";
+                                  return undefined;
+                                },
+                              }}
+                            >
+                              {(field) => (
+                                <Input
+                                  label="Achternaam"
+                                  value={field.state.value}
+                                  onValueChange={field.handleChange}
+                                  isInvalid={field.state.meta.errors.length > 0}
+                                  errorMessage={field.state.meta.errors[0]}
+                                  isRequired
+                                />
+                              )}
+                            </form.Field>
+
+                            <form.Field
+                              name={`parents[${parentIndex}].emailAddress`}
+                              validators={{
+                                onChange: ({ value }) => {
+                                  if (!value?.trim())
+                                    return "E-mailadres is verplicht";
+                                  if (value.trim().length > 255)
+                                    return "E-mailadres mag maximaal 255 karakters bevatten";
+                                  if (
+                                    !z.string().email().safeParse(value).success
+                                  ) {
+                                    return "Geldig e-mailadres is verplicht";
+                                  }
+                                  return undefined;
+                                },
+                              }}
+                            >
+                              {(field) => (
+                                <Input
+                                  label="E-mailadres"
+                                  type="email"
+                                  value={field.state.value}
+                                  onValueChange={field.handleChange}
+                                  isInvalid={field.state.meta.errors.length > 0}
+                                  errorMessage={field.state.meta.errors[0]}
+                                  isRequired
+                                />
+                              )}
+                            </form.Field>
+
+                            <form.Field
+                              name={`parents[${parentIndex}].phoneNumber`}
+                              validators={{
+                                onChange: ({ value }) => {
+                                  if (!value?.trim())
+                                    return "Telefoonnummer is verplicht";
+                                  if (value.trim().length > 20)
+                                    return "Telefoonnummer mag maximaal 20 karakters bevatten";
+                                  return undefined;
+                                },
+                              }}
+                            >
+                              {(field) => (
+                                <Input
+                                  label="Telefoonnummer"
+                                  type="tel"
+                                  value={field.state.value}
+                                  onValueChange={field.handleChange}
+                                  isInvalid={field.state.meta.errors.length > 0}
+                                  errorMessage={field.state.meta.errors[0]}
+                                  isRequired
+                                />
+                              )}
+                            </form.Field>
+
+                            <form.Field
+                              name={`parents[${parentIndex}].relationship`}
+                              validators={{
+                                onChange: ({ value }) => {
+                                  if (!value) return "Relatie is verplicht";
+                                  if (
+                                    ![
+                                      "MOTHER",
+                                      "FATHER",
+                                      "PLUSMOTHER",
+                                      "PLUSFATHER",
+                                      "GUARDIAN",
+                                    ].includes(value)
+                                  )
+                                    return "Ongeldige waarde voor relatie";
+                                  return undefined;
+                                },
+                              }}
+                            >
+                              {(field) => (
+                                <Select
+                                  label="Relatie"
+                                  selectedKeys={
+                                    field.state.value ? [field.state.value] : []
+                                  }
+                                  onSelectionChange={(keys) => {
+                                    const value = Array.from(
+                                      keys,
+                                    )[0] as ParentRelationship;
+                                    field.handleChange(value);
+                                  }}
+                                  isInvalid={field.state.meta.errors.length > 0}
+                                  errorMessage={field.state.meta.errors[0]}
+                                  isRequired
+                                >
+                                  <SelectItem key="FATHER">Vader</SelectItem>
+                                  <SelectItem key="MOTHER">Moeder</SelectItem>
+                                  <SelectItem key="PLUSFATHER">
+                                    Plusvader
+                                  </SelectItem>
+                                  <SelectItem key="PLUSMOTHER">
+                                    Plusmoeder
+                                  </SelectItem>
+                                  <SelectItem key="GUARDIAN">Voogd</SelectItem>
+                                </Select>
+                              )}
+                            </form.Field>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <form.Field
+                              name={`parents[${parentIndex}].address.street`}
+                              validators={{
+                                onChange: ({ value }) => {
+                                  if (!value?.trim())
+                                    return "Straat is verplicht";
+                                  if (value.trim().length > 100)
+                                    return "Straat mag maximaal 100 karakters bevatten";
+                                  return undefined;
+                                },
+                              }}
+                            >
+                              {(field) => (
+                                <Input
+                                  label="Straat"
+                                  value={field.state.value}
+                                  onValueChange={field.handleChange}
+                                  isInvalid={field.state.meta.errors.length > 0}
+                                  errorMessage={field.state.meta.errors[0]}
+                                  isRequired
+                                />
+                              )}
+                            </form.Field>
+
+                            <form.Field
+                              name={`parents[${parentIndex}].address.houseNumber`}
+                              validators={{
+                                onChange: ({ value }) => {
+                                  if (!value?.trim())
+                                    return "Huisnummer is verplicht";
+                                  if (value.trim().length > 10)
+                                    return "Huisnummer mag maximaal 10 karakters bevatten";
+                                  return undefined;
+                                },
+                              }}
+                            >
+                              {(field) => (
+                                <Input
+                                  label="Huisnummer"
+                                  value={field.state.value}
+                                  onValueChange={field.handleChange}
+                                  isInvalid={field.state.meta.errors.length > 0}
+                                  errorMessage={field.state.meta.errors[0]}
+                                  isRequired
+                                />
+                              )}
+                            </form.Field>
+
+                            <form.Field
+                              name={`parents[${parentIndex}].address.postalCode`}
+                              validators={{
+                                onChange: ({ value }) => {
+                                  if (!value?.trim())
+                                    return "Postcode is verplicht";
+                                  const postalCode = parseInt(value.trim(), 10);
+                                  if (isNaN(postalCode))
+                                    return "Postcode moet een geldig nummer zijn";
+                                  if (postalCode < 1000 || postalCode > 9999)
+                                    return "Postcode moet tussen 1000 en 9999 liggen";
+                                  return undefined;
+                                },
+                              }}
+                            >
+                              {(field) => (
+                                <Input
+                                  label="Postcode"
+                                  value={field.state.value}
+                                  onValueChange={field.handleChange}
+                                  isInvalid={field.state.meta.errors.length > 0}
+                                  errorMessage={field.state.meta.errors[0]}
+                                  isRequired
+                                />
+                              )}
+                            </form.Field>
+
+                            <form.Field
+                              name={`parents[${parentIndex}].address.municipality`}
+                              validators={{
+                                onChange: ({ value }) => {
+                                  if (!value?.trim())
+                                    return "Gemeente is verplicht";
+                                  if (value.trim().length > 50)
+                                    return "Gemeente mag maximaal 50 karakters bevatten";
+                                  return undefined;
+                                },
+                              }}
+                            >
+                              {(field) => (
+                                <Input
+                                  label="Gemeente"
+                                  value={field.state.value}
+                                  onValueChange={field.handleChange}
+                                  isInvalid={field.state.meta.errors.length > 0}
+                                  errorMessage={field.state.meta.errors[0]}
+                                  isRequired
+                                />
+                              )}
+                            </form.Field>
+                          </div>
+
+                          {parentIndex < parents.length - 1 && <Divider />}
+                        </div>
+                      ))}
+
+                      <div className="flex justify-center pt-4">
+                        <Button
+                          type="button"
+                          color="primary"
+                          variant="flat"
+                          onPress={addParent}
+                        >
+                          Ouder toevoegen
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </form.Subscribe>
+              </CardBody>
+            </Card>
+
+            {/* Emergency Contact */}
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">Noodcontact</h2>
+              </CardHeader>
+              <CardBody className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <form.Field
+                    name="emergencyContact.firstName"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value?.trim()) return "Voornaam is verplicht";
+                        if (value.trim().length > 100)
+                          return "Voornaam mag maximaal 100 karakters bevatten";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <Input
+                        label="Voornaam"
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        isRequired
+                      />
+                    )}
+                  </form.Field>
+
+                  <form.Field
+                    name="emergencyContact.lastName"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value?.trim()) return "Achternaam is verplicht";
+                        if (value.trim().length > 100)
+                          return "Achternaam mag maximaal 100 karakters bevatten";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <Input
+                        label="Achternaam"
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        isRequired
+                      />
+                    )}
+                  </form.Field>
+
+                  <form.Field
+                    name="emergencyContact.phoneNumber"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value?.trim())
+                          return "Telefoonnummer is verplicht";
+                        if (value.trim().length > 20)
+                          return "Telefoonnummer mag maximaal 20 karakters bevatten";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <Input
+                        label="Telefoonnummer"
+                        type="tel"
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        isRequired
+                      />
+                    )}
+                  </form.Field>
+
+                  <form.Field
+                    name="emergencyContact.relationship"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value?.trim()) return "Relatie is verplicht";
+                        if (value.trim().length > 50)
+                          return "Relatie mag maximaal 50 karakters bevatten";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <Input
+                        label="Relatie (oma, zus ...)"
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        isRequired
+                      />
+                    )}
+                  </form.Field>
+                </div>
+              </CardBody>
+            </Card>
+
+            {/* Medical Information */}
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">Medische informatie</h2>
+              </CardHeader>
+              <CardBody className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <form.Field
+                    name="medicalInformation.doctorFirstName"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value?.trim())
+                          return "Voornaam van dokter is verplicht";
+                        if (value.trim().length > 100)
+                          return "Voornaam mag maximaal 100 karakters bevatten";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <Input
+                        label="Voornaam dokter"
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        isRequired
+                      />
+                    )}
+                  </form.Field>
+                  <form.Field
+                    name="medicalInformation.doctorLastName"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value?.trim())
+                          return "Achternaam van dokter is verplicht";
+                        if (value.trim().length > 100)
+                          return "Achternaam mag maximaal 100 karakters bevatten";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <Input
+                        label="Achternaam dokter"
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        isRequired
+                      />
+                    )}
+                  </form.Field>
+                  <form.Field
+                    name="medicalInformation.doctorPhoneNumber"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value?.trim())
+                          return "Telefoonnummer van dokter is verplicht";
+                        if (value.trim().length > 20)
+                          return "Telefoonnummer mag maximaal 20 karakters bevatten";
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <Input
+                        label="Telefoonnummer dokter"
+                        type="tel"
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        isRequired
+                      />
+                    )}
+                  </form.Field>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <form.Field name="medicalInformation.tetanusVaccination">
+                    {(field) => (
+                      <Checkbox
+                        isSelected={field.state.value}
+                        onValueChange={field.handleChange}
+                      >
+                        Tetanusvaccinatie
+                      </Checkbox>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.asthma">
+                    {(field) => (
+                      <div className="space-y-2">
                         <Checkbox
                           isSelected={field.state.value}
-                          onValueChange={(checked) => {
-                            field.handleChange(checked);
-                            // Automatically set payment date to current date when payment is received
-                            if (checked) {
-                              form.setFieldValue(
-                                "payment.paymentDate",
-                                new Date(),
-                              );
-                            } else {
-                              form.setFieldValue(
-                                "payment.paymentDate",
-                                undefined,
-                              );
-                            }
-                          }}
+                          onValueChange={field.handleChange}
                         >
-                          Betaling ontvangen
+                          Astma
                         </Checkbox>
-                      )}
-                    </form.Field>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.asthmaDescription">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf astma"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf de astma en eventuele triggers..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
 
-                    <form.Field name="payment.paymentMethod">
-                      {(field) => (
-                        <Select
-                          label="Betaalmethode"
-                          selectedKeys={
-                            field.state.value ? [field.state.value] : []
-                          }
-                          onSelectionChange={(keys) => {
-                            const value = Array.from(keys)[0] as PaymentMethod;
-                            field.handleChange(value);
-                          }}
-                          isInvalid={field.state.meta.errors.length > 0}
-                          errorMessage={field.state.meta.errors[0]}
+                  <form.Field name="medicalInformation.bedwetting">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
                         >
-                          <SelectItem key="CASH">Contant</SelectItem>
-                          <SelectItem key="BANK_TRANSFER">
-                            Overschrijving
-                          </SelectItem>
-                          <SelectItem key="PAYCONIQ">Payconiq</SelectItem>
-                          <SelectItem key="OTHER">Anders</SelectItem>
-                        </Select>
-                      )}
-                    </form.Field>
+                          Bedplassen
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.bedwettingDescription">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf bedplassen"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf frequentie en eventuele maatregelen..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.epilepsy">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Epilepsie
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.epilepsyDescription">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf epilepsie"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf type aanvallen en medicatie..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.heartCondition">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Hartafwijking
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.heartConditionDescription">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf hartafwijking"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf de hartafwijking en eventuele beperkingen..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.hayFever">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Hooikoorts
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.hayFeverDescription">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf hooikoorts"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf triggers en eventuele medicatie..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.skinCondition">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Huidaandoening
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.skinConditionDescription">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf huidaandoening"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf de huidaandoening en eventuele verzorging..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.rheumatism">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Reuma
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.rheumatismDescription">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf reuma"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf de reuma en eventuele beperkingen..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.sleepwalking">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Slaapwandelen
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.sleepwalkingDescription">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf slaapwandelen"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf frequentie en eventuele maatregelen..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.diabetes">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Diabetes
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.diabetesDescription">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf diabetes"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf type diabetes en eventuele medicatie..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.getsTiredQuickly">
+                    {(field) => (
+                      <Checkbox
+                        isSelected={field.state.value}
+                        onValueChange={field.handleChange}
+                      >
+                        Snel moe
+                      </Checkbox>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.canParticipateSports">
+                    {(field) => (
+                      <Checkbox
+                        isSelected={field.state.value}
+                        onValueChange={field.handleChange}
+                      >
+                        Kan sporten
+                      </Checkbox>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.canSwim">
+                    {(field) => (
+                      <Checkbox
+                        isSelected={field.state.value}
+                        onValueChange={field.handleChange}
+                      >
+                        Kan zwemmen
+                      </Checkbox>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.permissionMedication">
+                    {(field) => (
+                      <Checkbox
+                        isSelected={field.state.value}
+                        onValueChange={field.handleChange}
+                      >
+                        Toestemming medicatie
+                      </Checkbox>
+                    )}
+                  </form.Field>
+                </div>
+
+                {/* Medical conditions with text fields */}
+                <div className="space-y-4">
+                  <form.Field name="medicalInformation.hasFoodAllergies">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Heeft voedselallergieën
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.foodAllergies">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf voedselallergieën"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf eventuele voedselallergieën..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.hasSubstanceAllergies">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Heeft stofallergieën
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.substanceAllergies">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf stofallergieën"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf eventuele stofallergieën..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.hasMedicationAllergies">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Heeft medicijnallergieën
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.medicationAllergies">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf medicijnallergieën"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf eventuele medicijnallergieën..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.hasMedication">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Gebruikt medicatie
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.medication">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf medicatie"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf eventuele medicatie..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.hasOtherMedicalConditions">
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Checkbox
+                          isSelected={field.state.value}
+                          onValueChange={field.handleChange}
+                        >
+                          Heeft andere medische aandoeningen
+                        </Checkbox>
+                        {field.state.value && (
+                          <form.Field name="medicalInformation.otherMedicalConditions">
+                            {(descField) => (
+                              <Textarea
+                                label="Beschrijf andere medische aandoeningen"
+                                value={descField.state.value}
+                                onValueChange={descField.handleChange}
+                                isInvalid={
+                                  descField.state.meta.errors.length > 0
+                                }
+                                errorMessage={descField.state.meta.errors[0]}
+                                placeholder="Beschrijf andere medische aandoeningen..."
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  <form.Field name="medicalInformation.otherRemarks">
+                    {(field) => (
+                      <Textarea
+                        label="Andere opmerkingen"
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        isInvalid={field.state.meta.errors.length > 0}
+                        errorMessage={field.state.meta.errors[0]}
+                        placeholder="Andere belangrijke opmerkingen..."
+                      />
+                    )}
+                  </form.Field>
+                </div>
+              </CardBody>
+            </Card>
+
+            {/* Payment Information */}
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">Betaling</h2>
+              </CardHeader>
+              <CardBody className="space-y-4">
+                <div className="flex flex-row items-start gap-8">
+                  {/* QR code for payment */}
+                  <div className="flex-shrink-0">
+                    <Image
+                      src="/qr-code-inschrijving-jaar.png"
+                      alt="QR code voor betaling"
+                      className="h-32 w-32 cursor-pointer rounded-lg border object-contain shadow transition-shadow hover:shadow-lg"
+                      width={128}
+                      height={128}
+                      onClick={() =>
+                        openQRModal(
+                          "/qr-code-inschrijving-jaar.png",
+                          "QR Code voor Betaling",
+                          "QR code voor betaling",
+                        )
+                      }
+                    />
+                    <div className="mt-2 text-center text-sm">
+                      <p className="font-medium text-gray-700">
+                        Bedrag: 40 EUR
+                      </p>
+                      <p className="text-gray-600">BE71 0018 7690 8469</p>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <form.Field name="payment.paymentReceived">
+                        {(field) => (
+                          <Checkbox
+                            isSelected={field.state.value}
+                            onValueChange={(checked) => {
+                              field.handleChange(checked);
+                              // Automatically set payment date to current date when payment is received
+                              if (checked) {
+                                form.setFieldValue(
+                                  "payment.paymentDate",
+                                  new Date(),
+                                );
+                              } else {
+                                form.setFieldValue(
+                                  "payment.paymentDate",
+                                  undefined,
+                                );
+                              }
+                            }}
+                          >
+                            Betaling ontvangen
+                          </Checkbox>
+                        )}
+                      </form.Field>
+
+                      <form.Field name="payment.paymentMethod">
+                        {(field) => (
+                          <Select
+                            label="Betaalmethode"
+                            selectedKeys={
+                              field.state.value ? [field.state.value] : []
+                            }
+                            onSelectionChange={(keys) => {
+                              const value = Array.from(
+                                keys,
+                              )[0] as PaymentMethod;
+                              field.handleChange(value);
+                            }}
+                            isInvalid={field.state.meta.errors.length > 0}
+                            errorMessage={field.state.meta.errors[0]}
+                          >
+                            <SelectItem key="CASH">Contant</SelectItem>
+                            <SelectItem key="BANK_TRANSFER">
+                              Overschrijving
+                            </SelectItem>
+                            <SelectItem key="PAYCONIQ">Payconiq</SelectItem>
+                            <SelectItem key="OTHER">Anders</SelectItem>
+                          </Select>
+                        )}
+                      </form.Field>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardBody>
-          </Card>
+              </CardBody>
+            </Card>
 
-          {/* Submit Button */}
-          <div className="flex justify-end gap-4">
-            <Button
-              type="button"
-              variant="flat"
-              onPress={() => router.push("/leidingsportaal")}
-            >
-              Annuleren
-            </Button>
-            <Button
-              type="submit"
-              color="primary"
-              isLoading={isSubmitting}
-              isDisabled={isSubmitting}
-            >
-              {isSubmitting ? "Inschrijven..." : "Lid inschrijven"}
-            </Button>
-          </div>
-        </form>
+            {/* Submit Button */}
+            <div className="flex justify-end gap-4">
+              <Button
+                type="button"
+                variant="flat"
+                onPress={() => router.push("/leidingsportaal")}
+              >
+                Annuleren
+              </Button>
+              <Button
+                type="submit"
+                color="primary"
+                isLoading={isSubmitting}
+                isDisabled={isSubmitting}
+              >
+                {isSubmitting ? "Inschrijven..." : "Lid inschrijven"}
+              </Button>
+            </div>
+          </form>
+        )}
       </SignedIn>
 
       {/* QR Code Modal */}

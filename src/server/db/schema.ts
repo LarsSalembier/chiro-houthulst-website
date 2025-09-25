@@ -22,7 +22,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 export const MAX_STRING_LENGTH = 255;
 export const MAX_NAME_LENGTH = 100;
 export const MAX_EMAIL_ADDRESS_LENGTH = MAX_STRING_LENGTH;
-export const MAX_URL_LENGTH = MAX_STRING_LENGTH;
+export const MAX_URL_LENGTH = 2000;
 export const MAX_PHONE_NUMBER_LENGTH = 20;
 
 export const MAX_STREET_LENGTH = 100;
@@ -111,6 +111,9 @@ const tableNamesArray = [
   "event_registrations",
   "sponsors",
   "sponsorship_agreements",
+  "settings",
+  "main_leaders",
+  "vbs",
 ] as const;
 
 const tableNames = {
@@ -128,10 +131,13 @@ const tableNames = {
   eventRegistrations: tableNamesArray[11],
   sponsors: tableNamesArray[12],
   sponsorshipAgreements: tableNamesArray[13],
+  settings: tableNamesArray[14],
+  mainLeaders: tableNamesArray[15],
+  vbs: tableNamesArray[16],
   auditLogs: "audit_logs",
 };
 export const tableNameEnumSchema = z.enum(tableNamesArray);
-export type TableName = z.infer<typeof auditActionEnumSchema>;
+export type TableName = z.infer<typeof tableNameEnumSchema>;
 export const tableNameEnum = pgEnum("table_name", tableNamesArray);
 
 /**
@@ -196,7 +202,7 @@ export const workYears = createTable(
   {
     id: serial("id").primaryKey(),
     startDate: date("start_date", { mode: "date" }).notNull(),
-    endDate: date("end_date", { mode: "date" }).notNull(),
+    endDate: date("end_date", { mode: "date" }),
     membershipFee: doublePrecision("membership_fee").notNull(),
     campPrice: doublePrecision("camp_price"),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -217,7 +223,7 @@ export const workYearsRelations = relations(workYears, ({ many }) => ({
 export const SelectWorkYearSchema = createSelectSchema(workYears);
 export const InsertWorkYearSchema = createInsertSchema(workYears, {
   startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
+  endDate: z.coerce.date().optional(),
   membershipFee: z.coerce.number().nonnegative(),
   campPrice: z.coerce.number().nonnegative().optional(),
 }).omit({ id: true, createdAt: true, updatedAt: true });
@@ -684,16 +690,14 @@ export const events = createTable(tableNames.events, {
   title: varchar("title", { length: MAX_EVENT_TITLE_LENGTH }).notNull(),
   description: text("description"),
   startDate: timestamp("start_date", { withTimezone: true }).notNull(),
-  endDate: timestamp("end_date", { withTimezone: true }).notNull(),
+  endDate: timestamp("end_date", { withTimezone: true }),
   location: varchar("location", { length: MAX_EVENT_LOCATION_LENGTH }),
   facebookEventUrl: varchar("facebook_event_url", {
     length: MAX_URL_LENGTH,
   }).unique(),
-  eventType: eventTypeEnum("event_type").notNull(),
   price: doublePrecision("price"),
   canSignUp: boolean("can_sign_up").default(false).notNull(),
   signUpDeadline: timestamp("sign_up_deadline", { withTimezone: true }),
-  flyerUrl: varchar("flyer_url", { length: MAX_URL_LENGTH }),
   coverImageUrl: varchar("cover_image_url", { length: MAX_URL_LENGTH }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
@@ -711,7 +715,7 @@ export const InsertEventSchema = createInsertSchema(events, {
   title: z.string().trim().min(1).max(MAX_EVENT_TITLE_LENGTH),
   description: z.string().optional().or(z.literal("")),
   startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
+  endDate: z.coerce.date().optional(),
   location: z.string().trim().optional().or(z.literal("")),
   facebookEventUrl: z
     .string()
@@ -720,11 +724,9 @@ export const InsertEventSchema = createInsertSchema(events, {
     .url()
     .optional()
     .or(z.literal("")),
-  eventType: eventTypeEnumSchema,
   price: z.coerce.number().nonnegative().optional(),
   canSignUp: z.coerce.boolean().default(false),
   signUpDeadline: z.coerce.date().optional(),
-  flyerUrl: z.string().trim().max(MAX_URL_LENGTH).optional().or(z.literal("")),
   coverImageUrl: z
     .string()
     .trim()
@@ -1023,3 +1025,69 @@ export const InsertAuditLogSchema = createInsertSchema(auditLogs, {
 
 export type AuditLog = z.infer<typeof SelectAuditLogSchema>;
 export type NewAuditLog = z.infer<typeof InsertAuditLogSchema>;
+
+// --- Settings ---
+export const settings = createTable(tableNames.settings, {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  value: text("value").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export const SelectSettingsSchema = createSelectSchema(settings);
+export const InsertSettingsSchema = createInsertSchema(settings, {
+  key: z.string().trim().min(1).max(100),
+  value: z.string().trim().min(1),
+  description: z.string().trim().optional().or(z.literal("")),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type Setting = z.infer<typeof SelectSettingsSchema>;
+export type NewSetting = z.infer<typeof InsertSettingsSchema>;
+
+// --- Main Leaders ---
+export const mainLeaders = createTable(tableNames.mainLeaders, {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  order: integer("order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export const SelectMainLeaderSchema = createSelectSchema(mainLeaders);
+export const InsertMainLeaderSchema = createInsertSchema(mainLeaders, {
+  name: z.string().trim().min(1).max(100),
+  phone: z.string().trim().min(1).max(20),
+  order: z.coerce.number().int().default(0),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type MainLeader = z.infer<typeof SelectMainLeaderSchema>;
+export type NewMainLeader = z.infer<typeof InsertMainLeaderSchema>;
+
+// --- VBs (Volwassen Begeleiders) ---
+export const vbs = createTable(tableNames.vbs, {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  order: integer("order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export const SelectVBSchema = createSelectSchema(vbs);
+export const InsertVBSchema = createInsertSchema(vbs, {
+  name: z.string().trim().min(1).max(100),
+  phone: z.string().trim().min(1).max(20),
+  order: z.coerce.number().int().default(0),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type VB = z.infer<typeof SelectVBSchema>;
+export type NewVB = z.infer<typeof InsertVBSchema>;

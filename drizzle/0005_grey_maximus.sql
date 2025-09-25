@@ -1,0 +1,1 @@
+ALTER TABLE "chirohouthulst-website_work_years" ALTER COLUMN "end_date" DROP NOT NULL;

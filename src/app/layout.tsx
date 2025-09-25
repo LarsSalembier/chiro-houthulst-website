@@ -3,7 +3,7 @@ import Navbar from "./navbar";
 import DotPattern from "~/components/ui/dot-pattern";
 import { Providers } from "./providers";
 import { type Metadata } from "next";
-import { Footer } from "./footer";
+import { FooterWrapper } from "./footer-wrapper";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chirohouthulst.be"),
@@ -91,7 +91,7 @@ export default function RootLayout({
             <main className="container mx-auto min-h-svh w-full px-4 pb-8 pt-12 sm:pb-8 md:px-16 md:pt-16 lg:pt-0 xl:px-32">
               {children}
             </main>
-            <Footer />
+            <FooterWrapper />
           </div>
         </Providers>
       </body>

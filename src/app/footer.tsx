@@ -5,8 +5,13 @@ import Address from "~/components/ui/address";
 import BlogText from "~/components/ui/blog-text";
 import EmailAddress from "~/components/ui/email-address";
 import PhoneNumber from "~/components/ui/phone-number";
+import { getAllMainLeaders, getAllVBs } from "./contacts/actions";
 
-export function Footer() {
+export async function Footer() {
+  const [mainLeaders, vbs] = await Promise.all([
+    getAllMainLeaders(),
+    getAllVBs(),
+  ]);
   return (
     <footer
       className="text-card-foreground container relative mx-auto w-full bg-slate-100 px-4 pb-2 md:px-16 xl:px-32"
@@ -23,34 +28,44 @@ export function Footer() {
           />
           <div className="flex flex-col gap-3 lg:gap-4">
             <EmailAddress address="chirohouthulst@hotmail.com" />
-            <PhoneNumber number="0468 30 06 64" />
+            {mainLeaders.length > 0 && (
+              <div className="flex flex-col gap-3 lg:gap-4">
+                {mainLeaders.map((leader) => (
+                  <PhoneNumber number={leader.phone} key={leader.id} />
+                ))}
+              </div>
+            )}
           </div>
           <h3>Hoofdleiding</h3>
           <p>
             Voor dringende vragen of problemen kan je steeds terecht bij onze
             hoofdleiding:
           </p>
-          <ul>
-            <li>
-              Warre Sabbe
-              <PhoneNumber number="0468 30 06 64" />
-            </li>
-            <li>
-              Yben Vandamme
-              <PhoneNumber number="0471 69 25 53" />
-            </li>
-          </ul>
+          {mainLeaders.length > 0 && (
+            <ul>
+              {mainLeaders.map((leader) => (
+                <li key={leader.id}>
+                  {leader.name}
+                  <PhoneNumber number={leader.phone} />
+                </li>
+              ))}
+            </ul>
+          )}
           <h3>Volwassen begeleiding</h3>
           <p>
             Voor (tent)verhuur en in noodsituaties kan je onze volwassen
             begeleiding steeds aanspreken.
           </p>
-          <ul>
-            <li>
-              Edwin Gouwy
-              <PhoneNumber number="0476 34 16 37" />
-            </li>
-          </ul>
+          {vbs.length > 0 && (
+            <ul>
+              {vbs.map((vb) => (
+                <li key={vb.id}>
+                  {vb.name}
+                  <PhoneNumber number={vb.phone} />
+                </li>
+              ))}
+            </ul>
+          )}
         </BlogText>
         <BlogText>
           <h2 className="hidden md:flex">Overig</h2>
@@ -96,6 +111,7 @@ export function Footer() {
           © {new Date().getFullYear()} Chiro Sint-Jan Houthulst | Alle rechten
           voorbehouden.
         </p>
+        <p>© Lars Salembier</p>
       </BlogText>
     </footer>
   );
