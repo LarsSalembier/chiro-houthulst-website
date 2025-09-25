@@ -43,6 +43,34 @@
       "when": 1757349776190,
       "tag": "0005_grey_maximus",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1758834100944,
+      "tag": "0006_faithful_kitty_pryde",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1758834931471,
+      "tag": "0007_spicy_power_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1758835391072,
+      "tag": "0008_stale_mole_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1758837896272,
+      "tag": "0009_freezing_captain_cross",
+      "breakpoints": true
     }
   ]
 }

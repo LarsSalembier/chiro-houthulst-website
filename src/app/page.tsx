@@ -1,101 +1,54 @@
-"use client";
-
 import AsideImage from "~/components/ui/aside-image";
 import BlogText from "~/components/ui/blog-text";
 import SplitSection from "~/components/ui/split-section";
 import HeroSection from "~/features/home/hero-section";
-import type { Event } from "~/features/calendar/event";
-import { Section } from "~/components/ui/section";
-import { Carousel } from "~/components/ui/carousel";
-import { EventCard } from "~/features/calendar/event-card";
 import Aside from "~/components/ui/aside";
 import GoogleMapsMap from "~/features/home/google-maps-map";
 import { Button } from "@heroui/button";
 import { Link } from "@heroui/link";
+import { getUpcomingEvents } from "./actions";
+import { getCurrentMembershipFee, getSetting } from "./settings/actions";
+// Define the database event type for the homepage
+type DbEvent = {
+  id: number;
+  title: string;
+  startDate: Date;
+  endDate: Date | null;
+  location: string | null;
+  coverImageUrl: string | null;
+  facebookEventUrl: string | null;
+  price: number | null;
+  canSignUp: boolean;
+  signUpDeadline: Date | null;
+};
+import type { Event } from "~/features/calendar/event";
+import CalendarSection from "~/components/calendar/calendar-section";
 
 const MEMBER_COUNT = 150;
-const LEADER_COUNT = 26;
+const LEADER_COUNT = 25;
 
-const events: Event[] = [
-  {
-    title: "Chironamiddag",
-    date: new Date("2025-03-23"),
-    location: "Chiroheem",
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxWcz6EUKtCqYzi3O4MHg1EXoT5U9vkldDnSej",
-  },
-  {
-    title: "Chironamiddag",
-    date: new Date("2025-03-30"),
-    location: "Chiroheem",
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxtWwOaA4pCQiSz4dKhcN86bWYIM7Fn2Au9lvD",
-  },
-  {
-    title: "Chironamiddag",
-    date: new Date("2025-04-06"),
-    location: "Chiroheem",
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxRHsihiRMwjXNhILV7B2sObk6Qv8MtegdHZxm",
-  },
-  {
-    title: "Chironamiddag",
-    date: new Date("2025-04-27"),
-    location: "Chiroheem",
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxV99l7dZRdA0O8vCVJBplHYafngu5DrWQjSq6",
-  },
-  {
-    title: "Voetbalcompetitie",
-    date: new Date("2025-05-01"),
-    location: "Vrijetijdscampus Houthulst",
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxkma0GmeG3xVfnFN2ULq8KbrpuCIhaBwX5v6t",
-  },
-  {
-    title: "Chironamiddag",
-    date: new Date("2025-05-04"),
-    location: "Chiroheem",
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxeZW8o6STBf9tzw1Y8AXr75mbV0Olok3EcGxd",
-  },
-  {
-    title: "Chironamiddag",
-    date: new Date("2025-05-18"),
-    location: "Chiroheem",
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxJg8MIXEVk2XoiFmSbQ9WCwBvZfs6YH4hPl3R",
-  },
-  {
-    title: "Chironamiddag",
-    date: new Date("2025-05-25"),
-    location: "Chiroheem",
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOx6pLe0TfYEVRTYsWdzytQDUr1jawq7mnNLI2C",
-  },
-  {
-    title: "Chirocafé en kip met frietjes",
-    date: new Date("2025-05-29"),
-    location: "Markt Houthulst",
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxkma0GmeG3xVfnFN2ULq8KbrpuCIhaBwX5v6t",
-  },
-  {
-    title: "Chironamiddag",
-    date: new Date("2025-06-15"),
-    location: "Chiroheem",
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOx6pf3r8PYEVRTYsWdzytQDUr1jawq7mnNLI2C",
-  },
-  {
-    title: "Chironamiddag",
-    date: new Date("2025-06-22"),
-    location: "Chiroheem",
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxRFAwh7MwjXNhILV7B2sObk6Qv8MtegdHZxmR",
-  },
-  {
-    title: "Groepsuitstap",
-    date: new Date("2025-06-29"),
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxZV0BvNWcs7NMztbL2UP6yoa8wfTeguH3lmCn",
-  },
-  {
-    title: "Vertrek KAMP!",
-    date: new Date("2025-07-20"),
-    src: "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxxYCc1kwdCYVMAq9142X6cluvFs7kPGpI8jDZ",
-  },
-];
+// Helper function to convert database event to display event
+function convertDbEventToDisplayEvent(dbEvent: DbEvent): Event {
+  return {
+    title: dbEvent.title,
+    date: dbEvent.startDate,
+    location: dbEvent.location ?? undefined,
+    price: dbEvent.price ?? undefined,
+    canSignUp: dbEvent.canSignUp ?? undefined,
+    facebookEventUrl: dbEvent.facebookEventUrl ?? undefined,
+    src:
+      dbEvent.coverImageUrl ??
+      "https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxWcz6EUKtCqYzi3O4MHg1EXoT5U9vkldDnSej", // Default image
+  };
+}
 
-export default function Home() {
+export default async function Home() {
+  const dbEvents = await getUpcomingEvents();
+  const events: Event[] = dbEvents.map((dbEvent) =>
+    convertDbEventToDisplayEvent(dbEvent as DbEvent),
+  );
+  const membershipFee = await getCurrentMembershipFee();
+  const tshirtPrice = await getSetting("tshirt_price");
   return (
     <>
       <HeroSection
@@ -107,16 +60,7 @@ export default function Home() {
           leiding: LEADER_COUNT,
         }}
       />
-      <Section title="Kalender" id="kalender">
-        <Carousel
-          items={events}
-          renderItem={(event, index) => (
-            <EventCard event={event} index={index} />
-          )}
-          cardWidth={320}
-          cardGap={16}
-        />
-      </Section>
+      <CalendarSection events={events} />
       <SplitSection>
         <AsideImage
           src="https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxaBH6J4oXDhskiH8OxmF37l2ceQIw5LuRqYWZ"
@@ -172,9 +116,10 @@ export default function Home() {
         <BlogText>
           <h2>Inschrijven</h2>
           <p id="uniform">
-            Inschrijven in de Chiro kost €40 en kan elke zondag bij de leiding.
-            Zo zijn jullie ook verzekerd. Je kan altijd eens de Chiro komen
-            uittesten, inschrijven is niet verplicht vanaf de eerste zondag!
+            Inschrijven in de Chiro kost €{membershipFee} en kan elke zondag bij
+            de leiding. Zo zijn jullie ook verzekerd. Je kan altijd eens de
+            Chiro komen uittesten, inschrijven is niet verplicht vanaf de eerste
+            zondag!
           </p>
         </BlogText>
       </SplitSection>
@@ -193,7 +138,8 @@ export default function Home() {
             </Link>
             (dichtste winkel: Roeselare). Vanaf de Rakwi&apos;s is een uniform
             verplicht. Naast het officiële uniform verkopen wij ook onze eigen
-            t-shirts. Deze zijn elke zondag te koop bij de leiding voor €20.
+            t-shirts. Deze zijn elke zondag te koop bij de leiding voor €
+            {tshirtPrice ?? "20"}.
           </p>
         </BlogText>
         <AsideImage

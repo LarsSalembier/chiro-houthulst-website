@@ -9,6 +9,8 @@ import {
   Utensils,
   Tent,
   Shield,
+  Calendar,
+  Settings,
 } from "lucide-react";
 import BlogTextNoAnimation from "~/components/ui/blog-text-no-animation";
 import SignInAsLeiding from "./sign-in-as-leiding";
@@ -41,39 +43,107 @@ export default async function Leidingsportaal() {
         <div className="mx-auto max-w-6xl px-4">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {isAdmin && (
-              <Card className="flex cursor-pointer flex-col">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-red-100 p-3">
-                      <Shield className="h-8 w-8 text-red-600" />
+              <>
+                <Card className="flex cursor-pointer flex-col">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-lg bg-red-100 p-3">
+                        <Shield className="h-8 w-8 text-red-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold">
+                          Gebruikersbeheer
+                        </h2>
+                        <p className="text-sm text-gray-600">
+                          Beheer gebruikers en rollen
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-xl font-semibold">
-                        Gebruikersbeheer
-                      </h2>
-                      <p className="text-sm text-gray-600">
-                        Beheer gebruikers en rollen
-                      </p>
+                  </CardHeader>
+                  <CardBody className="flex flex-1 flex-col pt-0">
+                    <p className="mb-4 flex-1 text-gray-700">
+                      Beheer gebruikers en hun rollen. Maak gebruikers leiding
+                      of administrator en beheer zo wie toegang heeft tot het
+                      leidingsportaal.
+                    </p>
+                    <Button
+                      color="danger"
+                      variant="bordered"
+                      as="a"
+                      href="/leidingsportaal/admin/users"
+                      endContent={<ArrowRight className="h-4 w-4" />}
+                    >
+                      Gebruikersbeheer
+                    </Button>
+                  </CardBody>
+                </Card>
+
+                <Card className="flex cursor-pointer flex-col">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-lg bg-blue-100 p-3">
+                        <Calendar className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold">
+                          Kalenderbeheer
+                        </h2>
+                        <p className="text-sm text-gray-600">
+                          Beheer evenementen en activiteiten
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardBody className="flex flex-1 flex-col pt-0">
-                  <p className="mb-4 flex-1 text-gray-700">
-                    Beheer gebruikers en hun rollen. Maak gebruikers leiding of
-                    administrator en beheer zo wie toegang heeft tot het
-                    leidingsportaal.
-                  </p>
-                  <Button
-                    color="danger"
-                    variant="bordered"
-                    as="a"
-                    href="/leidingsportaal/admin/users"
-                    endContent={<ArrowRight className="h-4 w-4" />}
-                  >
-                    Gebruikersbeheer
-                  </Button>
-                </CardBody>
-              </Card>
+                  </CardHeader>
+                  <CardBody className="flex flex-1 flex-col pt-0">
+                    <p className="mb-4 flex-1 text-gray-700">
+                      Beheer alle evenementen en activiteiten van de Chiro. Voeg
+                      nieuwe evenementen toe, bewerk bestaande en verwijder
+                      evenementen die niet meer relevant zijn.
+                    </p>
+                    <Button
+                      color="primary"
+                      variant="bordered"
+                      as="a"
+                      href="/leidingsportaal/admin/kalender"
+                      endContent={<ArrowRight className="h-4 w-4" />}
+                    >
+                      Kalenderbeheer
+                    </Button>
+                  </CardBody>
+                </Card>
+
+                <Card className="flex cursor-pointer flex-col">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-lg bg-gray-100 p-3">
+                        <Settings className="h-8 w-8 text-gray-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold">Instellingen</h2>
+                        <p className="text-sm text-gray-600">
+                          Beheer algemene instellingen
+                        </p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardBody className="flex flex-1 flex-col pt-0">
+                    <p className="mb-4 flex-1 text-gray-700">
+                      Beheer algemene instellingen zoals prijzen,
+                      contactgegevens en andere configuratie-opties voor de
+                      website.
+                    </p>
+                    <Button
+                      color="default"
+                      variant="bordered"
+                      as="a"
+                      href="/leidingsportaal/admin/instellingen"
+                      endContent={<ArrowRight className="h-4 w-4" />}
+                    >
+                      Instellingen
+                    </Button>
+                  </CardBody>
+                </Card>
+              </>
             )}
 
             {/* Nieuwe Inschrijving */}
