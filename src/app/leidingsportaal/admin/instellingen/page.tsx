@@ -1,5 +1,4 @@
 import { requireAdminAuth } from "~/lib/auth";
-import { getAllSettings } from "~/app/settings/actions";
 import { getAllMainLeaders, getAllVBs } from "~/app/contacts/actions";
 import SettingsAdminClient from "./SettingsAdminClient";
 import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
@@ -7,8 +6,7 @@ import BreadcrumbsWrapper from "~/components/ui/breadcrumbs-wrapper";
 export default async function SettingsAdminPage() {
   await requireAdminAuth();
 
-  const [settings, mainLeaders, vbs] = await Promise.all([
-    getAllSettings(),
+  const [mainLeaders, vbs] = await Promise.all([
     getAllMainLeaders(),
     getAllVBs(),
   ]);
@@ -31,7 +29,6 @@ export default async function SettingsAdminPage() {
         </div>
 
         <SettingsAdminClient
-          initialSettings={settings}
           initialMainLeaders={mainLeaders}
           initialVBs={vbs}
         />

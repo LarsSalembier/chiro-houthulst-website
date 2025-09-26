@@ -28,7 +28,7 @@ export default function Navbar() {
     { name: "Kalender", href: "/#kalender" },
     { name: "Chirozondagen", href: "/#chirozondagen" },
     { name: "Kamp", href: "/#kamp" },
-    { name: "Inschrijven", href: "/#inschrijven" },
+    { name: "Tentenverhuur", href: "/tentverhuur" },
     { name: "Uniform", href: "/#uniform" },
     { name: "Verzekering", href: "/verzekeringen" },
     { name: "Contact", href: "#contact" },
@@ -70,8 +70,8 @@ export default function Navbar() {
           </Link>
         </NavbarItem>
         <NavbarItem className="hidden lg:flex">
-          <Link href="/#inschrijven" color="foreground">
-            Inschrijven
+          <Link href="/tentverhuur" color="foreground">
+            Tentenverhuur
           </Link>
         </NavbarItem>
         <NavbarItem className="hidden lg:flex">

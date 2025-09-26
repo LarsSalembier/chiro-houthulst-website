@@ -23,6 +23,10 @@ const config = {
         protocol: "https",
         hostname: "*.fbcdn.net",
       },
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+      },
     ],
   },
   typescript: {

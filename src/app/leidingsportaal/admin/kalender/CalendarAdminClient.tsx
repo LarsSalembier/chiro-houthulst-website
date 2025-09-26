@@ -31,6 +31,8 @@ type AdminEvent = {
 };
 import { createEvent, updateEvent, deleteEvent } from "./actions";
 import DDMMYYYYDateInput from "~/components/ui/dd-mm-yyyy-date-input";
+import { UploadButton } from "~/utilities/uploadthing";
+import { Image } from "@heroui/image";
 
 interface CalendarAdminClientProps {
   initialEvents: AdminEvent[];
@@ -42,6 +44,7 @@ export default function CalendarAdminClient({
   const [events, setEvents] = useState<AdminEvent[]>(initialEvents);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingEvent, setEditingEvent] = useState<AdminEvent | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("");
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const form = useForm({
@@ -68,7 +71,7 @@ export default function CalendarAdminClient({
           price: value.price ?? undefined,
           canSignUp: value.canSignUp,
           signUpDeadline: value.signUpDeadline,
-          coverImageUrl: value.coverImageUrl || undefined,
+          coverImageUrl: uploadedImageUrl || value.coverImageUrl || undefined,
         };
 
         if (editingEvent) {
@@ -85,6 +88,7 @@ export default function CalendarAdminClient({
 
         form.reset();
         setEditingEvent(null);
+        setUploadedImageUrl("");
         onOpenChange();
       } catch (error) {
         console.error("Error saving event:", error);
@@ -97,6 +101,7 @@ export default function CalendarAdminClient({
 
   const handleEdit = (event: AdminEvent) => {
     setEditingEvent(event);
+    setUploadedImageUrl("");
     form.setFieldValue("title", event.title);
     form.setFieldValue("startDate", event.startDate);
     form.setFieldValue("endDate", event.endDate ?? undefined);
@@ -123,6 +128,7 @@ export default function CalendarAdminClient({
 
   const handleNewEvent = () => {
     setEditingEvent(null);
+    setUploadedImageUrl("");
     form.reset();
     onOpen();
   };
@@ -320,16 +326,45 @@ export default function CalendarAdminClient({
                   )}
                 </form.Field>
 
-                <form.Field name="coverImageUrl">
-                  {(field) => (
-                    <Input
-                      label="Cover Afbeelding URL"
-                      placeholder="https://..."
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Cover Afbeelding
+                  </label>
+                  <div className="space-y-2">
+                    <UploadButton
+                      endpoint="imageUploader"
+                      onClientUploadComplete={(res) => {
+                        if (res?.[0]) {
+                          setUploadedImageUrl(res[0].url);
+                          form.setFieldValue("coverImageUrl", res[0].url);
+                        }
+                      }}
+                      onUploadError={(error: Error) => {
+                        console.error("Upload error:", error);
+                        alert(`Upload fout: ${error.message}`);
+                      }}
+                      appearance={{
+                        button:
+                          "ut-ready:bg-primary ut-uploading:cursor-not-allowed rounded-r-none bg-primary px-4 py-2 text-sm font-medium text-white after:bg-primary",
+                        allowedContent: "text-xs text-gray-500",
+                      }}
                     />
-                  )}
-                </form.Field>
+                    {uploadedImageUrl && (
+                      <div className="mt-2">
+                        <p className="mb-2 text-xs text-green-600">
+                          Afbeelding geüpload!
+                        </p>
+                        <Image
+                          src={uploadedImageUrl}
+                          alt="Preview"
+                          width={200}
+                          height={150}
+                          className="rounded border"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
               </ModalBody>
               <ModalFooter>
                 <Button variant="light" onPress={onClose}>
