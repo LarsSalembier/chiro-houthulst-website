@@ -115,6 +115,38 @@ export default async function Leidingsportaal() {
                 <Card className="flex cursor-pointer flex-col">
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
+                      <div className="rounded-lg bg-orange-100 p-3">
+                        <Tent className="h-8 w-8 text-orange-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold">Tentverhuur</h2>
+                        <p className="text-sm text-gray-600">
+                          Beheer tentencatalogus
+                        </p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardBody className="flex flex-1 flex-col pt-0">
+                    <p className="mb-4 flex-1 text-gray-700">
+                      Beheer de catalogus van beschikbare tenten voor verhuur.
+                      Voeg nieuwe tenten toe, bewerk prijzen en beheer
+                      beschikbaarheid.
+                    </p>
+                    <Button
+                      color="warning"
+                      variant="bordered"
+                      as="a"
+                      href="/leidingsportaal/admin/tentverhuur"
+                      endContent={<ArrowRight className="h-4 w-4" />}
+                    >
+                      Tentenverhuur
+                    </Button>
+                  </CardBody>
+                </Card>
+
+                <Card className="flex cursor-pointer flex-col">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-3">
                       <div className="rounded-lg bg-gray-100 p-3">
                         <Settings className="h-8 w-8 text-gray-600" />
                       </div>

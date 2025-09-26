@@ -14,7 +14,6 @@ import {
   useDisclosure,
 } from "@heroui/modal";
 import { useForm } from "@tanstack/react-form";
-import { updateSetting } from "~/app/settings/actions";
 import {
   createMainLeader,
   updateMainLeader,
@@ -23,15 +22,6 @@ import {
   updateVB,
   deleteVB,
 } from "~/app/contacts/actions";
-
-type Setting = {
-  id: number;
-  key: string;
-  value: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date | null;
-};
 
 type MainLeader = {
   id: number;
@@ -52,32 +42,26 @@ type VB = {
 };
 
 interface SettingsAdminClientProps {
-  initialSettings: Setting[];
   initialMainLeaders: MainLeader[];
   initialVBs: VB[];
 }
 
 export default function SettingsAdminClient({
-  initialSettings,
   initialMainLeaders,
   initialVBs,
 }: SettingsAdminClientProps) {
-  const [settings, setSettings] = useState<Setting[]>(initialSettings);
   const [mainLeaders, setMainLeaders] =
     useState<MainLeader[]>(initialMainLeaders);
   const [vbs, setVBs] = useState<VB[]>(initialVBs);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingItem, setEditingItem] = useState<{
-    type: "setting" | "mainLeader" | "vb";
-    item: Setting | MainLeader | VB | null;
+    type: "mainLeader" | "vb";
+    item: MainLeader | VB | null;
   } | null>(null);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const form = useForm({
     defaultValues: {
-      key: "",
-      value: "",
-      description: "",
       name: "",
       phone: "",
       order: 0,
@@ -85,44 +69,7 @@ export default function SettingsAdminClient({
     onSubmit: async ({ value }) => {
       setIsSubmitting(true);
       try {
-        if (editingItem?.type === "setting") {
-          const result = await updateSetting(
-            value.key,
-            value.value,
-            value.description,
-          );
-          if (result.success) {
-            const existingSetting = settings.find((s) => s.key === value.key);
-            if (existingSetting) {
-              // Update existing setting
-              setSettings((prev) =>
-                prev.map((s) =>
-                  s.key === value.key
-                    ? {
-                        ...s,
-                        value: value.value,
-                        description: value.description || null,
-                        updatedAt: new Date(),
-                      }
-                    : s,
-                ),
-              );
-            } else {
-              // Add new setting
-              const newSetting: Setting = {
-                id: Date.now(), // Temporary ID
-                key: value.key,
-                value: value.value,
-                description: value.description || null,
-                createdAt: new Date(),
-                updatedAt: null,
-              };
-              setSettings((prev) => [...prev, newSetting]);
-            }
-            onOpenChange();
-            form.reset();
-          }
-        } else if (editingItem?.type === "mainLeader") {
+        if (editingItem?.type === "mainLeader") {
           if (editingItem.item && "id" in editingItem.item) {
             // Update existing
             const updated = await updateMainLeader(editingItem.item.id, {
@@ -185,17 +132,10 @@ export default function SettingsAdminClient({
     },
   });
 
-  const handleEdit = (
-    type: "setting" | "mainLeader" | "vb",
-    item: Setting | MainLeader | VB,
-  ) => {
+  const handleEdit = (type: "mainLeader" | "vb", item: MainLeader | VB) => {
     setEditingItem({ type, item });
-    if (type === "setting" && "key" in item) {
-      form.setFieldValue("key", item.key);
-      form.setFieldValue("value", item.value);
-      form.setFieldValue("description", item.description ?? "");
-    } else {
-      const contactItem = item as MainLeader | VB;
+    if (type === "mainLeader" || type === "vb") {
+      const contactItem = item;
       form.setFieldValue("name", contactItem.name ?? "");
       form.setFieldValue("phone", contactItem.phone ?? "");
       form.setFieldValue("order", contactItem.order ?? 0);
@@ -203,7 +143,7 @@ export default function SettingsAdminClient({
     onOpen();
   };
 
-  const handleNew = (type: "setting" | "mainLeader" | "vb") => {
+  const handleNew = (type: "mainLeader" | "vb") => {
     setEditingItem({ type, item: null });
     form.reset();
     onOpen();
@@ -225,70 +165,8 @@ export default function SettingsAdminClient({
     }
   };
 
-  const predefinedSettings = [
-    {
-      key: "tshirt_price",
-      label: "T-shirt Prijs",
-      description: "Prijs van de Chiro t-shirts (in euro's)",
-      placeholder: "20",
-    },
-  ];
-
   return (
     <div className="space-y-8">
-      {/* Settings */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">Algemene Instellingen</h2>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {predefinedSettings.map((predefined) => {
-            const setting = settings.find((s) => s.key === predefined.key);
-            return (
-              <Card key={predefined.key} className="p-4">
-                <CardHeader className="pb-2">
-                  <h3 className="text-lg font-medium">{predefined.label}</h3>
-                </CardHeader>
-                <CardBody className="pt-0">
-                  <p className="mb-3 text-sm text-gray-600">
-                    {predefined.description}
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-sm">
-                      <span className="font-medium">Huidige waarde:</span>{" "}
-                      {setting ? setting.value : "Niet ingesteld"}
-                    </p>
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      onPress={() => {
-                        if (setting) {
-                          handleEdit("setting", setting);
-                        } else {
-                          // Create a new setting object for predefined settings
-                          const newSetting: Setting = {
-                            id: 0,
-                            key: predefined.key,
-                            value: "",
-                            description: predefined.description,
-                            createdAt: new Date(),
-                            updatedAt: null,
-                          };
-                          handleEdit("setting", newSetting);
-                        }
-                      }}
-                    >
-                      {setting ? "Bewerken" : "Instellen"}
-                    </Button>
-                  </div>
-                </CardBody>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Main Leaders */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -381,10 +259,6 @@ export default function SettingsAdminClient({
               }}
             >
               <ModalHeader>
-                {editingItem?.type === "setting" &&
-                  (editingItem.item && editingItem.item.id > 0
-                    ? "Instelling Bewerken"
-                    : "Instelling Instellen")}
                 {editingItem?.type === "mainLeader" &&
                   (editingItem.item && "id" in editingItem.item
                     ? "Hoofdleiding Bewerken"
@@ -395,46 +269,6 @@ export default function SettingsAdminClient({
                     : "Nieuwe VB")}
               </ModalHeader>
               <ModalBody className="space-y-4">
-                {editingItem?.type === "setting" && (
-                  <>
-                    <form.Field name="key">
-                      {(field) => (
-                        <Input
-                          label="Sleutel"
-                          placeholder="Bijv. tshirt_price"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          isRequired
-                          isDisabled={true}
-                        />
-                      )}
-                    </form.Field>
-
-                    <form.Field name="value">
-                      {(field) => (
-                        <Input
-                          label="Waarde"
-                          placeholder="De waarde van de instelling"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          isRequired
-                        />
-                      )}
-                    </form.Field>
-
-                    <form.Field name="description">
-                      {(field) => (
-                        <Textarea
-                          label="Beschrijving"
-                          placeholder="Beschrijving van deze instelling"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                      )}
-                    </form.Field>
-                  </>
-                )}
-
                 {(editingItem?.type === "mainLeader" ||
                   editingItem?.type === "vb") && (
                   <>
@@ -483,13 +317,9 @@ export default function SettingsAdminClient({
                   Annuleren
                 </Button>
                 <Button color="primary" type="submit" isLoading={isSubmitting}>
-                  {editingItem?.type === "setting"
-                    ? editingItem.item && editingItem.item.id > 0
-                      ? "Bijwerken"
-                      : "Instellen"
-                    : editingItem?.item && "id" in editingItem.item
-                      ? "Bijwerken"
-                      : "Aanmaken"}
+                  {editingItem?.item && "id" in editingItem.item
+                    ? "Bijwerken"
+                    : "Aanmaken"}
                 </Button>
               </ModalFooter>
             </form>

@@ -7,7 +7,7 @@ import GoogleMapsMap from "~/features/home/google-maps-map";
 import { Button } from "@heroui/button";
 import { Link } from "@heroui/link";
 import { getUpcomingEvents } from "./actions";
-import { getCurrentMembershipFee, getSetting } from "./settings/actions";
+import { getCurrentMembershipFee } from "./settings/actions";
 // Define the database event type for the homepage
 type DbEvent = {
   id: number;
@@ -48,7 +48,6 @@ export default async function Home() {
     convertDbEventToDisplayEvent(dbEvent as DbEvent),
   );
   const membershipFee = await getCurrentMembershipFee();
-  const tshirtPrice = await getSetting("tshirt_price");
   return (
     <>
       <HeroSection
@@ -138,8 +137,7 @@ export default async function Home() {
             </Link>
             (dichtste winkel: Roeselare). Vanaf de Rakwi&apos;s is een uniform
             verplicht. Naast het officiële uniform verkopen wij ook onze eigen
-            t-shirts. Deze zijn elke zondag te koop bij de leiding voor €
-            {tshirtPrice ?? "20"}.
+            t-shirts. Deze zijn elke zondag te koop bij de leiding voor €20.
           </p>
         </BlogText>
         <AsideImage
@@ -178,6 +176,34 @@ export default async function Home() {
             Lees meer over de Chiroverzekering
           </Button>
         </BlogText>
+      </SplitSection>
+      <SplitSection>
+        <BlogText>
+          <h2>Tentenverhuur</h2>
+          <p>
+            Chiro Sint-Jan Houthulst verhuurt verschillende soorten tenten voor
+            uw evenementen, kampen of andere activiteiten. Onze tenten zijn van
+            goede kwaliteit en worden regelmatig onderhouden.
+          </p>
+          <Button
+            as={Link}
+            href="/tentverhuur"
+            variant="solid"
+            showAnchorIcon
+            className="not-prose"
+            size="lg"
+          >
+            Bekijk ons tentenaanbod
+          </Button>
+        </BlogText>
+        <AsideImage
+          src="https://o3x7nz292y.ufs.sh/f/9igZHUjyeBOxzEbvPhIKqudxXCTB8HOpYL3ZlvE0fDAn24be"
+          alt="Tentenverhuur bij Chiro Houthulst"
+          width={480}
+          height={250}
+          className="w-[400px] xl:w-[500px]"
+          side="right"
+        />
       </SplitSection>
       <SplitSection className="lg:pt-8">
         <BlogText>

@@ -111,9 +111,10 @@ const tableNamesArray = [
   "event_registrations",
   "sponsors",
   "sponsorship_agreements",
-  "settings",
   "main_leaders",
   "vbs",
+  "tent_rentals",
+  "tent_rental_terms",
 ] as const;
 
 const tableNames = {
@@ -131,9 +132,10 @@ const tableNames = {
   eventRegistrations: tableNamesArray[11],
   sponsors: tableNamesArray[12],
   sponsorshipAgreements: tableNamesArray[13],
-  settings: tableNamesArray[14],
-  mainLeaders: tableNamesArray[15],
-  vbs: tableNamesArray[16],
+  mainLeaders: tableNamesArray[14],
+  vbs: tableNamesArray[15],
+  tentRentals: tableNamesArray[16],
+  tentRentalTerms: tableNamesArray[17],
   auditLogs: "audit_logs",
 };
 export const tableNameEnumSchema = z.enum(tableNamesArray);
@@ -1026,28 +1028,6 @@ export const InsertAuditLogSchema = createInsertSchema(auditLogs, {
 export type AuditLog = z.infer<typeof SelectAuditLogSchema>;
 export type NewAuditLog = z.infer<typeof InsertAuditLogSchema>;
 
-// --- Settings ---
-export const settings = createTable(tableNames.settings, {
-  id: serial("id").primaryKey(),
-  key: varchar("key", { length: 100 }).notNull().unique(),
-  value: text("value").notNull(),
-  description: text("description"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }),
-});
-
-export const SelectSettingsSchema = createSelectSchema(settings);
-export const InsertSettingsSchema = createInsertSchema(settings, {
-  key: z.string().trim().min(1).max(100),
-  value: z.string().trim().min(1),
-  description: z.string().trim().optional().or(z.literal("")),
-}).omit({ id: true, createdAt: true, updatedAt: true });
-
-export type Setting = z.infer<typeof SelectSettingsSchema>;
-export type NewSetting = z.infer<typeof InsertSettingsSchema>;
-
 // --- Main Leaders ---
 export const mainLeaders = createTable(tableNames.mainLeaders, {
   id: serial("id").primaryKey(),
@@ -1091,3 +1071,51 @@ export const InsertVBSchema = createInsertSchema(vbs, {
 
 export type VB = z.infer<typeof SelectVBSchema>;
 export type NewVB = z.infer<typeof InsertVBSchema>;
+
+// --- Tent Rentals ---
+export const tentRentals = createTable(tableNames.tentRentals, {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: MAX_NAME_LENGTH }).notNull(),
+  description: text("description"),
+  price: doublePrecision("price").notNull(),
+  imageUrl: varchar("image_url", { length: MAX_URL_LENGTH }),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export const SelectTentRentalSchema = createSelectSchema(tentRentals);
+export const InsertTentRentalSchema = createInsertSchema(tentRentals, {
+  name: z.string().trim().min(1).max(MAX_NAME_LENGTH),
+  description: z.string().optional().or(z.literal("")),
+  price: z.coerce.number().nonnegative(),
+  imageUrl: z.string().trim().max(MAX_URL_LENGTH).optional().or(z.literal("")),
+  active: z.coerce.boolean().default(true),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type TentRental = z.infer<typeof SelectTentRentalSchema>;
+export type NewTentRental = z.infer<typeof InsertTentRentalSchema>;
+
+// --- Tent Rental Terms ---
+export const tentRentalTerms = createTable(tableNames.tentRentalTerms, {
+  id: serial("id").primaryKey(),
+  text: text("text").notNull(),
+  order: integer("order").notNull().default(0),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export const SelectTentRentalTermSchema = createSelectSchema(tentRentalTerms);
+export const InsertTentRentalTermSchema = createInsertSchema(tentRentalTerms, {
+  text: z.string().trim().min(1),
+  order: z.coerce.number().int().default(0),
+  active: z.coerce.boolean().default(true),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type TentRentalTerm = z.infer<typeof SelectTentRentalTermSchema>;
+export type NewTentRentalTerm = z.infer<typeof InsertTentRentalTermSchema>;
